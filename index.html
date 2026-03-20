@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#D32F2F">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kimchi Mart Order System</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --red:#D32F2F; --green:#388E3C; --blue:#1565C0;
+  --bg:#F5F5F5; --white:#FFF; --gray:#E0E0E0; --dark:#333; --light-gray:#F9F9F9;
+  --radius:12px; --shadow:0 2px 8px rgba(0,0,0,0.12);
+}
+body { font-family:'Segoe UI','Malgun Gothic',sans-serif; background:var(--bg); color:var(--dark); overflow-x:hidden; }
+button { cursor:pointer; border:none; font-family:inherit; }
+input { font-family:inherit; }
+
+/* HEADER */
+.header { background:var(--white); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); position:sticky; top:0; z-index:100; }
+.header h1 { font-size:20px; color:var(--dark); }
+.header h1 small { font-size:13px; color:#888; display:block; }
+.back-btn { background:none; font-size:28px; color:var(--dark); padding:8px 12px; border-radius:8px; }
+.back-btn:active { background:var(--gray); }
+
+/* HOME PAGE */
+.home { padding:30px 20px; display:flex; flex-direction:column; align-items:center; min-height:90vh; justify-content:center; }
+.home h2 { font-size:28px; margin-bottom:6px; }
+.home p { color:#888; margin-bottom:30px; font-size:16px; }
+.vendor-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; width:100%; max-width:900px; }
+.vendor-card { background:var(--white); border-radius:var(--radius); padding:30px 20px; text-align:center; box-shadow:var(--shadow); transition:transform 0.15s; border-top:5px solid; min-height:200px; display:flex; flex-direction:column; justify-content:center; }
+.vendor-card:active { transform:scale(0.97); }
+.vendor-card h3 { font-size:22px; margin-bottom:4px; }
+.vendor-card .kr { font-size:14px; color:#888; margin-bottom:12px; }
+.vendor-card .count { font-size:15px; color:#666; margin-bottom:8px; }
+.vendor-card .cart-badge { display:inline-block; background:#FF6F00; color:#FFF; padding:4px 14px; border-radius:20px; font-size:14px; font-weight:600; }
+.vendor-card .cart-badge.empty { background:var(--gray); color:#999; }
+.home-actions { display:flex; gap:12px; margin-top:30px; }
+.home-actions button { padding:14px 28px; border-radius:var(--radius); font-size:16px; font-weight:600; }
+.btn-primary { background:var(--red); color:#FFF; }
+.btn-secondary { background:var(--white); color:var(--dark); border:2px solid var(--gray); }
+
+/* BROWSE PAGE */
+.browse { display:flex; height:calc(100vh - 60px); }
+.sidebar { width:200px; background:var(--white); overflow-y:auto; border-right:1px solid var(--gray); flex-shrink:0; }
+.sidebar .cat-item { padding:14px 16px; font-size:14px; border-bottom:1px solid #F0F0F0; cursor:pointer; }
+.sidebar .cat-item:active, .sidebar .cat-item.active { background:#FFF3E0; font-weight:700; }
+.sidebar .cat-item .cat-count { float:right; color:#999; font-size:12px; }
+
+.main-content { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.search-bar { padding:10px 16px; background:var(--white); border-bottom:1px solid var(--gray); }
+.search-bar input { width:100%; padding:12px 16px; border:2px solid var(--gray); border-radius:8px; font-size:16px; outline:none; }
+.search-bar input:focus { border-color:var(--blue); }
+
+.product-grid { flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:12px; align-content:start; }
+.product-tile { background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.08); display:flex; flex-direction:column; min-height:280px; }
+.product-tile .img-wrap { width:100%; height:150px; background:#F8F8F8; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.product-tile .img-wrap img { max-width:100%; max-height:100%; object-fit:contain; }
+.product-tile .img-wrap .no-img { color:#CCC; font-size:40px; }
+.product-tile .info { padding:8px 10px; flex:1; }
+.product-tile .info .name { font-size:13px; font-weight:600; line-height:1.3; max-height:2.6em; overflow:hidden; }
+.product-tile .info .name-kr { font-size:11px; color:#888; margin-top:2px; max-height:1.4em; overflow:hidden; }
+.product-tile .info .meta { font-size:11px; color:#999; margin-top:4px; }
+.product-tile .info .price { font-size:14px; font-weight:700; color:var(--red); margin-top:4px; }
+.product-tile .qty-row { display:flex; align-items:center; justify-content:center; padding:8px; gap:0; border-top:1px solid #F0F0F0; }
+.qty-btn { width:44px; height:44px; font-size:22px; font-weight:700; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.qty-btn.minus { background:#FFEBEE; color:var(--red); }
+.qty-btn.plus { background:#E8F5E9; color:var(--green); }
+.qty-btn:active { opacity:0.7; }
+.qty-input { width:56px; height:44px; text-align:center; font-size:20px; font-weight:700; border:2px solid var(--gray); border-radius:8px; margin:0 4px; }
+.qty-input.has-qty { border-color:#FF6F00; background:#FFF8E1; color:#E65100; }
+
+/* FLOATING ORDER BTN */
+.float-order { position:fixed; bottom:20px; right:20px; background:var(--red); color:#FFF; padding:14px 24px; border-radius:30px; font-size:16px; font-weight:700; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:99; display:flex; align-items:center; gap:8px; }
+.float-order:active { transform:scale(0.95); }
+.float-order .badge { background:#FFF; color:var(--red); width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+/* ORDER SUMMARY PAGE */
+.order-page { padding:16px; max-width:900px; margin:0 auto; }
+.order-page h2 { margin-bottom:16px; }
+.order-table { width:100%; border-collapse:collapse; background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.order-table th { background:#424242; color:#FFF; padding:12px; text-align:left; font-size:14px; }
+.order-table td { padding:10px 12px; border-bottom:1px solid #F0F0F0; font-size:14px; vertical-align:middle; }
+.order-table tr:nth-child(even) { background:var(--light-gray); }
+.order-table .item-img { width:50px; height:50px; object-fit:contain; border-radius:4px; }
+.order-total { text-align:right; padding:16px; font-size:20px; font-weight:700; }
+
+.action-bar { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+.action-bar button { padding:16px 28px; border-radius:var(--radius); font-size:16px; font-weight:600; min-width:180px; }
+.btn-email { background:#1565C0; color:#FFF; }
+.btn-excel { background:#2E7D32; color:#FFF; }
+.btn-copy { background:#F57F17; color:#FFF; }
+.btn-clear { background:#FFF; color:var(--red); border:2px solid var(--red); }
+
+/* HISTORY PAGE */
+.history-page { padding:20px; max-width:900px; margin:0 auto; }
+.history-item { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:12px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:center; }
+.history-item .info h4 { font-size:16px; }
+.history-item .info p { font-size:13px; color:#888; }
+.history-item button { padding:10px 20px; border-radius:8px; background:#E3F2FD; color:var(--blue); font-weight:600; }
+
+/* RESPONSIVE */
+@media (max-width:768px) {
+  .vendor-cards { grid-template-columns:1fr; max-width:400px; }
+  .sidebar { width:140px; }
+  .product-grid { grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); }
+}
+@media (orientation:portrait) {
+  .sidebar { display:none; }
+  .cat-tabs { display:flex !important; }
+}
+.cat-tabs { display:none; overflow-x:auto; white-space:nowrap; padding:8px 12px; background:var(--white); border-bottom:1px solid var(--gray); }
+.cat-tabs .tab { display:inline-block; padding:8px 16px; border-radius:20px; font-size:13px; margin-right:6px; background:#F5F5F5; flex-shrink:0; }
+.cat-tabs .tab.active { background:var(--red); color:#FFF; font-weight:600; }
+
+/* TOAST */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#FFF; padding:12px 24px; border-radius:8px; font-size:14px; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+.toast.show { opacity:1; }
+
+/* NUMPAD MODAL */
+.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; display:none; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.numpad { background:var(--white); border-radius:16px; padding:20px; width:300px; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.numpad h3 { text-align:center; margin-bottom:8px; font-size:14px; }
+.numpad .display { font-size:36px; text-align:center; padding:12px; background:#F5F5F5; border-radius:8px; margin-bottom:12px; min-height:60px; font-weight:700; }
+.numpad .keys { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.numpad .key { height:56px; font-size:24px; font-weight:600; border-radius:8px; background:#F5F5F5; display:flex; align-items:center; justify-content:center; }
+.numpad .key:active { background:var(--gray); }
+.numpad .key.confirm { background:var(--green); color:#FFF; }
+.numpad .key.del { background:#FFEBEE; color:var(--red); }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="numpadModal">
+  <div class="numpad">
+    <h3 id="numpadTitle">Enter Quantity</h3>
+    <div class="display" id="numpadDisplay">0</div>
+    <div class="keys">
+      <button class="key" onclick="numpadKey('1')">1</button>
+      <button class="key" onclick="numpadKey('2')">2</button>
+      <button class="key" onclick="numpadKey('3')">3</button>
+      <button class="key" onclick="numpadKey('4')">4</button>
+      <button class="key" onclick="numpadKey('5')">5</button>
+      <button class="key" onclick="numpadKey('6')">6</button>
+      <button class="key" onclick="numpadKey('7')">7</button>
+      <button class="key" onclick="numpadKey('8')">8</button>
+      <button class="key" onclick="numpadKey('9')">9</button>
+      <button class="key del" onclick="numpadKey('del')">&#9003;</button>
+      <button class="key" onclick="numpadKey('0')">0</button>
+      <button class="key confirm" onclick="numpadConfirm()">&#10003;</button>
+    </div>
+  </div>
+</div>
+
+<script src="products.js"></script>
+<script>
+// ===== STATE =====
+let state = {
+  page: 'home',
+  vendor: null,
+  category: 'all',
+  search: '',
+  orders: {},
+  history: JSON.parse(localStorage.getItem('km_history') || '[]')
+};
+
+// Load saved orders
+try { state.orders = JSON.parse(localStorage.getItem('km_orders') || '{}'); } catch(e) { state.orders = {}; }
+for (let v in VENDORS) { if (!state.orders[v]) state.orders[v] = {}; }
+
+function saveState() {
+  localStorage.setItem('km_orders', JSON.stringify(state.orders));
+  localStorage.setItem('km_history', JSON.stringify(state.history));
+}
+
+function getOrderCount(vendorId) {
+  const o = state.orders[vendorId] || {};
+  return Object.values(o).filter(q => q > 0).length;
+}
+
+function getOrderTotal(vendorId) {
+  const o = state.orders[vendorId] || {};
+  const vendor = VENDORS[vendorId];
+  let total = 0;
+  for (let id in o) {
+    if (o[id] > 0) {
+      const p = vendor.products.find(p => p.id === id);
+      if (p && p.price) total += p.price * o[id];
+    }
+  }
+  return total;
+}
+
+function setQty(vendorId, productId, qty) {
+  if (!state.orders[vendorId]) state.orders[vendorId] = {};
+  state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
+  if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
+  saveState();
+  render();
+}
+
+function getQty(vendorId, productId) {
+  return (state.orders[vendorId] || {})[productId] || 0;
+}
+
+// ===== NUMPAD =====
+let numpadTarget = null;
+function openNumpad(vendorId, productId, currentQty, productName) {
+  numpadTarget = { vendorId, productId };
+  document.getElementById('numpadDisplay').textContent = currentQty > 0 ? String(currentQty) : '0';
+  document.getElementById('numpadTitle').textContent = productName.substring(0, 30);
+  document.getElementById('numpadModal').classList.add('show');
+}
+function numpadKey(k) {
+  const d = document.getElementById('numpadDisplay');
+  if (k === 'del') { d.textContent = d.textContent.length > 1 ? d.textContent.slice(0,-1) : '0'; }
+  else { d.textContent = d.textContent === '0' ? k : d.textContent + k; }
+}
+function numpadConfirm() {
+  const qty = parseInt(document.getElementById('numpadDisplay').textContent) || 0;
+  if (numpadTarget) setQty(numpadTarget.vendorId, numpadTarget.productId, qty);
+  document.getElementById('numpadModal').classList.remove('show');
+  numpadTarget = null;
+}
+document.getElementById('numpadModal').addEventListener('click', function(e) {
+  if (e.target === this) { this.classList.remove('show'); numpadTarget = null; }
+});
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== RENDER =====
+function render() {
+  const app = document.getElementById('app');
+  if (state.page === 'home') renderHome(app);
+  else if (state.page === 'browse') renderBrowse(app);
+  else if (state.page === 'order') renderOrder(app);
+  else if (state.page === 'history') renderHistory(app);
+}
+
+function renderHome(app) {
+  let cards = '';
+  for (let vid in VENDORS) {
+    const v = VENDORS[vid];
+    const cnt = getOrderCount(vid);
+    const badge = cnt > 0 ? `<span class="cart-badge">${cnt} items in cart</span>` : `<span class="cart-badge empty">Empty</span>`;
+    cards += `<div class="vendor-card" style="border-color:${v.color}" onclick="state.vendor='${vid}';state.category='all';state.search='';state.page='browse';render()">
+      <h3 style="color:${v.color}">${v.name}</h3>
+      <div class="kr">${v.nameKr}</div>
+      <div class="count">${v.products.length} Products</div>
+      ${badge}
+    </div>`;
+  }
+  app.innerHTML = `
+    <div class="header"><h1>Kimchi Mart<small>Order System / 주문 시스템</small></h1><div></div></div>
+    <div class="home">
+      <h2>Select Vendor</h2>
+      <p>벤더를 선택하세요</p>
+      <div class="vendor-cards">${cards}</div>
+      <div class="home-actions">
+        <button class="btn-secondary" onclick="state.page='history';render()">Order History</button>
+      </div>
+    </div>`;
+}
+
+function renderBrowse(app) {
+  const v = VENDORS[state.vendor];
+  if (!v) { state.page='home'; render(); return; }
+
+  // Filter products
+  let products = v.products;
+  if (state.category !== 'all') products = products.filter(p => p.category === state.category);
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    products = products.filter(p =>
+      (p.name||'').toLowerCase().includes(q) || (p.nameKr||'').toLowerCase().includes(q) ||
+      (p.id||'').toLowerCase().includes(q) || (p.brand||'').toLowerCase().includes(q)
+    );
+  }
+
+  // Sidebar categories
+  let sideItems = `<div class="cat-item ${state.category==='all'?'active':''}" onclick="state.category='all';render()">All Items <span class="cat-count">${v.products.length}</span></div>`;
+  let tabs = `<button class="tab ${state.category==='all'?'active':''}" onclick="state.category='all';render()">All</button>`;
+  for (let c of v.categories) {
+    const cnt = v.products.filter(p => p.category === c.id).length;
+    sideItems += `<div class="cat-item ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name} <span class="cat-count">${cnt}</span></div>`;
+    tabs += `<button class="tab ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`;
+  }
+
+  // Product tiles
+  let tiles = '';
+  for (let p of products) {
+    const qty = getQty(state.vendor, p.id);
+    const imgHtml = p.image ? `<img src="${p.image}" loading="lazy" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=no-img>&#128230;</div>'">` : '<div class="no-img">&#128230;</div>';
+    const priceHtml = p.price ? `<div class="price">$${p.price.toFixed(2)}</div>` : '';
+    tiles += `<div class="product-tile">
+      <div class="img-wrap">${imgHtml}</div>
+      <div class="info">
+        <div class="name">${p.name || p.nameKr}</div>
+        ${p.nameKr && p.name ? `<div class="name-kr">${p.nameKr}</div>` : ''}
+        <div class="meta">${p.id} | ${p.size || ''}</div>
+        ${priceHtml}
+      </div>
+      <div class="qty-row">
+        <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})">-</button>
+        <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="openNumpad('${state.vendor}','${p.id}',${qty},'${(p.name||p.nameKr||'').replace(/'/g,'')}')">
+        <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
+      </div>
+    </div>`;
+  }
+
+  const orderCount = getOrderCount(state.vendor);
+  const floatBtn = orderCount > 0 ? `<button class="float-order" style="background:${v.color}" onclick="state.page='order';render()">View Order <span class="badge">${orderCount}</span></button>` : '';
+
+  app.innerHTML = `
+    <div class="header">
+      <button class="back-btn" onclick="state.page='home';render()">&larr;</button>
+      <h1 style="color:${v.color}">${v.name}<small>${v.nameKr}</small></h1>
+      <button class="back-btn" onclick="state.page='order';render()">&#128722;</button>
+    </div>
+    <div class="browse">
+      <div class="sidebar">${sideItems}</div>
+      <div class="main-content">
+        <div class="cat-tabs">${tabs}</div>
+        <div class="search-bar"><input type="search" placeholder="Search products... / 제품 검색..." oninput="state.search=this.value;render()" value="${state.search}"></div>
+        <div class="product-grid">${tiles}</div>
+      </div>
+    </div>
+    ${floatBtn}`;
+}
+
+function renderOrder(app) {
+  const v = VENDORS[state.vendor];
+  if (!v) { state.page='home'; render(); return; }
+  const orders = state.orders[state.vendor] || {};
+  const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
+    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'' };
+    return { ...p, orderQty: qty, total: (p.price||0) * qty };
+  });
+
+  let rows = '';
+  items.forEach((it, i) => {
+    const imgHtml = it.image ? `<img class="item-img" src="${it.image}" onerror="this.style.display='none'">` : '';
+    rows += `<tr>
+      <td>${i+1}</td>
+      <td>${imgHtml}</td>
+      <td><strong>${it.name || it.nameKr}</strong><br><small style="color:#888">${it.id} | ${it.size||''}</small></td>
+      <td><div class="qty-row" style="border:0;padding:0">
+        <button class="qty-btn minus" style="width:36px;height:36px;font-size:18px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty-1})">-</button>
+        <input class="qty-input has-qty" style="width:50px;height:36px;font-size:18px" value="${it.orderQty}" readonly onclick="openNumpad('${state.vendor}','${it.id}',${it.orderQty},'${(it.name||'').replace(/'/g,'')}')">
+        <button class="qty-btn plus" style="width:36px;height:36px;font-size:18px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty+1})">+</button>
+      </div></td>
+      <td>${it.price ? '$'+it.price.toFixed(2) : '-'}</td>
+      <td>${it.total ? '$'+it.total.toFixed(2) : '-'}</td>
+    </tr>`;
+  });
+
+  const grandTotal = items.reduce((s,it) => s + it.total, 0);
+  const today = new Date().toLocaleDateString('en-US');
+
+  app.innerHTML = `
+    <div class="header">
+      <button class="back-btn" onclick="state.page='browse';render()">&larr;</button>
+      <h1 style="color:${v.color}">Order Summary<small>${v.name} - ${today}</small></h1>
+      <div></div>
+    </div>
+    <div class="order-page">
+      <h2>${items.length} Items Ordered</h2>
+      ${items.length === 0 ? '<p style="text-align:center;padding:40px;color:#999">No items in order. Go back and add products.</p>' : `
+      <table class="order-table">
+        <tr><th>#</th><th>Photo</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        ${rows}
+      </table>
+      <div class="order-total">Grand Total: $${grandTotal.toFixed(2)}</div>
+      `}
+      <div class="action-bar">
+        <button class="btn-email" onclick="emailOrder()">&#9993; Email Order</button>
+        <button class="btn-copy" onclick="copyOrder()">&#128203; Copy to Clipboard</button>
+        <button class="btn-excel" onclick="downloadCSV()">&#128196; Download CSV</button>
+        <button class="btn-clear" onclick="if(confirm('Clear all items?')){state.orders[state.vendor]={};saveState();render();}">Clear All</button>
+      </div>
+    </div>`;
+}
+
+function renderHistory(app) {
+  let items = '';
+  state.history.forEach((h, i) => {
+    items += `<div class="history-item">
+      <div class="info"><h4>${h.vendor} - ${h.date}</h4><p>${h.count} items | $${(h.total||0).toFixed(2)}</p></div>
+      <button onclick="reorder(${i})">Reorder</button>
+    </div>`;
+  });
+  app.innerHTML = `
+    <div class="header">
+      <button class="back-btn" onclick="state.page='home';render()">&larr;</button>
+      <h1>Order History<small>주문 내역</small></h1>
+      <div></div>
+    </div>
+    <div class="history-page">
+      ${items || '<p style="text-align:center;padding:40px;color:#999">No order history yet.</p>'}
+    </div>`;
+}
+
+// ===== ORDER ACTIONS =====
+function formatOrderText() {
+  const v = VENDORS[state.vendor];
+  const orders = state.orders[state.vendor] || {};
+  const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
+    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', size:'', price:0 };
+    return { ...p, orderQty: qty };
+  });
+  const today = new Date().toLocaleDateString('en-US');
+  let text = `KIMCHI MART - ORDER\nVendor: ${v.name}\nDate: ${today}\nCustomer: Kimchi Mart\n${'='.repeat(60)}\n`;
+  text += `${'Item#'.padEnd(12)}${'Product'.padEnd(35)}${'Size'.padEnd(15)}${'Qty'.padEnd(6)}${'Price'.padEnd(10)}Total\n`;
+  text += `${'-'.repeat(60)}\n`;
+  let total = 0;
+  items.forEach(it => {
+    const lineTotal = (it.price||0) * it.orderQty;
+    total += lineTotal;
+    text += `${(it.id||'').padEnd(12)}${(it.name||it.nameKr||'').substring(0,33).padEnd(35)}${(it.size||'').padEnd(15)}${String(it.orderQty).padEnd(6)}${it.price?'$'+it.price.toFixed(2):'N/A'.padEnd(10)}${lineTotal?'$'+lineTotal.toFixed(2):''}\n`;
+  });
+  text += `${'-'.repeat(60)}\nTOTAL: $${total.toFixed(2)}\n\nThank you.\nKimchi Mart`;
+  return text;
+}
+
+function emailOrder() {
+  const v = VENDORS[state.vendor];
+  const subject = `Kimchi Mart Order - ${v.name} - ${new Date().toLocaleDateString('en-US')}`;
+  const body = formatOrderText();
+  const mailto = `mailto:${v.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+
+  // Save to history
+  const orders = state.orders[state.vendor] || {};
+  const items = Object.entries(orders).filter(([_,q]) => q > 0);
+  state.history.unshift({
+    vendor: v.name, date: new Date().toLocaleDateString('en-US'),
+    count: items.length, total: getOrderTotal(state.vendor),
+    items: { ...orders }
+  });
+  if (state.history.length > 20) state.history = state.history.slice(0, 20);
+  saveState();
+  showToast('Order sent! Check your email app.');
+}
+
+function copyOrder() {
+  const text = formatOrderText();
+  navigator.clipboard.writeText(text).then(() => showToast('Order copied to clipboard!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Order copied!');
+  });
+}
+
+function downloadCSV() {
+  const v = VENDORS[state.vendor];
+  const orders = state.orders[state.vendor] || {};
+  const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
+    const p = v.products.find(p => p.id === id) || { id, name:'', size:'', price:0 };
+    return { ...p, orderQty: qty };
+  });
+  let csv = 'Item#,Product,Size,Qty,Price,Total\n';
+  items.forEach(it => {
+    const name = (it.name||it.nameKr||'').replace(/,/g,' ');
+    csv += `${it.id},"${name}",${it.size||''},${it.orderQty},${it.price||0},${((it.price||0)*it.orderQty).toFixed(2)}\n`;
+  });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `KimchiMart_Order_${v.name.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded!');
+}
+
+function reorder(idx) {
+  const h = state.history[idx];
+  if (!h || !h.items) return;
+  const vendorId = Object.keys(VENDORS).find(k => VENDORS[k].name === h.vendor);
+  if (vendorId) {
+    state.orders[vendorId] = { ...h.items };
+    state.vendor = vendorId;
+    state.page = 'browse';
+    saveState();
+    render();
+    showToast('Previous order loaded!');
+  }
+}
+
+// ===== PWA INSTALL =====
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  if (document.getElementById('installBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1B5E20;color:#FFF;padding:14px 20px;z-index:999;display:flex;justify-content:space-between;align-items:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,0.3)';
+  banner.innerHTML = '<span>Install this app for offline use!</span><div><button onclick="installApp()" style="background:#FFF;color:#1B5E20;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;margin-right:8px">INSTALL</button><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#FFF;font-size:20px;padding:4px 8px">&times;</button></div>';
+  document.body.prepend(banner);
+}
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') showToast('App installed!');
+    deferredPrompt = null;
+    document.getElementById('installBanner')?.remove();
+  });
+}
+
+// ===== SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    console.log('SW registered');
+  }).catch(err => console.log('SW failed', err));
+}
+
+// ===== INIT =====
+render();
+</script>
+</body>
+</html>

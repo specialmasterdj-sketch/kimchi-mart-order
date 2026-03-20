@@ -13,7 +13,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
-  --red:#D32F2F; --green:#388E3C; --blue:#1565C0;
+  --red:#D32F2F; --dark-red:#8B0000; --green:#388E3C; --blue:#1565C0;
   --bg:#F5F5F5; --white:#FFF; --gray:#E0E0E0; --dark:#333; --light-gray:#F9F9F9;
   --radius:12px; --shadow:0 2px 8px rgba(0,0,0,0.12);
 }
@@ -32,7 +32,7 @@ input { font-family:inherit; }
 .home { padding:30px 20px; display:flex; flex-direction:column; align-items:center; min-height:90vh; justify-content:center; }
 .home h2 { font-size:28px; margin-bottom:6px; }
 .home p { color:#888; margin-bottom:30px; font-size:16px; }
-.vendor-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; width:100%; max-width:900px; }
+.vendor-cards { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; width:100%; max-width:900px; }
 .vendor-card { background:var(--white); border-radius:var(--radius); padding:30px 20px; text-align:center; box-shadow:var(--shadow); transition:transform 0.15s; border-top:5px solid; min-height:200px; display:flex; flex-direction:column; justify-content:center; }
 .vendor-card:active { transform:scale(0.97); }
 .vendor-card h3 { font-size:22px; margin-bottom:4px; }
@@ -40,6 +40,7 @@ input { font-family:inherit; }
 .vendor-card .count { font-size:15px; color:#666; margin-bottom:8px; }
 .vendor-card .cart-badge { display:inline-block; background:#FF6F00; color:#FFF; padding:4px 14px; border-radius:20px; font-size:14px; font-weight:600; }
 .vendor-card .cart-badge.empty { background:var(--gray); color:#999; }
+.vendor-card .tag { font-size:13px; color:#666; margin-bottom:8px; }
 .home-actions { display:flex; gap:12px; margin-top:30px; }
 .home-actions button { padding:14px 28px; border-radius:var(--radius); font-size:16px; font-weight:600; }
 .btn-primary { background:var(--red); color:#FFF; }
@@ -105,7 +106,7 @@ input { font-family:inherit; }
 .history-item button { padding:10px 20px; border-radius:8px; background:#E3F2FD; color:var(--blue); font-weight:600; }
 
 /* RESPONSIVE */
-@media (max-width:768px) {
+@media (max-width:600px) {
   .vendor-cards { grid-template-columns:1fr; max-width:400px; }
   .sidebar { width:140px; }
   .product-grid { grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); }
@@ -255,13 +256,16 @@ function render() {
 
 function renderHome(app) {
   let cards = '';
+  const vendorTags = { rhee_frequent: '\u2B50 \uC790\uC8FC \uC8FC\uBB38', rhee_full: '\uD83D\uDCCB \uC804\uCCB4 \uCE74\uD0C8\uB85C\uADF8' };
   for (let vid in VENDORS) {
     const v = VENDORS[vid];
     const cnt = getOrderCount(vid);
     const badge = cnt > 0 ? `<span class="cart-badge">${cnt} items in cart</span>` : `<span class="cart-badge empty">Empty</span>`;
+    const tag = vendorTags[vid] ? `<div class="tag">${vendorTags[vid]}</div>` : '';
     cards += `<div class="vendor-card" style="border-color:${v.color}" onclick="state.vendor='${vid}';state.category='all';state.search='';state.page='browse';render()">
       <h3 style="color:${v.color}">${v.name}</h3>
       <div class="kr">${v.nameKr}</div>
+      ${tag}
       <div class="count">${v.products.length} Products</div>
       ${badge}
     </div>`;

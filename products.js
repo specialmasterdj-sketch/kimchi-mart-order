@@ -2896,6 +2896,93 @@ const VENDORS = {
       { id: "28590", brand: "", name: "Wang Red-Coated Gloves 30/10 pair / 왕 적코팅장갑 30/10 pair", nameKr: "왕 적코팅장갑 30/10 pair", size: "", category: "other", avgQty: 0, price: 0, image: "images/wang/28590.jpeg" },
       { id: "5404", brand: "", name: "Firestone Butane Gas 7/4/7.76 o / 파이어스톤 부탄가스 7/4/7.76 o", nameKr: "파이어스톤 부탄가스 7/4/7.76 o", size: "", category: "other", avgQty: 0, price: 0, image: "images/wang/5404.jpeg" },
       { id: "21058", brand: "", name: "휴대용 Gas Cooker (SJ70), 1/6 PC / 휴대용가스쿠커 (SJ70), 1/6 PC", nameKr: "휴대용가스쿠커 (SJ70), 1/6 PC", size: "", category: "other", avgQty: 0, price: 0, image: "images/wang/21058.jpeg" },
+      // ===== CJ BRAND PRODUCTS =====
+      // --- CJ Bibigo Dumplings (만두) ---
+      { id: "CJ001", brand: "CJ BIBIGO", name: "CJ Bibigo Mandu Pork & Vegetable Dumpling 24oz / CJ 비비고 왕교자 돼지고기야채 680g", nameKr: "CJ 비비고 왕교자 돼지고기야채 680g", size: "12/24oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ001.jpg" },
+      { id: "CJ002", brand: "CJ BIBIGO", name: "CJ Bibigo Mandu Pork & Vegetable Dumpling 32oz / CJ 비비고 왕교자 돼지고기야채 907g", nameKr: "CJ 비비고 왕교자 돼지고기야채 907g", size: "9/32oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ002.jpg" },
+      { id: "CJ003", brand: "CJ BIBIGO", name: "CJ Bibigo Mandu Kimchi & Pork Dumpling 24oz / CJ 비비고 김치왕교자 680g", nameKr: "CJ 비비고 김치왕교자 680g", size: "12/24oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ003.jpg" },
+      { id: "CJ004", brand: "CJ BIBIGO", name: "CJ Bibigo Mandu Chicken & Vegetable Dumpling 24oz / CJ 비비고 닭고기야채 왕교자 680g", nameKr: "CJ 비비고 닭고기야채 왕교자 680g", size: "12/24oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ004.jpg" },
+      { id: "CJ005", brand: "CJ BIBIGO", name: "CJ Bibigo Steamed Dumpling Chicken & Vegetable 6.6oz / CJ 비비고 찐만두 닭고기야채 186g", nameKr: "CJ 비비고 찐만두 닭고기야채 186g", size: "24/6.6oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ005.jpg" },
+      { id: "CJ006", brand: "CJ BIBIGO", name: "CJ Bibigo Mini Wontons Chicken & Cilantro 24oz / CJ 비비고 미니완탕 치킨 680g", nameKr: "CJ 비비고 미니완탕 치킨 680g", size: "9/24oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ006.jpg" },
+      { id: "CJ007", brand: "CJ BIBIGO", name: "CJ Bibigo Mandu Bulgogi Dumpling 24oz / CJ 비비고 불고기 왕교자 680g", nameKr: "CJ 비비고 불고기 왕교자 680g", size: "12/24oz", category: "dumplings", avgQty: 0, price: 0, image: "images/wang/CJ007.jpg" },
+      // --- CJ Hetbahn (햇반) Cooked Rice ---
+      { id: "CJ010", brand: "CJ HETBAHN", name: "CJ Hetbahn Cooked White Rice 7.4oz x12 / CJ 햇반 백미밥 210g x12", nameKr: "CJ 햇반 백미밥 210g x12", size: "12/7.4oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ010.jpg" },
+      { id: "CJ011", brand: "CJ HETBAHN", name: "CJ Hetbahn Cooked Black Rice 7.4oz x12 / CJ 햇반 흑미밥 210g x12", nameKr: "CJ 햇반 흑미밥 210g x12", size: "12/7.4oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ011.jpg" },
+      { id: "CJ012", brand: "CJ HETBAHN", name: "CJ Hetbahn Cooked Multigrain Rice 7.4oz x12 / CJ 햇반 잡곡밥 210g x12", nameKr: "CJ 햇반 잡곡밥 210g x12", size: "12/7.4oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ012.jpg" },
+      { id: "CJ013", brand: "CJ HETBAHN", name: "CJ Hetbahn Cooked Brown Rice 7.4oz x12 / CJ 햇반 현미밥 210g x12", nameKr: "CJ 햇반 현미밥 210g x12", size: "12/7.4oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ013.jpg" },
+      { id: "CJ014", brand: "CJ HETBAHN", name: "CJ Hetbahn Cooked Sprouted Brown Rice 7.4oz x12 / CJ 햇반 발아현미밥 210g x12", nameKr: "CJ 햇반 발아현미밥 210g x12", size: "12/7.4oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ014.jpg" },
+      // --- CJ Dashida (다시다) Soup Stock ---
+      { id: "CJ020", brand: "CJ DASHIDA", name: "CJ Dashida Beef Soup Stock 2.2lb (1kg) / CJ 다시다 쇠고기 1kg", nameKr: "CJ 다시다 쇠고기 1kg", size: "10/2.2lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ020.jpg" },
+      { id: "CJ021", brand: "CJ DASHIDA", name: "CJ Dashida Beef Soup Stock 1.1lb (500g) / CJ 다시다 쇠고기 500g", nameKr: "CJ 다시다 쇠고기 500g", size: "20/1.1lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ021.jpg" },
+      { id: "CJ022", brand: "CJ DASHIDA", name: "CJ Dashida Anchovy Soup Stock 2.2lb (1kg) / CJ 다시다 멸치 1kg", nameKr: "CJ 다시다 멸치 1kg", size: "10/2.2lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ022.jpg" },
+      { id: "CJ023", brand: "CJ DASHIDA", name: "CJ Dashida Clam Soup Stock 2.2lb (1kg) / CJ 다시다 조개 1kg", nameKr: "CJ 다시다 조개 1kg", size: "10/2.2lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ023.jpg" },
+      { id: "CJ024", brand: "CJ DASHIDA", name: "CJ Dashida Vegetable Soup Stock 2.2lb (1kg) / CJ 다시다 야채 1kg", nameKr: "CJ 다시다 야채 1kg", size: "10/2.2lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ024.jpg" },
+      // --- CJ Gochujang / Doenjang / Ssamjang (장류) ---
+      { id: "CJ030", brand: "CJ HAECHANDLE", name: "CJ Haechandle Gochujang (Hot Pepper Paste) 2.2lb (1kg) / CJ 해찬들 고추장 1kg", nameKr: "CJ 해찬들 고추장 1kg", size: "12/2.2lb", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ030.jpg" },
+      { id: "CJ031", brand: "CJ HAECHANDLE", name: "CJ Haechandle Gochujang (Hot Pepper Paste) 500g / CJ 해찬들 고추장 500g", nameKr: "CJ 해찬들 고추장 500g", size: "20/500g", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ031.jpg" },
+      { id: "CJ032", brand: "CJ HAECHANDLE", name: "CJ Haechandle Doenjang (Soybean Paste) 2.2lb (1kg) / CJ 해찬들 된장 1kg", nameKr: "CJ 해찬들 된장 1kg", size: "12/2.2lb", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ032.jpg" },
+      { id: "CJ033", brand: "CJ HAECHANDLE", name: "CJ Haechandle Doenjang (Soybean Paste) 500g / CJ 해찬들 된장 500g", nameKr: "CJ 해찬들 된장 500g", size: "20/500g", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ033.jpg" },
+      { id: "CJ034", brand: "CJ HAECHANDLE", name: "CJ Haechandle Ssamjang (Seasoned Paste) 2.2lb (1kg) / CJ 해찬들 쌈장 1kg", nameKr: "CJ 해찬들 쌈장 1kg", size: "12/2.2lb", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ034.jpg" },
+      { id: "CJ035", brand: "CJ HAECHANDLE", name: "CJ Haechandle Ssamjang (Seasoned Paste) 500g / CJ 해찬들 쌈장 500g", nameKr: "CJ 해찬들 쌈장 500g", size: "20/500g", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ035.jpg" },
+      { id: "CJ036", brand: "CJ HAECHANDLE", name: "CJ Haechandle Gochujang (Hot Pepper Paste) 6.6lb (3kg) / CJ 해찬들 고추장 3kg", nameKr: "CJ 해찬들 고추장 3kg", size: "4/6.6lb", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ036.jpg" },
+      { id: "CJ037", brand: "CJ HAECHANDLE", name: "CJ Haechandle Doenjang (Soybean Paste) 6.6lb (3kg) / CJ 해찬들 된장 3kg", nameKr: "CJ 해찬들 된장 3kg", size: "4/6.6lb", category: "paste", avgQty: 0, price: 0, image: "images/wang/CJ037.jpg" },
+      // --- CJ Spam / Canned ---
+      { id: "CJ040", brand: "CJ SPAM", name: "CJ Spam Classic 12oz / CJ 스팸 클래식 340g", nameKr: "CJ 스팸 클래식 340g", size: "12/12oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ040.jpg" },
+      { id: "CJ041", brand: "CJ SPAM", name: "CJ Spam Classic 7oz / CJ 스팸 클래식 200g", nameKr: "CJ 스팸 클래식 200g", size: "24/7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ041.jpg" },
+      { id: "CJ042", brand: "CJ SPAM", name: "CJ Spam 25% Less Sodium 12oz / CJ 스팸 저나트륨 340g", nameKr: "CJ 스팸 저나트륨 340g", size: "12/12oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ042.jpg" },
+      { id: "CJ043", brand: "CJ SPAM", name: "CJ Spam Lite 12oz / CJ 스팸 라이트 340g", nameKr: "CJ 스팸 라이트 340g", size: "12/12oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ043.jpg" },
+      // --- CJ Beksul (백설) Cooking Ingredients ---
+      { id: "CJ050", brand: "CJ BEKSUL", name: "CJ Beksul All Purpose Flour 2.2lb (1kg) / CJ 백설 밀가루(중력분) 1kg", nameKr: "CJ 백설 밀가루(중력분) 1kg", size: "15/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ050.jpg" },
+      { id: "CJ051", brand: "CJ BEKSUL", name: "CJ Beksul Frying Mix 2.2lb (1kg) / CJ 백설 튀김가루 1kg", nameKr: "CJ 백설 튀김가루 1kg", size: "10/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ051.jpg" },
+      { id: "CJ052", brand: "CJ BEKSUL", name: "CJ Beksul Pancake Mix 2.2lb (1kg) / CJ 백설 부침가루 1kg", nameKr: "CJ 백설 부침가루 1kg", size: "10/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ052.jpg" },
+      { id: "CJ053", brand: "CJ BEKSUL", name: "CJ Beksul White Sugar 2.2lb (1kg) / CJ 백설 설탕 1kg", nameKr: "CJ 백설 설탕 1kg", size: "16/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ053.jpg" },
+      { id: "CJ054", brand: "CJ BEKSUL", name: "CJ Beksul Brown Sugar 2.2lb (1kg) / CJ 백설 황설탕 1kg", nameKr: "CJ 백설 황설탕 1kg", size: "16/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ054.jpg" },
+      { id: "CJ055", brand: "CJ BEKSUL", name: "CJ Beksul Korean Fried Chicken Mix 2.2lb (1kg) / CJ 백설 치킨가루 1kg", nameKr: "CJ 백설 치킨가루 1kg", size: "10/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ055.jpg" },
+      { id: "CJ056", brand: "CJ BEKSUL", name: "CJ Beksul Sweet Potato Starch 2.2lb (1kg) / CJ 백설 고구마전분 1kg", nameKr: "CJ 백설 고구마전분 1kg", size: "10/2.2lb", category: "flour-and-powder", avgQty: 0, price: 0, image: "images/wang/CJ056.jpg" },
+      // --- CJ Bibigo Ready Meals & Side Dishes ---
+      { id: "CJ060", brand: "CJ BIBIGO", name: "CJ Bibigo Korean BBQ Sauce Original 16.9oz / CJ 비비고 코리안 BBQ 소스 오리지널 480g", nameKr: "CJ 비비고 코리안 BBQ 소스 오리지널 480g", size: "12/16.9oz", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ060.jpg" },
+      { id: "CJ061", brand: "CJ BIBIGO", name: "CJ Bibigo Korean BBQ Sauce Hot & Spicy 16.9oz / CJ 비비고 코리안 BBQ 소스 매운맛 480g", nameKr: "CJ 비비고 코리안 BBQ 소스 매운맛 480g", size: "12/16.9oz", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ061.jpg" },
+      { id: "CJ062", brand: "CJ BIBIGO", name: "CJ Bibigo Gochujang Sauce 11.5oz / CJ 비비고 고추장 소스 325g", nameKr: "CJ 비비고 고추장 소스 325g", size: "12/11.5oz", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ062.jpg" },
+      { id: "CJ063", brand: "CJ BIBIGO", name: "CJ Bibigo Seaweed Crispy Rolls Original 0.71oz / CJ 비비고 김스낵 오리지널 20g", nameKr: "CJ 비비고 김스낵 오리지널 20g", size: "24/0.71oz", category: "snacks", avgQty: 0, price: 0, image: "images/wang/CJ063.jpg" },
+      { id: "CJ064", brand: "CJ BIBIGO", name: "CJ Bibigo Crispy Seaweed Snack 5g x12 / CJ 비비고 바삭김 5g x12", nameKr: "CJ 비비고 바삭김 5g x12", size: "12/5g", category: "snacks", avgQty: 0, price: 0, image: "images/wang/CJ064.jpg" },
+      { id: "CJ065", brand: "CJ BIBIGO", name: "CJ Bibigo Kimchi Fried Rice 15.9oz / CJ 비비고 김치볶음밥 450g", nameKr: "CJ 비비고 김치볶음밥 450g", size: "12/15.9oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ065.jpg" },
+      { id: "CJ066", brand: "CJ BIBIGO", name: "CJ Bibigo Beef Bulgogi Rice Bowl 9.7oz / CJ 비비고 불고기덮밥 275g", nameKr: "CJ 비비고 불고기덮밥 275g", size: "12/9.7oz", category: "rice", avgQty: 0, price: 0, image: "images/wang/CJ066.jpg" },
+      { id: "CJ067", brand: "CJ BIBIGO", name: "CJ Bibigo Tteokbokki (Spicy Rice Cake) 12.7oz / CJ 비비고 떡볶이 360g", nameKr: "CJ 비비고 떡볶이 360g", size: "12/12.7oz", category: "rice-cake", avgQty: 0, price: 0, image: "images/wang/CJ067.jpg" },
+      { id: "CJ068", brand: "CJ BIBIGO", name: "CJ Bibigo Japchae (Korean Glass Noodles) 18oz / CJ 비비고 잡채 510g", nameKr: "CJ 비비고 잡채 510g", size: "12/18oz", category: "noodles", avgQty: 0, price: 0, image: "images/wang/CJ068.jpg" },
+      // --- CJ Bibigo Soup / Stew ---
+      { id: "CJ070", brand: "CJ BIBIGO", name: "CJ Bibigo Beef Bone Broth Soup (Seolleongtang) 17.7oz / CJ 비비고 설렁탕 500g", nameKr: "CJ 비비고 설렁탕 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ070.jpg" },
+      { id: "CJ071", brand: "CJ BIBIGO", name: "CJ Bibigo Kimchi Stew (Kimchi Jjigae) 17.7oz / CJ 비비고 김치찌개 500g", nameKr: "CJ 비비고 김치찌개 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ071.jpg" },
+      { id: "CJ072", brand: "CJ BIBIGO", name: "CJ Bibigo Soft Tofu Stew (Sundubu Jjigae) 17.7oz / CJ 비비고 순두부찌개 500g", nameKr: "CJ 비비고 순두부찌개 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ072.jpg" },
+      { id: "CJ073", brand: "CJ BIBIGO", name: "CJ Bibigo Beef Seaweed Soup (Miyeokguk) 17.7oz / CJ 비비고 소고기미역국 500g", nameKr: "CJ 비비고 소고기미역국 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ073.jpg" },
+      { id: "CJ074", brand: "CJ BIBIGO", name: "CJ Bibigo Soybean Paste Stew (Doenjang Jjigae) 17.7oz / CJ 비비고 된장찌개 500g", nameKr: "CJ 비비고 된장찌개 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ074.jpg" },
+      { id: "CJ075", brand: "CJ BIBIGO", name: "CJ Bibigo Army Stew (Budae Jjigae) 17.7oz / CJ 비비고 부대찌개 500g", nameKr: "CJ 비비고 부대찌개 500g", size: "18/17.7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ075.jpg" },
+      // --- CJ Bibigo Ramen ---
+      { id: "CJ080", brand: "CJ BIBIGO", name: "CJ Bibigo Ramyun K-Chicken 4pk / CJ 비비고 라면 K치킨 4입", nameKr: "CJ 비비고 라면 K치킨 4입", size: "8/4pk", category: "ramen", avgQty: 0, price: 0, image: "images/wang/CJ080.jpg" },
+      { id: "CJ081", brand: "CJ BIBIGO", name: "CJ Bibigo Ramyun Spicy Tteokbokki 4pk / CJ 비비고 라면 매운떡볶이 4입", nameKr: "CJ 비비고 라면 매운떡볶이 4입", size: "8/4pk", category: "ramen", avgQty: 0, price: 0, image: "images/wang/CJ081.jpg" },
+      { id: "CJ082", brand: "CJ BIBIGO", name: "CJ Bibigo Ramyun Cheese Tteokbokki 4pk / CJ 비비고 라면 치즈떡볶이 4입", nameKr: "CJ 비비고 라면 치즈떡볶이 4입", size: "8/4pk", category: "ramen", avgQty: 0, price: 0, image: "images/wang/CJ082.jpg" },
+      // --- CJ Beksul Sauces & Oil ---
+      { id: "CJ090", brand: "CJ BEKSUL", name: "CJ Beksul Soy Sauce for Soup 930ml / CJ 백설 국간장 930ml", nameKr: "CJ 백설 국간장 930ml", size: "12/930ml", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ090.jpg" },
+      { id: "CJ091", brand: "CJ BEKSUL", name: "CJ Beksul Soy Sauce Jin 930ml / CJ 백설 진간장 930ml", nameKr: "CJ 백설 진간장 930ml", size: "12/930ml", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ091.jpg" },
+      { id: "CJ092", brand: "CJ BEKSUL", name: "CJ Beksul Sesame Oil 500ml / CJ 백설 참기름 500ml", nameKr: "CJ 백설 참기름 500ml", size: "12/500ml", category: "oil", avgQty: 0, price: 0, image: "images/wang/CJ092.jpg" },
+      { id: "CJ093", brand: "CJ BEKSUL", name: "CJ Beksul Perilla Oil 500ml / CJ 백설 들기름 500ml", nameKr: "CJ 백설 들기름 500ml", size: "12/500ml", category: "oil", avgQty: 0, price: 0, image: "images/wang/CJ093.jpg" },
+      { id: "CJ094", brand: "CJ BEKSUL", name: "CJ Beksul Rice Vinegar 500ml / CJ 백설 식초 500ml", nameKr: "CJ 백설 식초 500ml", size: "20/500ml", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ094.jpg" },
+      { id: "CJ095", brand: "CJ BEKSUL", name: "CJ Beksul Plum Extract 1.2kg / CJ 백설 매실청 1.2kg", nameKr: "CJ 백설 매실청 1.2kg", size: "8/1.2kg", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ095.jpg" },
+      { id: "CJ096", brand: "CJ BEKSUL", name: "CJ Beksul Corn Syrup (Mulyeot) 2.2lb (1kg) / CJ 백설 물엿 1kg", nameKr: "CJ 백설 물엿 1kg", size: "12/2.2lb", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ096.jpg" },
+      { id: "CJ097", brand: "CJ BEKSUL", name: "CJ Beksul Oligosaccharide (Oligo Syrup) 1.2kg / CJ 백설 올리고당 1.2kg", nameKr: "CJ 백설 올리고당 1.2kg", size: "10/1.2kg", category: "sauces", avgQty: 0, price: 0, image: "images/wang/CJ097.jpg" },
+      // --- CJ Bibigo Kimchi ---
+      { id: "CJ100", brand: "CJ BIBIGO", name: "CJ Bibigo Sliced Kimchi 17.6oz (500g) / CJ 비비고 맛김치 500g", nameKr: "CJ 비비고 맛김치 500g", size: "12/500g", category: "kimchi", avgQty: 0, price: 0, image: "images/wang/CJ100.jpg" },
+      { id: "CJ101", brand: "CJ BIBIGO", name: "CJ Bibigo Whole Cabbage Kimchi 2.2lb (1kg) / CJ 비비고 포기김치 1kg", nameKr: "CJ 비비고 포기김치 1kg", size: "8/2.2lb", category: "kimchi", avgQty: 0, price: 0, image: "images/wang/CJ101.jpg" },
+      { id: "CJ102", brand: "CJ BIBIGO", name: "CJ Bibigo Radish Kimchi (Kkakdugi) 17.6oz (500g) / CJ 비비고 깍두기 500g", nameKr: "CJ 비비고 깍두기 500g", size: "12/500g", category: "kimchi", avgQty: 0, price: 0, image: "images/wang/CJ102.jpg" },
+      // --- CJ Luncheon Meat ---
+      { id: "CJ110", brand: "CJ", name: "CJ Beksul Luncheon Meat 12oz (340g) / CJ 백설 런천미트 340g", nameKr: "CJ 백설 런천미트 340g", size: "12/12oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ110.jpg" },
+      { id: "CJ111", brand: "CJ", name: "CJ Beksul Luncheon Meat 7oz (200g) / CJ 백설 런천미트 200g", nameKr: "CJ 백설 런천미트 200g", size: "24/7oz", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ111.jpg" },
+      // --- CJ Bibigo Porridge ---
+      { id: "CJ120", brand: "CJ BIBIGO", name: "CJ Bibigo Sweet Pumpkin Porridge 14.8oz (420g) / CJ 비비고 단호박죽 420g", nameKr: "CJ 비비고 단호박죽 420g", size: "12/420g", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ120.jpg" },
+      { id: "CJ121", brand: "CJ BIBIGO", name: "CJ Bibigo Abalone Porridge 14.8oz (420g) / CJ 비비고 전복죽 420g", nameKr: "CJ 비비고 전복죽 420g", size: "12/420g", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ121.jpg" },
+      { id: "CJ122", brand: "CJ BIBIGO", name: "CJ Bibigo Mushroom Porridge 14.8oz (420g) / CJ 비비고 버섯죽 420g", nameKr: "CJ 비비고 버섯죽 420g", size: "12/420g", category: "canned-goods", avgQty: 0, price: 0, image: "images/wang/CJ122.jpg" },
+      // --- CJ Beksul Noodles ---
+      { id: "CJ130", brand: "CJ BEKSUL", name: "CJ Beksul Sweet Potato Noodles (Japchae) 1.5lb (680g) / CJ 백설 당면 680g", nameKr: "CJ 백설 당면 680g", size: "12/1.5lb", category: "noodles", avgQty: 0, price: 0, image: "images/wang/CJ130.jpg" },
+      { id: "CJ131", brand: "CJ BEKSUL", name: "CJ Beksul Wheat Noodle (Somyeon) 2.2lb (1kg) / CJ 백설 소면 1kg", nameKr: "CJ 백설 소면 1kg", size: "10/2.2lb", category: "noodles", avgQty: 0, price: 0, image: "images/wang/CJ131.jpg" },
     ]
   },
 };

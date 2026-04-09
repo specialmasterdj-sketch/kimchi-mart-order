@@ -859,27 +859,62 @@ async function emailWithPDF() {
 
     var dateStr = new Date().toISOString().slice(0,10);
     var fileName = 'KimchiMart_Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.pdf';
+
+    // Get PDF as base64
+    var pdfDataUri = pdf.output('datauristring');
+    var pdfBase64 = pdfDataUri.split(',')[1];
+
+    // Also save a copy as regular PDF download
     pdf.save(fileName);
+
+    // Create .eml file with PDF attached + X-Unsent:1 (opens in Outlook compose mode)
+    var boundary = '----=_NextPart_' + Date.now();
+    var subject = 'Purchase Order - ' + storeName + ' to ' + v.name + ' - ' + new Date().toLocaleDateString('en-US');
+    var bodyText = 'Dear ' + v.name + ',\r\n\r\n' +
+      'Please find attached our purchase order.\r\n\r\n' +
+      'Order #: KM-' + dateStr.replace(/-/g,'') + '\r\n' +
+      'Date: ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) + '\r\n' +
+      'Total Items: ' + orderItems.length + '\r\n\r\n' +
+      'Thank you,\r\n' + storeName +
+      (store.address ? '\r\n' + store.address : '') +
+      (store.city ? '\r\n' + store.city : '') +
+      (store.phone ? '\r\nTel: ' + store.phone : '');
+
+    var emlContent = [
+      'To: ' + (v.email || ''),
+      'Subject: ' + subject,
+      'X-Unsent: 1',
+      'MIME-Version: 1.0',
+      'Content-Type: multipart/mixed; boundary="' + boundary + '"',
+      '',
+      '--' + boundary,
+      'Content-Type: text/plain; charset="utf-8"',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      bodyText,
+      '',
+      '--' + boundary,
+      'Content-Type: application/pdf; name="' + fileName + '"',
+      'Content-Transfer-Encoding: base64',
+      'Content-Disposition: attachment; filename="' + fileName + '"',
+      '',
+      pdfBase64.match(/.{1,76}/g).join('\r\n'),
+      '',
+      '--' + boundary + '--'
+    ].join('\r\n');
+
+    var emlBlob = new Blob([emlContent], { type: 'message/rfc822' });
+    var emlUrl = URL.createObjectURL(emlBlob);
+    var emlLink = document.createElement('a');
+    emlLink.href = emlUrl;
+    emlLink.download = 'Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.eml';
+    emlLink.click();
+    URL.revokeObjectURL(emlUrl);
 
     // Remove loading
     document.getElementById('pdfLoading')?.remove();
 
-    // Open email with clean professional body
-    setTimeout(function() {
-      var subject = 'Purchase Order - ' + storeName + ' to ' + v.name + ' - ' + new Date().toLocaleDateString('en-US');
-      var body = 'Dear ' + v.name + ',\r\n\r\n' +
-        'Please find attached our purchase order.\r\n\r\n' +
-        'Order #: KM-' + dateStr.replace(/-/g,'') + '\r\n' +
-        'Date: ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) + '\r\n' +
-        'Total Items: ' + orderItems.length + '\r\n\r\n' +
-        'Thank you,\r\n' + storeName +
-        (store.address ? '\r\n' + store.address : '') +
-        (store.city ? '\r\n' + store.city : '') +
-        (store.phone ? '\r\nTel: ' + store.phone : '');
-      window.location.href = 'mailto:' + (v.email||'') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    }, 600);
-
-    showToast('PDF 다운로드 완료! 이메일에 첨부하세요!');
+    showToast('이메일 파일 생성 완료! 다운로드된 .eml 파일을 열어주세요.');
 
     // Save to history
     state.history.unshift({

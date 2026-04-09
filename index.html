@@ -163,7 +163,7 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="products.js?v=20260410a"></script>
+<script src="products.js?v=20260410b"></script>
 <script>
 // ===== STATE =====
 let state = {
@@ -538,6 +538,17 @@ function installApp() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(reg => {
     console.log('SW registered');
+    // Force check for updates on every page load
+    reg.update();
+    // When new SW is waiting, activate it immediately
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated') {
+          window.location.reload();
+        }
+      });
+    });
   }).catch(err => console.log('SW failed', err));
 }
 

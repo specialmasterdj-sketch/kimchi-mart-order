@@ -404,12 +404,19 @@ function showToast(msg) {
 // ===== RENDER =====
 function render() {
   const scrollPos = window.scrollY;
+  // Blur active element before DOM rebuild to prevent browser from scrolling
+  // to re-show the focused element (which gets removed when innerHTML is replaced)
+  if (document.activeElement && document.activeElement !== document.body) {
+    document.activeElement.blur();
+  }
   const app = document.getElementById('app');
   if (state.page === 'home') renderHome(app);
   else if (state.page === 'browse') renderBrowse(app);
   else if (state.page === 'order') renderOrder(app);
   else if (state.page === 'history') renderHistory(app);
-  requestAnimationFrame(() => window.scrollTo(0, scrollPos));
+  // Restore scroll synchronously (not via rAF) so browser applies DOM change
+  // and scroll position in the same paint cycle — prevents visible scroll jump
+  window.scrollTo(0, scrollPos);
 }
 
 function renderHome(app) {

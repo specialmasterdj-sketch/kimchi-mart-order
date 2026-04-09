@@ -97,6 +97,46 @@ input { font-family:inherit; }
 .btn-excel { background:#2E7D32; color:#FFF; }
 .btn-copy { background:#F57F17; color:#FFF; }
 .btn-clear { background:#FFF; color:var(--red); border:2px solid var(--red); }
+.btn-purple { background:#7B1FA2; color:#FFF; }
+
+/* PROFESSIONAL ORDER FORM */
+.of-wrap { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:16px; }
+.of-header { padding:20px 24px; border-bottom:3px solid var(--red); display:flex; justify-content:space-between; align-items:flex-start; }
+.of-logo { font-size:24px; font-weight:700; color:var(--red); letter-spacing:1px; line-height:1.2; }
+.of-logo-kr { color:#888; font-size:13px; font-weight:400; letter-spacing:0; }
+.of-store { text-align:right; font-size:13px; color:#555; line-height:1.6; }
+.of-store .bname { font-size:15px; font-weight:700; color:var(--dark); }
+.of-title { background:#424242; color:#FFF; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+.of-title h3 { font-size:17px; letter-spacing:2px; margin:0; font-weight:700; }
+.of-title .meta { font-size:13px; text-align:right; line-height:1.7; }
+.of-vendor { padding:14px 24px; background:#FAFAFA; border-bottom:1px solid var(--gray); display:flex; justify-content:space-between; align-items:flex-start; }
+.of-label { font-size:11px; color:#999; text-transform:uppercase; margin-bottom:2px; }
+.of-value { font-weight:700; font-size:16px; color:var(--dark); }
+.of-table { width:100%; border-collapse:collapse; }
+.of-table th { background:#F5F5F5; padding:10px 8px; text-align:left; font-size:11px; text-transform:uppercase; color:#666; border-bottom:2px solid #DDD; }
+.of-table td { padding:8px; border-bottom:1px solid #F0F0F0; vertical-align:middle; font-size:13px; }
+.of-table tr:nth-child(even) td { background:#FAFAFA; }
+.of-thumb { width:45px; height:45px; object-fit:contain; border-radius:4px; border:1px solid #EEE; display:block; }
+.of-no-thumb { width:45px; height:45px; background:#F8F8F8; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#CCC; font-size:18px; border:1px solid #EEE; }
+.of-item-name { font-weight:600; font-size:13px; line-height:1.3; }
+.of-item-meta { font-size:11px; color:#999; margin-top:2px; }
+.of-totals { padding:16px 24px; border-top:2px solid var(--gray); display:flex; justify-content:flex-end; }
+.of-totals .trow { display:flex; justify-content:space-between; gap:40px; padding:4px 0; font-size:14px; }
+.of-totals .trow span:last-child { font-weight:600; }
+.of-totals .grand { font-size:20px; font-weight:700; color:var(--red); border-top:2px solid var(--dark); padding-top:10px; margin-top:6px; }
+.of-footer { text-align:center; padding:14px; color:#888; font-size:13px; border-top:1px solid #F0F0F0; }
+
+/* Store Settings Modal */
+.settings-modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; display:none; align-items:center; justify-content:center; }
+.settings-modal.show { display:flex; }
+.settings-form { background:var(--white); border-radius:16px; padding:24px; width:420px; max-width:90vw; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.settings-form h3 { margin-bottom:16px; font-size:18px; }
+.settings-form .field { margin-bottom:12px; }
+.settings-form .field label { display:block; font-size:12px; color:#888; margin-bottom:4px; text-transform:uppercase; }
+.settings-form .field input { width:100%; padding:10px 12px; border:2px solid var(--gray); border-radius:8px; font-size:15px; outline:none; box-sizing:border-box; }
+.settings-form .field input:focus { border-color:var(--blue); }
+.settings-form .s-actions { display:flex; gap:10px; margin-top:16px; }
+.settings-form .s-actions button { flex:1; padding:12px; border-radius:8px; font-size:15px; font-weight:600; }
 
 /* HISTORY PAGE */
 .history-page { padding:20px; max-width:900px; margin:0 auto; }
@@ -163,6 +203,40 @@ input { font-family:inherit; }
   </div>
 </div>
 
+<div class="settings-modal" id="storeSettingsModal">
+  <div class="settings-form">
+    <h3>&#9881; Store Info / 지점 정보 설정</h3>
+    <div class="field">
+      <label>Branch Name / 지점명</label>
+      <input id="sBranch" placeholder="e.g. Kimchi Mart - Main Branch">
+    </div>
+    <div class="field">
+      <label>Address / 주소</label>
+      <input id="sAddress" placeholder="e.g. 1234 Main St">
+    </div>
+    <div class="field">
+      <label>City, State ZIP</label>
+      <input id="sCity" placeholder="e.g. Los Angeles, CA 90001">
+    </div>
+    <div class="field">
+      <label>Phone / 전화번호</label>
+      <input id="sPhone" placeholder="e.g. (213) 555-1234">
+    </div>
+    <div class="field">
+      <label>Fax / 팩스</label>
+      <input id="sFax" placeholder="e.g. (213) 555-1235">
+    </div>
+    <div class="field">
+      <label>Contact / 담당자</label>
+      <input id="sContact" placeholder="e.g. John Kim">
+    </div>
+    <div class="s-actions">
+      <button style="background:#E0E0E0;color:#333" onclick="closeStoreSettings()">Cancel</button>
+      <button style="background:#D32F2F;color:#FFF" onclick="saveStoreSettingsForm()">Save / 저장</button>
+    </div>
+  </div>
+</div>
+
 <script src="products.js?v=20260410e"></script>
 <script>
 // ===== STATE =====
@@ -183,6 +257,44 @@ function saveState() {
   localStorage.setItem('km_orders', JSON.stringify(state.orders));
   localStorage.setItem('km_history', JSON.stringify(state.history));
 }
+
+// ===== STORE INFO =====
+function getStoreInfo() {
+  try { return JSON.parse(localStorage.getItem('km_store_info')) || {}; } catch(e) { return {}; }
+}
+function saveStoreInfo(info) {
+  localStorage.setItem('km_store_info', JSON.stringify(info));
+}
+function openStoreSettings() {
+  const s = getStoreInfo();
+  document.getElementById('sBranch').value = s.branch || '';
+  document.getElementById('sAddress').value = s.address || '';
+  document.getElementById('sCity').value = s.city || '';
+  document.getElementById('sPhone').value = s.phone || '';
+  document.getElementById('sFax').value = s.fax || '';
+  document.getElementById('sContact').value = s.contact || '';
+  document.getElementById('storeSettingsModal').classList.add('show');
+}
+function closeStoreSettings() {
+  document.getElementById('storeSettingsModal').classList.remove('show');
+}
+function saveStoreSettingsForm() {
+  const info = {
+    branch: document.getElementById('sBranch').value.trim(),
+    address: document.getElementById('sAddress').value.trim(),
+    city: document.getElementById('sCity').value.trim(),
+    phone: document.getElementById('sPhone').value.trim(),
+    fax: document.getElementById('sFax').value.trim(),
+    contact: document.getElementById('sContact').value.trim()
+  };
+  saveStoreInfo(info);
+  closeStoreSettings();
+  showToast('Store info saved! / 저장되었습니다!');
+  if (state.page === 'order') render();
+}
+document.getElementById('storeSettingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeStoreSettings();
+});
 
 function getOrderCount(vendorId) {
   const o = state.orders[vendorId] || {};
@@ -322,6 +434,7 @@ function renderHome(app) {
       <div class="vendor-cards">${cards}</div>
       <div class="home-actions">
         <button class="btn-secondary" onclick="state.page='history';render()">Order History</button>
+        <button class="btn-secondary" onclick="openStoreSettings()">&#9881; Store Settings</button>
       </div>
     </div>`;
 }
@@ -397,50 +510,104 @@ function renderOrder(app) {
   if (!v) { state.page='home'; render(); return; }
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
-    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'' };
+    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'', size:'' };
     return { ...p, orderQty: qty, total: (p.price||0) * qty };
   });
 
+  const store = getStoreInfo();
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const orderNum = 'KM-' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const grandTotal = items.reduce((s,it) => s + it.total, 0);
+  const totalQty = items.reduce((s,it) => s + it.orderQty, 0);
+
   let rows = '';
   items.forEach((it, i) => {
-    const imgHtml = it.image ? `<img class="item-img" src="${it.image}" onerror="this.style.display='none'">` : '';
+    const imgHtml = it.image
+      ? `<img class="of-thumb" src="${it.image}" onerror="this.outerHTML='<div class=of-no-thumb>&#128230;</div>'">`
+      : '<div class="of-no-thumb">&#128230;</div>';
+    const safeName = (it.name||'').replace(/'/g,'');
     rows += `<tr>
-      <td>${i+1}</td>
+      <td style="text-align:center;color:#999">${i+1}</td>
       <td>${imgHtml}</td>
-      <td><strong>${it.name || it.nameKr}</strong><br><small style="color:#888">${it.id} | ${it.size||''}</small></td>
+      <td><div class="of-item-name">${it.name || it.nameKr}</div><div class="of-item-meta">${it.id} | ${it.size||''}</div></td>
       <td><div class="qty-row" style="border:0;padding:0">
-        <button class="qty-btn minus" style="width:36px;height:36px;font-size:18px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty-1})">-</button>
-        <input class="qty-input has-qty" style="width:50px;height:36px;font-size:18px" value="${it.orderQty}" readonly onclick="openNumpad('${state.vendor}','${it.id}',${it.orderQty},'${(it.name||'').replace(/'/g,'')}')">
-        <button class="qty-btn plus" style="width:36px;height:36px;font-size:18px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty+1})">+</button>
+        <button class="qty-btn minus" style="width:34px;height:34px;font-size:16px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty-1})">-</button>
+        <input class="qty-input has-qty" style="width:48px;height:34px;font-size:16px" value="${it.orderQty}" readonly onclick="openNumpad('${state.vendor}','${it.id}',${it.orderQty},'${safeName}')">
+        <button class="qty-btn plus" style="width:34px;height:34px;font-size:16px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty+1})">+</button>
       </div></td>
-      <td>${it.price ? '$'+it.price.toFixed(2) : '-'}</td>
-      <td>${it.total ? '$'+it.total.toFixed(2) : '-'}</td>
+      <td style="text-align:right">${it.price ? '$'+it.price.toFixed(2) : '-'}</td>
+      <td style="text-align:right;font-weight:600">${it.total ? '$'+it.total.toFixed(2) : '-'}</td>
     </tr>`;
   });
 
-  const grandTotal = items.reduce((s,it) => s + it.total, 0);
-  const today = new Date().toLocaleDateString('en-US');
+  const storeHtml = (store.branch || store.address)
+    ? `<div class="bname">${store.branch || 'Kimchi Mart'}</div>
+       ${store.address ? '<div>'+store.address+'</div>' : ''}
+       ${store.city ? '<div>'+store.city+'</div>' : ''}
+       ${store.phone ? '<div>Tel: '+store.phone+'</div>' : ''}
+       ${store.contact ? '<div>'+store.contact+'</div>' : ''}`
+    : '<div style="color:#F57F17;cursor:pointer" onclick="openStoreSettings()">&#9881; Set store info / 지점 정보 설정</div>';
 
   app.innerHTML = `
     <div class="header">
       <button class="back-btn" onclick="state.page='browse';render()">&larr;</button>
-      <h1 style="color:${v.color}">Order Summary<small>${v.name} - ${today}</small></h1>
-      <div></div>
+      <h1 style="color:${v.color}">Order Form<small>${v.name}</small></h1>
+      <button class="back-btn" onclick="openStoreSettings()" title="Store Settings">&#9881;</button>
     </div>
     <div class="order-page">
-      <h2>${items.length} Items Ordered</h2>
-      ${items.length === 0 ? '<p style="text-align:center;padding:40px;color:#999">No items in order. Go back and add products.</p>' : `
-      <table class="order-table">
-        <tr><th>#</th><th>Photo</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-        ${rows}
-      </table>
-      <div class="order-total">Grand Total: $${grandTotal.toFixed(2)}</div>
+      ${items.length === 0 ? '<p style="text-align:center;padding:60px;color:#999;font-size:18px">No items in order.<br>Go back and add products. / 주문할 제품을 추가하세요.</p>' : `
+      <div class="of-wrap">
+        <div class="of-header">
+          <div>
+            <div class="of-logo">KIMCHI MART<br><span class="of-logo-kr">김치마트</span></div>
+          </div>
+          <div class="of-store">${storeHtml}</div>
+        </div>
+        <div class="of-title">
+          <h3>PURCHASE ORDER / 발주서</h3>
+          <div class="meta"><div>Date: ${dateStr}</div><div>Order #: ${orderNum}</div></div>
+        </div>
+        <div class="of-vendor">
+          <div>
+            <div class="of-label">Vendor / 거래처</div>
+            <div class="of-value">${v.name}</div>
+            <div style="font-size:13px;color:#666">${v.nameKr}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="of-label">Summary / 요약</div>
+            <div style="font-weight:600;font-size:14px">${items.length} items / ${totalQty} units</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="of-table">
+            <tr>
+              <th style="width:35px;text-align:center">#</th>
+              <th style="width:55px">Photo</th>
+              <th>Product / 제품</th>
+              <th style="width:140px;text-align:center">Qty / 수량</th>
+              <th style="width:70px;text-align:right">Price</th>
+              <th style="width:80px;text-align:right">Total</th>
+            </tr>
+            ${rows}
+          </table>
+        </div>
+        <div class="of-totals">
+          <div>
+            <div class="trow"><span>Total Items / 총 품목:</span><span>${items.length}</span></div>
+            <div class="trow"><span>Total Quantity / 총 수량:</span><span>${totalQty}</span></div>
+            <div class="trow grand"><span>Grand Total:</span><span>$${grandTotal.toFixed(2)}</span></div>
+          </div>
+        </div>
+        <div class="of-footer">Thank you for your business! / 감사합니다!<br><strong>KIMCHI MART</strong></div>
+      </div>
       `}
       <div class="action-bar">
-        <button class="btn-email" onclick="emailOrder()">&#9993; Email Order</button>
-        <button class="btn-copy" onclick="copyOrder()">&#128203; Copy to Clipboard</button>
-        <button class="btn-excel" onclick="downloadCSV()">&#128196; Download CSV</button>
-        <button class="btn-clear" onclick="if(confirm('Clear all items?')){state.orders[state.vendor]={};saveState();render();}">Clear All</button>
+        <button class="btn-purple" onclick="printOrder()">&#128424; Print / PDF</button>
+        <button class="btn-email" onclick="copyHtmlOrder()">&#128233; Copy for Email</button>
+        <button class="btn-email" style="background:#0D47A1" onclick="emailOrder()">&#9993; Quick Email</button>
+        <button class="btn-excel" onclick="downloadCSV()">&#128196; CSV</button>
+        <button class="btn-clear" onclick="if(confirm('Clear all items? / 모두 삭제?')){state.orders[state.vendor]={};saveState();render();}">Clear All</button>
       </div>
     </div>`;
 }
@@ -467,30 +634,159 @@ function renderHistory(app) {
 // ===== ORDER ACTIONS =====
 function formatOrderText() {
   const v = VENDORS[state.vendor];
+  const store = getStoreInfo();
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
     const p = v.products.find(p => p.id === id) || { id, name:'Unknown', size:'', price:0 };
     return { ...p, orderQty: qty };
   });
-  const today = new Date().toLocaleDateString('en-US');
-  let text = `KIMCHI MART - ORDER\nVendor: ${v.name}\nDate: ${today}\nCustomer: Kimchi Mart\n${'='.repeat(60)}\n`;
-  text += `${'Item#'.padEnd(12)}${'Product'.padEnd(35)}${'Size'.padEnd(15)}${'Qty'.padEnd(6)}${'Price'.padEnd(10)}Total\n`;
-  text += `${'-'.repeat(60)}\n`;
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const orderNum = 'KM-' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+
+  let text = '═══════════════════════════════════════════════════\n';
+  text += '  KIMCHI MART / 김치마트 - PURCHASE ORDER\n';
+  text += '═══════════════════════════════════════════════════\n\n';
+  if (store.branch) text += `  Store: ${store.branch}\n`;
+  if (store.address) text += `  Address: ${store.address}\n`;
+  if (store.city) text += `  ${store.city}\n`;
+  if (store.phone) text += `  Tel: ${store.phone}\n`;
+  text += `\n  Vendor: ${v.name} (${v.nameKr})\n`;
+  text += `  Date: ${dateStr}\n`;
+  text += `  Order #: ${orderNum}\n\n`;
+  text += '───────────────────────────────────────────────────\n';
+  text += `  ${'#'.padEnd(4)}${'Item#'.padEnd(10)}${'Product'.padEnd(30)}${'Size'.padEnd(12)}${'Qty'.padEnd(5)}\n`;
+  text += '───────────────────────────────────────────────────\n';
   let total = 0;
-  items.forEach(it => {
+  items.forEach((it, i) => {
     const lineTotal = (it.price||0) * it.orderQty;
     total += lineTotal;
-    text += `${(it.id||'').padEnd(12)}${(it.name||it.nameKr||'').substring(0,33).padEnd(35)}${(it.size||'').padEnd(15)}${String(it.orderQty).padEnd(6)}${it.price?'$'+it.price.toFixed(2):'N/A'.padEnd(10)}${lineTotal?'$'+lineTotal.toFixed(2):''}\n`;
+    text += `  ${String(i+1).padEnd(4)}${(it.id||'').padEnd(10)}${(it.name||it.nameKr||'').substring(0,28).padEnd(30)}${(it.size||'').substring(0,10).padEnd(12)}${String(it.orderQty).padEnd(5)}\n`;
   });
-  text += `${'-'.repeat(60)}\nTOTAL: $${total.toFixed(2)}\n\nThank you.\nKimchi Mart`;
+  text += '───────────────────────────────────────────────────\n';
+  text += `  Total Items: ${items.length}\n`;
+  text += `  Total Quantity: ${items.reduce((s,it)=>s+it.orderQty,0)}\n`;
+  if (total > 0) text += `  Grand Total: $${total.toFixed(2)}\n`;
+  text += '\n═══════════════════════════════════════════════════\n';
+  text += '  Thank you! / 감사합니다!\n';
+  text += '  KIMCHI MART\n';
   return text;
+}
+
+function generateOrderHTML() {
+  const v = VENDORS[state.vendor];
+  const store = getStoreInfo();
+  const orders = state.orders[state.vendor] || {};
+  const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
+    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'', size:'' };
+    return { ...p, orderQty: qty, total: (p.price||0) * qty };
+  });
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const orderNum = 'KM-' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const grandTotal = items.reduce((s,it) => s + it.total, 0);
+  const totalQty = items.reduce((s,it) => s + it.orderQty, 0);
+  const baseUrl = window.location.href.replace(/[^\/]*$/, '');
+
+  let rows = '';
+  items.forEach((it, i) => {
+    const absImg = it.image ? (it.image.startsWith('http') ? it.image : baseUrl + it.image) : '';
+    const imgCell = absImg
+      ? '<img src="'+absImg+'" style="width:42px;height:42px;object-fit:contain;border-radius:4px;border:1px solid #EEE;display:block" onerror="this.style.display=\'none\'">'
+      : '';
+    rows += '<tr style="'+(i%2?'background:#FAFAFA':'')+'">' +
+      '<td style="text-align:center;color:#999;padding:8px 6px;border-bottom:1px solid #F0F0F0;font-size:13px">'+(i+1)+'</td>' +
+      '<td style="padding:8px 6px;border-bottom:1px solid #F0F0F0;width:50px">'+imgCell+'</td>' +
+      '<td style="padding:8px 6px;border-bottom:1px solid #F0F0F0"><strong style="font-size:13px">'+(it.name||it.nameKr)+'</strong><br><span style="font-size:11px;color:#999">'+(it.id||'')+' | '+(it.size||'')+'</span></td>' +
+      '<td style="text-align:center;padding:8px 6px;border-bottom:1px solid #F0F0F0;font-size:18px;font-weight:700;color:#E65100">'+it.orderQty+'</td>' +
+      '<td style="text-align:right;padding:8px 6px;border-bottom:1px solid #F0F0F0;font-size:13px">'+(it.price?'$'+it.price.toFixed(2):'-')+'</td>' +
+      '<td style="text-align:right;padding:8px 6px;border-bottom:1px solid #F0F0F0;font-size:13px;font-weight:600">'+(it.total?'$'+it.total.toFixed(2):'-')+'</td>' +
+    '</tr>';
+  });
+
+  return '<div style="font-family:Segoe UI,Malgun Gothic,sans-serif;max-width:800px;margin:0 auto;color:#333">' +
+    '<div style="padding:20px 24px;border-bottom:3px solid #D32F2F;display:flex;justify-content:space-between;align-items:flex-start">' +
+      '<div><div style="font-size:24px;font-weight:700;color:#D32F2F;letter-spacing:1px">KIMCHI MART</div><div style="color:#888;font-size:13px">김치마트</div></div>' +
+      '<div style="text-align:right;font-size:13px;color:#555;line-height:1.6">' +
+        (store.branch ? '<div style="font-weight:700;font-size:15px;color:#333">'+store.branch+'</div>' : '') +
+        (store.address ? '<div>'+store.address+'</div>' : '') +
+        (store.city ? '<div>'+store.city+'</div>' : '') +
+        (store.phone ? '<div>Tel: '+store.phone+'</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div style="background:#424242;color:#FFF;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;border-radius:0">' +
+      '<div style="font-size:17px;font-weight:700;letter-spacing:2px">PURCHASE ORDER / 발주서</div>' +
+      '<div style="font-size:13px;text-align:right;line-height:1.7"><div>Date: '+dateStr+'</div><div>Order #: '+orderNum+'</div></div>' +
+    '</div>' +
+    '<div style="padding:14px 24px;background:#FAFAFA;border-bottom:1px solid #E0E0E0;display:flex;justify-content:space-between">' +
+      '<div><div style="font-size:11px;color:#999;text-transform:uppercase">Vendor / 거래처</div><div style="font-weight:700;font-size:16px;margin-top:2px">'+v.name+'</div><div style="color:#666;font-size:13px">'+v.nameKr+'</div></div>' +
+      '<div style="text-align:right"><div style="font-size:11px;color:#999;text-transform:uppercase">Summary</div><div style="font-weight:600;font-size:14px;margin-top:2px">'+items.length+' items / '+totalQty+' units</div></div>' +
+    '</div>' +
+    '<table style="width:100%;border-collapse:collapse">' +
+      '<tr><th style="background:#F5F5F5;padding:10px 6px;text-align:center;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD;width:35px">#</th>' +
+      '<th style="background:#F5F5F5;padding:10px 6px;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD;width:50px">Photo</th>' +
+      '<th style="background:#F5F5F5;padding:10px 6px;text-align:left;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD">Product / 제품</th>' +
+      '<th style="background:#F5F5F5;padding:10px 6px;text-align:center;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD;width:60px">Qty</th>' +
+      '<th style="background:#F5F5F5;padding:10px 6px;text-align:right;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD;width:70px">Price</th>' +
+      '<th style="background:#F5F5F5;padding:10px 6px;text-align:right;font-size:11px;text-transform:uppercase;color:#666;border-bottom:2px solid #DDD;width:80px">Total</th></tr>' +
+      rows +
+    '</table>' +
+    '<div style="padding:16px 24px;border-top:2px solid #E0E0E0;display:flex;justify-content:flex-end">' +
+      '<div>' +
+        '<div style="display:flex;justify-content:space-between;gap:40px;padding:4px 0;font-size:14px"><span>Total Items:</span><span style="font-weight:600">'+items.length+'</span></div>' +
+        '<div style="display:flex;justify-content:space-between;gap:40px;padding:4px 0;font-size:14px"><span>Total Quantity:</span><span style="font-weight:600">'+totalQty+'</span></div>' +
+        '<div style="display:flex;justify-content:space-between;gap:40px;padding:8px 0;font-size:20px;font-weight:700;color:#D32F2F;border-top:2px solid #333;margin-top:6px"><span>Grand Total:</span><span>$'+grandTotal.toFixed(2)+'</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="text-align:center;padding:14px;color:#888;font-size:13px;border-top:1px solid #F0F0F0">Thank you! / 감사합니다!<br><strong>KIMCHI MART</strong></div>' +
+  '</div>';
+}
+
+function printOrder() {
+  const v = VENDORS[state.vendor];
+  const html = generateOrderHTML();
+  const printHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - '+v.name+'</title>' +
+    '<style>body{margin:0;padding:25px;font-family:Segoe UI,Malgun Gothic,sans-serif}@media print{body{padding:15px}@page{margin:12mm}}</style>' +
+    '</head><body>'+html+'</body></html>';
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Popup blocked! Allow popups.'); return; }
+  w.document.write(printHtml);
+  w.document.close();
+  setTimeout(function(){ w.print(); }, 800);
+}
+
+function copyHtmlOrder() {
+  const html = generateOrderHTML();
+  const plain = formatOrderText();
+  if (navigator.clipboard && navigator.clipboard.write) {
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], {type:'text/html'}),
+      'text/plain': new Blob([plain], {type:'text/plain'})
+    })]).then(function(){
+      showToast('Order copied! Paste into email. / 이메일에 붙여넣기 하세요!');
+    }).catch(function(){
+      navigator.clipboard.writeText(plain).then(function(){
+        showToast('Text copied! Paste into email.');
+      });
+    });
+  } else {
+    navigator.clipboard.writeText(plain).then(function(){
+      showToast('Text copied! Paste into email.');
+    }).catch(function(){
+      const ta = document.createElement('textarea');
+      ta.value = plain; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); showToast('Order copied!');
+    });
+  }
 }
 
 function emailOrder() {
   const v = VENDORS[state.vendor];
-  const subject = `Kimchi Mart Order - ${v.name} - ${new Date().toLocaleDateString('en-US')}`;
+  const store = getStoreInfo();
+  const storeName = store.branch || 'Kimchi Mart';
+  const subject = `Purchase Order - ${storeName} to ${v.name} - ${new Date().toLocaleDateString('en-US')}`;
   const body = formatOrderText();
-  const mailto = `mailto:${v.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const mailto = `mailto:${v.email||''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailto;
 
   // Save to history
@@ -507,12 +803,7 @@ function emailOrder() {
 }
 
 function copyOrder() {
-  const text = formatOrderText();
-  navigator.clipboard.writeText(text).then(() => showToast('Order copied to clipboard!')).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); showToast('Order copied!');
-  });
+  copyHtmlOrder();
 }
 
 function downloadCSV() {

@@ -237,9 +237,9 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="products.js?v=20260410f"></script>
+<script src="products.js?v=20260410g"></script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ===== STATE =====
 let state = {
@@ -788,9 +788,10 @@ async function emailWithPDF() {
   const orderItems = Object.entries(orders).filter(([_,q]) => q > 0);
   if (orderItems.length === 0) { showToast('No items to send. / 오더 항목이 없습니다.'); return; }
 
-  // Check libraries
+  // Check libraries - if not loaded yet, fall back to print
   if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-    showToast('PDF library loading... try again in a moment.');
+    showToast('PDF 라이브러리 로딩 중... Print로 대체합니다.');
+    printOrder();
     return;
   }
 

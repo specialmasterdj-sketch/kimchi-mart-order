@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v18';
+const CACHE_NAME = 'km-order-v19';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -22,7 +22,12 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (url.pathname.endsWith('products.js') || url.pathname.endsWith('index.html')) {
+
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) return;
+
+  // Network-first for HTML and JS (always get latest code)
+  if (url.pathname.endsWith('products.js') || url.pathname.endsWith('index.html') || url.pathname.endsWith('manifest.json')) {
     event.respondWith(
       fetch(event.request).then(response => {
         if (response.ok) {
@@ -32,18 +37,19 @@ self.addEventListener('fetch', event => {
         return response;
       }).catch(() => caches.match(event.request))
     );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (response.ok && event.request.url.startsWith(self.location.origin)) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => cached);
-      })
-    );
+    return;
   }
+
+  // Images: DO NOT intercept - let browser handle normally
+  // This prevents stale cache issues with product photos
+  if (url.pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/i)) {
+    return; // browser default fetch
+  }
+
+  // Everything else: network with cache fallback
+  event.respondWith(
+    fetch(event.request).then(response => {
+      return response;
+    }).catch(() => caches.match(event.request))
+  );
 });

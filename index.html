@@ -237,7 +237,9 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="products.js?v=20260410e"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="products.js?v=20260410f"></script>
 <script>
 // ===== STATE =====
 let state = {
@@ -603,9 +605,8 @@ function renderOrder(app) {
       </div>
       `}
       <div class="action-bar">
+        <button class="btn-email" style="min-width:220px;font-size:17px;padding:18px 28px" onclick="emailWithPDF()">&#128233; Email Order / 이메일 발주</button>
         <button class="btn-purple" onclick="printOrder()">&#128424; Print / PDF</button>
-        <button class="btn-email" onclick="copyHtmlOrder()">&#128233; Copy for Email</button>
-        <button class="btn-email" style="background:#0D47A1" onclick="emailOrder()">&#9993; Quick Email</button>
         <button class="btn-excel" onclick="downloadCSV()">&#128196; CSV</button>
         <button class="btn-clear" onclick="if(confirm('Clear all items? / 모두 삭제?')){state.orders[state.vendor]={};saveState();render();}">Clear All</button>
       </div>
@@ -780,26 +781,128 @@ function copyHtmlOrder() {
   }
 }
 
-function emailOrder() {
+async function emailWithPDF() {
   const v = VENDORS[state.vendor];
+  if (!v) return;
+  const orders = state.orders[state.vendor] || {};
+  const orderItems = Object.entries(orders).filter(([_,q]) => q > 0);
+  if (orderItems.length === 0) { showToast('No items to send. / 오더 항목이 없습니다.'); return; }
+
+  // Check libraries
+  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+    showToast('PDF library loading... try again in a moment.');
+    return;
+  }
+
   const store = getStoreInfo();
   const storeName = store.branch || 'Kimchi Mart';
-  const subject = `Purchase Order - ${storeName} to ${v.name} - ${new Date().toLocaleDateString('en-US')}`;
-  const body = formatOrderText();
-  const mailto = `mailto:${v.email||''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
 
-  // Save to history
-  const orders = state.orders[state.vendor] || {};
-  const items = Object.entries(orders).filter(([_,q]) => q > 0);
-  state.history.unshift({
-    vendor: v.name, date: new Date().toLocaleDateString('en-US'),
-    count: items.length, total: getOrderTotal(state.vendor),
-    items: { ...orders }
-  });
-  if (state.history.length > 20) state.history = state.history.slice(0, 20);
-  saveState();
-  showToast('Order sent! Check your email app.');
+  // Show loading overlay
+  const loadDiv = document.createElement('div');
+  loadDiv.id = 'pdfLoading';
+  loadDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#FFF;font-size:18px';
+  loadDiv.innerHTML = '<div style="width:50px;height:50px;border:4px solid #FFF;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px"></div><div>PDF 생성 중... / Generating PDF...</div>';
+  const styleEl = document.createElement('style');
+  styleEl.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+  loadDiv.appendChild(styleEl);
+  document.body.appendChild(loadDiv);
+
+  // Create hidden container with order HTML
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;left:-9999px;top:0;width:780px;background:#FFF;padding:10px;z-index:-1';
+  wrap.innerHTML = generateOrderHTML();
+  document.body.appendChild(wrap);
+
+  // Wait for images to load
+  const imgs = wrap.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(function(img) {
+    if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+    return new Promise(function(resolve) {
+      img.onload = resolve;
+      img.onerror = function() { img.style.display = 'none'; resolve(); };
+      setTimeout(resolve, 3000);
+    });
+  }));
+  await new Promise(function(r) { setTimeout(r, 300); });
+
+  try {
+    var canvas = await html2canvas(wrap, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#FFFFFF',
+      logging: false
+    });
+    document.body.removeChild(wrap);
+
+    var { jsPDF } = window.jspdf;
+    var pdf = new jsPDF('p', 'mm', 'a4');
+    var pw = pdf.internal.pageSize.getWidth();
+    var ph = pdf.internal.pageSize.getHeight();
+    var mg = 8;
+    var uw = pw - 2 * mg;
+    var uh = ph - 2 * mg;
+    var iw = uw;
+    var ih = (canvas.height * iw) / canvas.width;
+    var imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+    if (ih <= uh) {
+      pdf.addImage(imgData, 'JPEG', mg, mg, iw, ih);
+    } else {
+      var pages = Math.ceil(ih / uh);
+      for (var p = 0; p < pages; p++) {
+        if (p > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', mg, mg - (p * uh), iw, ih);
+      }
+    }
+
+    var dateStr = new Date().toISOString().slice(0,10);
+    var fileName = 'KimchiMart_Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.pdf';
+    pdf.save(fileName);
+
+    // Remove loading
+    document.getElementById('pdfLoading')?.remove();
+
+    // Open email with clean professional body
+    setTimeout(function() {
+      var subject = 'Purchase Order - ' + storeName + ' to ' + v.name + ' - ' + new Date().toLocaleDateString('en-US');
+      var body = 'Dear ' + v.name + ',\r\n\r\n' +
+        'Please find attached our purchase order.\r\n\r\n' +
+        'Order #: KM-' + dateStr.replace(/-/g,'') + '\r\n' +
+        'Date: ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) + '\r\n' +
+        'Total Items: ' + orderItems.length + '\r\n\r\n' +
+        'Thank you,\r\n' + storeName +
+        (store.address ? '\r\n' + store.address : '') +
+        (store.city ? '\r\n' + store.city : '') +
+        (store.phone ? '\r\nTel: ' + store.phone : '');
+      window.location.href = 'mailto:' + (v.email||'') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    }, 600);
+
+    showToast('PDF 다운로드 완료! 이메일에 첨부하세요!');
+
+    // Save to history
+    state.history.unshift({
+      vendor: v.name, date: new Date().toLocaleDateString('en-US'),
+      count: orderItems.length, total: getOrderTotal(state.vendor),
+      items: { ...orders }
+    });
+    if (state.history.length > 20) state.history = state.history.slice(0, 20);
+    saveState();
+
+  } catch(err) {
+    if (wrap.parentNode) document.body.removeChild(wrap);
+    document.getElementById('pdfLoading')?.remove();
+    console.error('PDF generation error:', err);
+    showToast('PDF 생성 실패. Print/PDF 버튼을 사용하세요.');
+    printOrder();
+  }
+}
+
+function emailOrder() {
+  emailWithPDF();
+
+  // Fallback save to history if emailWithPDF handles it
+  // History is saved inside emailWithPDF
 }
 
 function copyOrder() {

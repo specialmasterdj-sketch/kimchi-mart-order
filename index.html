@@ -163,7 +163,7 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="products.js?v=20260410d"></script>
+<script src="products.js?v=20260410e"></script>
 <script>
 // ===== STATE =====
 let state = {
@@ -207,7 +207,49 @@ function setQty(vendorId, productId, qty) {
   state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
   if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
   saveState();
-  render();
+  // Update only the changed product's qty display instead of full re-render
+  if (state.page === 'browse') {
+    const newQty = getQty(vendorId, productId);
+    const tiles = document.querySelectorAll('.product-tile');
+    for (const tile of tiles) {
+      const input = tile.querySelector('.qty-input');
+      if (!input) continue;
+      const onclickAttr = input.getAttribute('onclick') || '';
+      if (onclickAttr.includes("'" + productId + "'")) {
+        input.value = newQty;
+        input.className = 'qty-input' + (newQty > 0 ? ' has-qty' : '');
+        // Update the minus/plus button onclick values
+        const minus = tile.querySelector('.minus');
+        const plus = tile.querySelector('.plus');
+        if (minus) minus.setAttribute('onclick', "event.stopPropagation();setQty('" + vendorId + "','" + productId + "'," + (newQty-1) + ")");
+        if (plus) plus.setAttribute('onclick', "event.stopPropagation();setQty('" + vendorId + "','" + productId + "'," + (newQty+1) + ")");
+        // Update numpad onclick
+        const pName = (input.getAttribute('onclick') || '').match(/,'([^']*)'\)/);
+        input.setAttribute('onclick', "openNumpad('" + vendorId + "','" + productId + "'," + newQty + ",'" + (pName ? pName[1] : '') + "')");
+        break;
+      }
+    }
+    // Update floating order button
+    const orderCount = getOrderCount(vendorId);
+    const existing = document.querySelector('.float-order');
+    const v = VENDORS[vendorId];
+    if (orderCount > 0) {
+      if (existing) {
+        existing.querySelector('.badge').textContent = orderCount;
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'float-order';
+        btn.style.background = v.color;
+        btn.innerHTML = 'View Order <span class="badge">' + orderCount + '</span>';
+        btn.onclick = function() { state.page='order'; render(); };
+        document.getElementById('app').appendChild(btn);
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  } else {
+    render();
+  }
 }
 
 function getQty(vendorId, productId) {
@@ -247,11 +289,13 @@ function showToast(msg) {
 
 // ===== RENDER =====
 function render() {
+  const scrollPos = window.scrollY;
   const app = document.getElementById('app');
   if (state.page === 'home') renderHome(app);
   else if (state.page === 'browse') renderBrowse(app);
   else if (state.page === 'order') renderOrder(app);
   else if (state.page === 'history') renderHistory(app);
+  requestAnimationFrame(() => window.scrollTo(0, scrollPos));
 }
 
 function renderHome(app) {

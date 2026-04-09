@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v7';
+const CACHE_NAME = 'km-order-v12';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -21,16 +21,29 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (response.ok && event.request.url.startsWith(self.location.origin)) {
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('products.js') || url.pathname.endsWith('index.html')) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => cached);
-    })
-  );
+      }).catch(() => caches.match(event.request))
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok && event.request.url.startsWith(self.location.origin)) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => cached);
+      })
+    );
+  }
 });

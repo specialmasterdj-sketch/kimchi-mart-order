@@ -159,6 +159,15 @@ input { font-family:inherit; }
 .cat-tabs .tab { display:inline-block; padding:8px 16px; border-radius:20px; font-size:13px; margin-right:6px; background:#F5F5F5; flex-shrink:0; }
 .cat-tabs .tab.active { background:var(--red); color:#FFF; font-weight:600; }
 
+/* LANGUAGE SWITCHER */
+.lang-bar { display:flex; align-items:center; gap:4px; }
+.lang-btn { padding:4px 10px; border-radius:6px; font-size:12px; font-weight:700; background:#F5F5F5; color:#666; transition:background 0.15s, color 0.15s; letter-spacing:0.5px; }
+.lang-btn.active { background:var(--red); color:#FFF; }
+.lang-btn:active { opacity:0.7; }
+.home-icon { background:none; font-size:22px; color:var(--dark); padding:6px 8px; border-radius:8px; text-decoration:none; display:flex; align-items:center; }
+.home-icon:active { background:var(--gray); }
+.header-right { display:flex; align-items:center; gap:8px; }
+
 /* TOAST */
 .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#333; color:#FFF; padding:12px 24px; border-radius:8px; font-size:14px; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; }
 .toast.show { opacity:1; }
@@ -184,7 +193,7 @@ input { font-family:inherit; }
 
 <div class="modal-overlay" id="numpadModal">
   <div class="numpad">
-    <h3 id="numpadTitle">Enter Quantity</h3>
+    <h3 id="numpadTitle" data-t="enter_qty">Enter Quantity</h3>
     <div class="display" id="numpadDisplay">0</div>
     <div class="keys">
       <button class="key" onclick="numpadKey('1')">1</button>
@@ -205,13 +214,13 @@ input { font-family:inherit; }
 
 <div class="settings-modal" id="storeSettingsModal">
   <div class="settings-form">
-    <h3>&#9881; Store Info / 지점 정보 설정</h3>
+    <h3 id="settingsModalTitle">&#9881; Store Info / 지점 정보 설정</h3>
     <div class="field">
-      <label>Branch Name / 지점명</label>
+      <label id="labelBranch">Branch Name / 지점명</label>
       <input id="sBranch" placeholder="e.g. Kimchi Mart - Main Branch">
     </div>
     <div class="field">
-      <label>Address / 주소</label>
+      <label id="labelAddress">Address / 주소</label>
       <input id="sAddress" placeholder="e.g. 1234 Main St">
     </div>
     <div class="field">
@@ -219,20 +228,20 @@ input { font-family:inherit; }
       <input id="sCity" placeholder="e.g. Los Angeles, CA 90001">
     </div>
     <div class="field">
-      <label>Phone / 전화번호</label>
+      <label id="labelPhone">Phone / 전화번호</label>
       <input id="sPhone" placeholder="e.g. (213) 555-1234">
     </div>
     <div class="field">
-      <label>Fax / 팩스</label>
+      <label id="labelFax">Fax / 팩스</label>
       <input id="sFax" placeholder="e.g. (213) 555-1235">
     </div>
     <div class="field">
-      <label>Contact / 담당자</label>
+      <label id="labelContact">Contact / 담당자</label>
       <input id="sContact" placeholder="e.g. John Kim">
     </div>
     <div class="s-actions">
-      <button style="background:#E0E0E0;color:#333" onclick="closeStoreSettings()">Cancel</button>
-      <button style="background:#D32F2F;color:#FFF" onclick="saveStoreSettingsForm()">Save / 저장</button>
+      <button style="background:#E0E0E0;color:#333" onclick="closeStoreSettings()" id="btnSettingsCancel">Cancel</button>
+      <button style="background:#D32F2F;color:#FFF" onclick="saveStoreSettingsForm()" id="btnSettingsSave">Save / 저장</button>
     </div>
   </div>
 </div>
@@ -260,6 +269,101 @@ function saveState() {
   localStorage.setItem('km_history', JSON.stringify(state.history));
 }
 
+// ===== LANGUAGE SYSTEM =====
+let currentLang = localStorage.getItem('kimchi_lang') || 'ko';
+
+const TRANSLATIONS = {
+  // Header
+  'app_title': { ko:'Kimchi Mart', en:'Kimchi Mart', es:'Kimchi Mart' },
+  'app_subtitle': { ko:'주문 시스템', en:'Order System', es:'Sistema de Pedidos' },
+  // Home page
+  'select_vendor': { ko:'벤더 선택', en:'Select Vendor', es:'Seleccionar Proveedor' },
+  'select_vendor_sub': { ko:'벤더를 선택하세요', en:'Choose a vendor to start ordering', es:'Elija un proveedor para comenzar' },
+  'order_history': { ko:'주문 내역', en:'Order History', es:'Historial de Pedidos' },
+  'store_settings': { ko:'지점 설정', en:'Store Settings', es:'Config. Tienda' },
+  'items_in_cart': { ko:'개 담김', en:'items in cart', es:'en carrito' },
+  'empty_cart': { ko:'비어있음', en:'Empty', es:'Vacio' },
+  'products': { ko:'개 제품', en:'Products', es:'Productos' },
+  // Browse page
+  'search_placeholder': { ko:'제품 검색...', en:'Search products...', es:'Buscar productos...' },
+  'all_items': { ko:'전체 보기', en:'All Items', es:'Todos' },
+  'all': { ko:'전체', en:'All', es:'Todo' },
+  'view_order': { ko:'주문 보기', en:'View Order', es:'Ver Pedido' },
+  // Order page
+  'order_form': { ko:'발주서', en:'Order Form', es:'Formulario de Pedido' },
+  'purchase_order': { ko:'발주서', en:'PURCHASE ORDER', es:'ORDEN DE COMPRA' },
+  'purchase_order_label': { ko:'PURCHASE ORDER / 발주서', en:'PURCHASE ORDER', es:'ORDEN DE COMPRA' },
+  'vendor_label': { ko:'거래처', en:'Vendor', es:'Proveedor' },
+  'summary_label': { ko:'요약', en:'Summary', es:'Resumen' },
+  'items_units': { ko:'품목 / 개', en:'items / units', es:'articulos / unidades' },
+  'product_col': { ko:'제품', en:'Product', es:'Producto' },
+  'qty_col': { ko:'수량', en:'Qty', es:'Cant.' },
+  'price_col': { ko:'단가', en:'Price', es:'Precio' },
+  'total_col': { ko:'합계', en:'Total', es:'Total' },
+  'photo_col': { ko:'사진', en:'Photo', es:'Foto' },
+  'total_items': { ko:'총 품목', en:'Total Items', es:'Total Articulos' },
+  'total_quantity': { ko:'총 수량', en:'Total Quantity', es:'Cantidad Total' },
+  'grand_total': { ko:'총 합계', en:'Grand Total', es:'Gran Total' },
+  'thank_you': { ko:'감사합니다!', en:'Thank you for your business!', es:'Gracias por su compra!' },
+  'no_items_msg': { ko:'주문할 제품을 추가하세요.', en:'No items in order. Go back and add products.', es:'No hay articulos. Regrese y agregue productos.' },
+  'email_order': { ko:'이메일 발주', en:'Email Order', es:'Enviar Pedido' },
+  'print_pdf': { ko:'인쇄 / PDF', en:'Print / PDF', es:'Imprimir / PDF' },
+  'csv_download': { ko:'CSV 다운로드', en:'CSV Download', es:'Descargar CSV' },
+  'clear_all': { ko:'전체 삭제', en:'Clear All', es:'Borrar Todo' },
+  'clear_confirm': { ko:'모두 삭제하시겠습니까?', en:'Clear all items?', es:'Borrar todos los articulos?' },
+  'set_store_info': { ko:'지점 정보 설정', en:'Set store info', es:'Configurar tienda' },
+  // History page
+  'history_title': { ko:'주문 내역', en:'Order History', es:'Historial de Pedidos' },
+  'history_subtitle': { ko:'이전 주문 목록', en:'Past orders', es:'Pedidos anteriores' },
+  'no_history': { ko:'주문 내역이 없습니다.', en:'No order history yet.', es:'No hay historial de pedidos.' },
+  'reorder': { ko:'재주문', en:'Reorder', es:'Reordenar' },
+  // Settings modal
+  'settings_title': { ko:'지점 정보 설정', en:'Store Info Settings', es:'Config. de Tienda' },
+  'branch_name': { ko:'지점명', en:'Branch Name', es:'Nombre de Sucursal' },
+  'address': { ko:'주소', en:'Address', es:'Direccion' },
+  'phone': { ko:'전화번호', en:'Phone', es:'Telefono' },
+  'fax': { ko:'팩스', en:'Fax', es:'Fax' },
+  'contact': { ko:'담당자', en:'Contact', es:'Contacto' },
+  'cancel': { ko:'취소', en:'Cancel', es:'Cancelar' },
+  'save': { ko:'저장', en:'Save', es:'Guardar' },
+  'store_saved': { ko:'저장되었습니다!', en:'Store info saved!', es:'Informacion guardada!' },
+  // Numpad
+  'enter_qty': { ko:'수량 입력', en:'Enter Quantity', es:'Ingresar Cantidad' },
+  // Install
+  'install_msg': { ko:'오프라인 사용을 위해 앱을 설치하세요!', en:'Install this app for offline use!', es:'Instale esta app para uso sin conexion!' },
+  'install_btn': { ko:'설치', en:'INSTALL', es:'INSTALAR' },
+  // Toasts
+  'order_copied': { ko:'이메일에 붙여넣기 하세요!', en:'Order copied! Paste into email.', es:'Pedido copiado! Pegue en el correo.' },
+  'csv_done': { ko:'CSV 다운로드 완료!', en:'CSV downloaded!', es:'CSV descargado!' },
+  'prev_order_loaded': { ko:'이전 주문을 불러왔습니다!', en:'Previous order loaded!', es:'Pedido anterior cargado!' },
+  'date_label': { ko:'날짜', en:'Date', es:'Fecha' },
+  'order_num': { ko:'주문번호', en:'Order #', es:'Pedido #' }
+};
+
+function t(key) {
+  var entry = TRANSLATIONS[key];
+  if (!entry) return key;
+  return entry[currentLang] || entry['en'] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('kimchi_lang', lang);
+  render();
+}
+
+function langButtons() {
+  return '<div class="lang-bar">' +
+    '<button class="lang-btn ' + (currentLang==='ko'?'active':'') + '" onclick="setLang(\'ko\')">KO</button>' +
+    '<button class="lang-btn ' + (currentLang==='en'?'active':'') + '" onclick="setLang(\'en\')">EN</button>' +
+    '<button class="lang-btn ' + (currentLang==='es'?'active':'') + '" onclick="setLang(\'es\')">ES</button>' +
+    '</div>';
+}
+
+function homeIconHtml() {
+  return '<a class="home-icon" href="https://specialmasterdj-sketch.github.io/kfood-guide/apps.html" title="Apps Hub">&#127968;</a>';
+}
+
 // ===== STORE INFO =====
 function getStoreInfo() {
   try { return JSON.parse(localStorage.getItem('km_store_info')) || {}; } catch(e) { return {}; }
@@ -275,6 +379,15 @@ function openStoreSettings() {
   document.getElementById('sPhone').value = s.phone || '';
   document.getElementById('sFax').value = s.fax || '';
   document.getElementById('sContact').value = s.contact || '';
+  // Apply translations to modal
+  document.getElementById('settingsModalTitle').innerHTML = '&#9881; ' + t('settings_title');
+  document.getElementById('labelBranch').textContent = t('branch_name');
+  document.getElementById('labelAddress').textContent = t('address');
+  document.getElementById('labelPhone').textContent = t('phone');
+  document.getElementById('labelFax').textContent = t('fax');
+  document.getElementById('labelContact').textContent = t('contact');
+  document.getElementById('btnSettingsCancel').textContent = t('cancel');
+  document.getElementById('btnSettingsSave').textContent = t('save');
   document.getElementById('storeSettingsModal').classList.add('show');
 }
 function closeStoreSettings() {
@@ -291,7 +404,7 @@ function saveStoreSettingsForm() {
   };
   saveStoreInfo(info);
   closeStoreSettings();
-  showToast('Store info saved! / 저장되었습니다!');
+  showToast(t('store_saved'));
   if (state.page === 'order') render();
 }
 document.getElementById('storeSettingsModal').addEventListener('click', function(e) {
@@ -354,7 +467,7 @@ function setQty(vendorId, productId, qty) {
         const btn = document.createElement('button');
         btn.className = 'float-order';
         btn.style.background = v.color;
-        btn.innerHTML = 'View Order <span class="badge">' + orderCount + '</span>';
+        btn.innerHTML = t('view_order') + ' <span class="badge">' + orderCount + '</span>';
         btn.onclick = function() { state.page='order'; render(); };
         document.getElementById('app').appendChild(btn);
       }
@@ -414,31 +527,37 @@ function render() {
 
 function renderHome(app) {
   let cards = '';
-  const vendorTags = { rhee_frequent: '\u2B50 \uC790\uC8FC \uC8FC\uBB38', rhee_full: '\uD83D\uDCCB \uC804\uCCB4 \uCE74\uD0C8\uB85C\uADF8' };
+  const vendorTagsKo = { rhee_frequent: '\u2B50 \uC790\uC8FC \uC8FC\uBB38', rhee_full: '\uD83D\uDCCB \uC804\uCCB4 \uCE74\uD0C8\uB85C\uADF8' };
+  const vendorTagsEn = { rhee_frequent: '\u2B50 Frequent', rhee_full: '\uD83D\uDCCB Full Catalog' };
+  const vendorTagsEs = { rhee_frequent: '\u2B50 Frecuente', rhee_full: '\uD83D\uDCCB Catalogo Completo' };
+  var tagMap = currentLang === 'es' ? vendorTagsEs : (currentLang === 'en' ? vendorTagsEn : vendorTagsKo);
   for (let vid in VENDORS) {
     const v = VENDORS[vid];
     const cnt = getOrderCount(vid);
-    const badge = cnt > 0 ? `<span class="cart-badge">${cnt} items in cart</span>` : `<span class="cart-badge empty">Empty</span>`;
-    const tag = vendorTags[vid] ? `<div class="tag">${vendorTags[vid]}</div>` : '';
-    cards += `<div class="vendor-card" style="border-color:${v.color}" onclick="state.vendor='${vid}';state.category='all';state.search='';state.page='browse';render()">
-      <h3 style="color:${v.color}">${v.name}</h3>
-      <div class="kr">${v.nameKr}</div>
-      ${tag}
-      <div class="count">${v.products.length} Products</div>
-      ${badge}
-    </div>`;
+    const badge = cnt > 0 ? '<span class="cart-badge">' + cnt + ' ' + t('items_in_cart') + '</span>' : '<span class="cart-badge empty">' + t('empty_cart') + '</span>';
+    const tag = tagMap[vid] ? '<div class="tag">' + tagMap[vid] + '</div>' : '';
+    cards += '<div class="vendor-card" style="border-color:' + v.color + '" onclick="state.vendor=\'' + vid + '\';state.category=\'all\';state.search=\'\';state.page=\'browse\';render()">' +
+      '<h3 style="color:' + v.color + '">' + v.name + '</h3>' +
+      '<div class="kr">' + v.nameKr + '</div>' +
+      tag +
+      '<div class="count">' + v.products.length + ' ' + t('products') + '</div>' +
+      badge +
+    '</div>';
   }
-  app.innerHTML = `
-    <div class="header"><h1>Kimchi Mart<small>Order System / 주문 시스템</small></h1><div></div></div>
-    <div class="home">
-      <h2>Select Vendor</h2>
-      <p>벤더를 선택하세요</p>
-      <div class="vendor-cards">${cards}</div>
-      <div class="home-actions">
-        <button class="btn-secondary" onclick="state.page='history';render()">Order History</button>
-        <button class="btn-secondary" onclick="openStoreSettings()">&#9881; Store Settings</button>
-      </div>
-    </div>`;
+  app.innerHTML = '<div class="header">' +
+      homeIconHtml() +
+      '<h1>' + t('app_title') + '<small>' + t('app_subtitle') + '</small></h1>' +
+      '<div class="header-right">' + langButtons() + '</div>' +
+    '</div>' +
+    '<div class="home">' +
+      '<h2 data-t="select_vendor">' + t('select_vendor') + '</h2>' +
+      '<p data-t="select_vendor_sub">' + t('select_vendor_sub') + '</p>' +
+      '<div class="vendor-cards">' + cards + '</div>' +
+      '<div class="home-actions">' +
+        '<button class="btn-secondary" onclick="state.page=\'history\';render()" data-t="order_history">' + t('order_history') + '</button>' +
+        '<button class="btn-secondary" onclick="openStoreSettings()">&#9881; <span data-t="store_settings">' + t('store_settings') + '</span></button>' +
+      '</div>' +
+    '</div>';
 }
 
 function renderBrowse(app) {
@@ -457,8 +576,8 @@ function renderBrowse(app) {
   }
 
   // Sidebar categories
-  let sideItems = `<div class="cat-item ${state.category==='all'?'active':''}" onclick="state.category='all';render()">All Items <span class="cat-count">${v.products.length}</span></div>`;
-  let tabs = `<button class="tab ${state.category==='all'?'active':''}" onclick="state.category='all';render()">All</button>`;
+  let sideItems = '<div class="cat-item ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all_items">' + t('all_items') + ' <span class="cat-count">' + v.products.length + '</span></div>';
+  let tabs = '<button class="tab ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all">' + t('all') + '</button>';
   for (let c of v.categories) {
     const cnt = v.products.filter(p => p.category === c.id).length;
     sideItems += `<div class="cat-item ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name} <span class="cat-count">${cnt}</span></div>`;
@@ -488,23 +607,22 @@ function renderBrowse(app) {
   }
 
   const orderCount = getOrderCount(state.vendor);
-  const floatBtn = orderCount > 0 ? `<button class="float-order" style="background:${v.color}" onclick="state.page='order';render()">View Order <span class="badge">${orderCount}</span></button>` : '';
+  const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
 
-  app.innerHTML = `
-    <div class="header">
-      <button class="back-btn" onclick="state.page='home';render()">&larr;</button>
-      <h1 style="color:${v.color}">${v.name}<small>${v.nameKr}</small></h1>
-      <button class="back-btn" onclick="state.page='order';render()">&#128722;</button>
-    </div>
-    <div class="browse">
-      <div class="sidebar">${sideItems}</div>
-      <div class="main-content">
-        <div class="cat-tabs">${tabs}</div>
-        <div class="search-bar"><input type="search" placeholder="Search products... / 제품 검색..." oninput="state.search=this.value;render()" value="${state.search}"></div>
-        <div class="product-grid">${tiles}</div>
-      </div>
-    </div>
-    ${floatBtn}`;
+  app.innerHTML = '<div class="header">' +
+      '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
+      '<h1 style="color:' + v.color + '">' + v.name + '<small>' + v.nameKr + '</small></h1>' +
+      '<div class="header-right">' + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
+    '</div>' +
+    '<div class="browse">' +
+      '<div class="sidebar">' + sideItems + '</div>' +
+      '<div class="main-content">' +
+        '<div class="cat-tabs">' + tabs + '</div>' +
+        '<div class="search-bar"><input type="search" placeholder="' + t('search_placeholder') + '" oninput="state.search=this.value;render()" value="' + state.search + '"></div>' +
+        '<div class="product-grid">' + tiles + '</div>' +
+      '</div>' +
+    '</div>' +
+    floatBtn;
 }
 
 function renderOrder(app) {
@@ -549,87 +667,83 @@ function renderOrder(app) {
        ${store.city ? '<div>'+store.city+'</div>' : ''}
        ${store.phone ? '<div>Tel: '+store.phone+'</div>' : ''}
        ${store.contact ? '<div>'+store.contact+'</div>' : ''}`
-    : '<div style="color:#F57F17;cursor:pointer" onclick="openStoreSettings()">&#9881; Set store info / 지점 정보 설정</div>';
+    : '<div style="color:#F57F17;cursor:pointer" onclick="openStoreSettings()">&#9881; ' + t('set_store_info') + '</div>';
 
-  app.innerHTML = `
-    <div class="header">
-      <button class="back-btn" onclick="state.page='browse';render()">&larr;</button>
-      <h1 style="color:${v.color}">Order Form<small>${v.name}</small></h1>
-      <button class="back-btn" onclick="openStoreSettings()" title="Store Settings">&#9881;</button>
-    </div>
-    <div class="order-page">
-      ${items.length === 0 ? '<p style="text-align:center;padding:60px;color:#999;font-size:18px">No items in order.<br>Go back and add products. / 주문할 제품을 추가하세요.</p>' : `
-      <div class="of-wrap">
-        <div class="of-header">
-          <div>
-            <div class="of-logo">KIMCHI MART<br><span class="of-logo-kr">김치마트</span></div>
-          </div>
-          <div class="of-store">${storeHtml}</div>
-        </div>
-        <div class="of-title">
-          <h3>PURCHASE ORDER / 발주서</h3>
-          <div class="meta"><div>Date: ${dateStr}</div><div>Order #: ${orderNum}</div></div>
-        </div>
-        <div class="of-vendor">
-          <div>
-            <div class="of-label">Vendor / 거래처</div>
-            <div class="of-value">${v.name}</div>
-            <div style="font-size:13px;color:#666">${v.nameKr}</div>
-          </div>
-          <div style="text-align:right">
-            <div class="of-label">Summary / 요약</div>
-            <div style="font-weight:600;font-size:14px">${items.length} items / ${totalQty} units</div>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="of-table">
-            <tr>
-              <th style="width:35px;text-align:center">#</th>
-              <th style="width:55px">Photo</th>
-              <th>Product / 제품</th>
-              <th style="width:140px;text-align:center">Qty / 수량</th>
-              <th style="width:70px;text-align:right">Price</th>
-              <th style="width:80px;text-align:right">Total</th>
-            </tr>
-            ${rows}
-          </table>
-        </div>
-        <div class="of-totals">
-          <div>
-            <div class="trow"><span>Total Items / 총 품목:</span><span>${items.length}</span></div>
-            <div class="trow"><span>Total Quantity / 총 수량:</span><span>${totalQty}</span></div>
-            <div class="trow grand"><span>Grand Total:</span><span>$${grandTotal.toFixed(2)}</span></div>
-          </div>
-        </div>
-        <div class="of-footer">Thank you for your business! / 감사합니다!<br><strong>KIMCHI MART</strong></div>
-      </div>
-      `}
-      <div class="action-bar">
-        <button class="btn-email" style="min-width:220px;font-size:17px;padding:18px 28px" onclick="emailWithPDF()">&#128233; Email Order / 이메일 발주</button>
-        <button class="btn-purple" onclick="printOrder()">&#128424; Print / PDF</button>
-        <button class="btn-excel" onclick="downloadCSV()">&#128196; CSV</button>
-        <button class="btn-clear" onclick="if(confirm('Clear all items? / 모두 삭제?')){state.orders[state.vendor]={};saveState();render();}">Clear All</button>
-      </div>
-    </div>`;
+  app.innerHTML = '<div class="header">' +
+      '<button class="back-btn" onclick="state.page=\'browse\';render()">&larr;</button>' +
+      '<h1 style="color:' + v.color + '" data-t="order_form">' + t('order_form') + '<small>' + v.name + '</small></h1>' +
+      '<div class="header-right">' + langButtons() + '<button class="back-btn" onclick="openStoreSettings()" title="' + t('store_settings') + '">&#9881;</button></div>' +
+    '</div>' +
+    '<div class="order-page">' +
+      (items.length === 0 ? '<p style="text-align:center;padding:60px;color:#999;font-size:18px" data-t="no_items_msg">' + t('no_items_msg') + '</p>' :
+      '<div class="of-wrap">' +
+        '<div class="of-header">' +
+          '<div><div class="of-logo">KIMCHI MART<br><span class="of-logo-kr">\uAE40\uCE58\uB9C8\uD2B8</span></div></div>' +
+          '<div class="of-store">' + storeHtml + '</div>' +
+        '</div>' +
+        '<div class="of-title">' +
+          '<h3 data-t="purchase_order_label">' + t('purchase_order_label') + '</h3>' +
+          '<div class="meta"><div>' + t('date_label') + ': ' + dateStr + '</div><div>' + t('order_num') + ': ' + orderNum + '</div></div>' +
+        '</div>' +
+        '<div class="of-vendor">' +
+          '<div>' +
+            '<div class="of-label" data-t="vendor_label">' + t('vendor_label') + '</div>' +
+            '<div class="of-value">' + v.name + '</div>' +
+            '<div style="font-size:13px;color:#666">' + v.nameKr + '</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div class="of-label" data-t="summary_label">' + t('summary_label') + '</div>' +
+            '<div style="font-weight:600;font-size:14px">' + items.length + ' ' + t('items_units').split(' / ')[0] + ' / ' + totalQty + ' ' + t('items_units').split(' / ')[1] + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="overflow-x:auto">' +
+          '<table class="of-table">' +
+            '<tr>' +
+              '<th style="width:35px;text-align:center">#</th>' +
+              '<th style="width:55px" data-t="photo_col">' + t('photo_col') + '</th>' +
+              '<th data-t="product_col">' + t('product_col') + '</th>' +
+              '<th style="width:140px;text-align:center" data-t="qty_col">' + t('qty_col') + '</th>' +
+              '<th style="width:70px;text-align:right" data-t="price_col">' + t('price_col') + '</th>' +
+              '<th style="width:80px;text-align:right" data-t="total_col">' + t('total_col') + '</th>' +
+            '</tr>' +
+            rows +
+          '</table>' +
+        '</div>' +
+        '<div class="of-totals">' +
+          '<div>' +
+            '<div class="trow"><span data-t="total_items">' + t('total_items') + ':</span><span>' + items.length + '</span></div>' +
+            '<div class="trow"><span data-t="total_quantity">' + t('total_quantity') + ':</span><span>' + totalQty + '</span></div>' +
+            '<div class="trow grand"><span data-t="grand_total">' + t('grand_total') + ':</span><span>$' + grandTotal.toFixed(2) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="of-footer" data-t="thank_you">' + t('thank_you') + '<br><strong>KIMCHI MART</strong></div>' +
+      '</div>'
+      ) +
+      '<div class="action-bar">' +
+        '<button class="btn-email" style="min-width:220px;font-size:17px;padding:18px 28px" onclick="emailWithPDF()">&#128233; <span data-t="email_order">' + t('email_order') + '</span></button>' +
+        '<button class="btn-purple" onclick="printOrder()">&#128424; <span data-t="print_pdf">' + t('print_pdf') + '</span></button>' +
+        '<button class="btn-excel" onclick="downloadCSV()">&#128196; <span data-t="csv_download">' + t('csv_download') + '</span></button>' +
+        '<button class="btn-clear" onclick="if(confirm(\'' + t('clear_confirm') + '\')){state.orders[state.vendor]={};saveState();render();}" data-t="clear_all">' + t('clear_all') + '</button>' +
+      '</div>' +
+    '</div>';
 }
 
 function renderHistory(app) {
   let items = '';
   state.history.forEach((h, i) => {
-    items += `<div class="history-item">
-      <div class="info"><h4>${h.vendor} - ${h.date}</h4><p>${h.count} items | $${(h.total||0).toFixed(2)}</p></div>
-      <button onclick="reorder(${i})">Reorder</button>
-    </div>`;
+    items += '<div class="history-item">' +
+      '<div class="info"><h4>' + h.vendor + ' - ' + h.date + '</h4><p>' + h.count + ' items | $' + (h.total||0).toFixed(2) + '</p></div>' +
+      '<button onclick="reorder(' + i + ')" data-t="reorder">' + t('reorder') + '</button>' +
+    '</div>';
   });
-  app.innerHTML = `
-    <div class="header">
-      <button class="back-btn" onclick="state.page='home';render()">&larr;</button>
-      <h1>Order History<small>주문 내역</small></h1>
-      <div></div>
-    </div>
-    <div class="history-page">
-      ${items || '<p style="text-align:center;padding:40px;color:#999">No order history yet.</p>'}
-    </div>`;
+  app.innerHTML = '<div class="header">' +
+      '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
+      '<h1 data-t="history_title">' + t('history_title') + '<small data-t="history_subtitle">' + t('history_subtitle') + '</small></h1>' +
+      '<div class="header-right">' + langButtons() + '</div>' +
+    '</div>' +
+    '<div class="history-page">' +
+      (items || '<p style="text-align:center;padding:40px;color:#999" data-t="no_history">' + t('no_history') + '</p>') +
+    '</div>';
 }
 
 // ===== ORDER ACTIONS =====
@@ -750,7 +864,7 @@ function printOrder() {
     '<style>body{margin:0;padding:25px;font-family:Segoe UI,Malgun Gothic,sans-serif}@media print{body{padding:15px}@page{margin:12mm}}</style>' +
     '</head><body>'+html+'</body></html>';
   const w = window.open('', '_blank');
-  if (!w) { showToast('Popup blocked! Allow popups.'); return; }
+  if (!w) { showToast(currentLang==='ko'?'\uD31D\uC5C5\uC774 \uCC28\uB2E8\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uD31D\uC5C5\uC744 \uD5C8\uC6A9\uD574\uC8FC\uC138\uC694.':currentLang==='es'?'Popup bloqueado! Permita los popups.':'Popup blocked! Allow popups.'); return; }
   w.document.write(printHtml);
   w.document.close();
   setTimeout(function(){ w.print(); }, 800);
@@ -764,19 +878,19 @@ function copyHtmlOrder() {
       'text/html': new Blob([html], {type:'text/html'}),
       'text/plain': new Blob([plain], {type:'text/plain'})
     })]).then(function(){
-      showToast('Order copied! Paste into email. / 이메일에 붙여넣기 하세요!');
+      showToast(t('order_copied'));
     }).catch(function(){
       navigator.clipboard.writeText(plain).then(function(){
-        showToast('Text copied! Paste into email.');
+        showToast(t('order_copied'));
       });
     });
   } else {
     navigator.clipboard.writeText(plain).then(function(){
-      showToast('Text copied! Paste into email.');
+      showToast(t('order_copied'));
     }).catch(function(){
       const ta = document.createElement('textarea');
       ta.value = plain; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta); showToast('Order copied!');
+      document.body.removeChild(ta); showToast(t('order_copied'));
     });
   }
 }
@@ -786,11 +900,11 @@ async function emailWithPDF() {
   if (!v) return;
   const orders = state.orders[state.vendor] || {};
   const orderItems = Object.entries(orders).filter(([_,q]) => q > 0);
-  if (orderItems.length === 0) { showToast('No items to send. / 오더 항목이 없습니다.'); return; }
+  if (orderItems.length === 0) { showToast(currentLang==='ko'?'\uC624\uB354 \uD56D\uBAA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.':currentLang==='es'?'No hay articulos para enviar.':'No items to send.'); return; }
 
   // Check libraries - if not loaded yet, fall back to print
   if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-    showToast('PDF 라이브러리 로딩 중... Print로 대체합니다.');
+    showToast(currentLang==='ko'?'PDF \uB77C\uC774\uBE0C\uB7EC\uB9AC \uB85C\uB529 \uC911... Print\uB85C \uB300\uCCB4\uD569\uB2C8\uB2E4.':currentLang==='es'?'Cargando PDF... Usando impresion.':'Loading PDF library... Using print instead.');
     printOrder();
     return;
   }
@@ -911,7 +1025,7 @@ async function emailWithPDF() {
     // Remove loading
     document.getElementById('pdfLoading')?.remove();
 
-    showToast('이메일 파일 생성 완료! 다운로드된 .eml 파일을 열어주세요.');
+    showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uD30C\uC77C \uC0DD\uC131 \uC644\uB8CC! .eml \uD30C\uC77C\uC744 \uC5F4\uC5B4\uC8FC\uC138\uC694.':currentLang==='es'?'Email generado! Abra el archivo .eml descargado.':'Email file created! Open the downloaded .eml file.');
 
     // Save to history
     state.history.unshift({
@@ -926,7 +1040,7 @@ async function emailWithPDF() {
     if (wrap.parentNode) document.body.removeChild(wrap);
     document.getElementById('pdfLoading')?.remove();
     console.error('PDF generation error:', err);
-    showToast('PDF 생성 실패. Print/PDF 버튼을 사용하세요.');
+    showToast(currentLang==='ko'?'PDF \uC0DD\uC131 \uC2E4\uD328. Print/PDF \uBC84\uD2BC\uC744 \uC0AC\uC6A9\uD558\uC138\uC694.':currentLang==='es'?'Error al generar PDF. Use el boton Imprimir.':'PDF generation failed. Use the Print/PDF button.');
     printOrder();
   }
 }
@@ -961,7 +1075,7 @@ function downloadCSV() {
   a.download = `KimchiMart_Order_${v.name.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('CSV downloaded!');
+  showToast(t('csv_done'));
 }
 
 function reorder(idx) {
@@ -974,7 +1088,7 @@ function reorder(idx) {
     state.page = 'browse';
     saveState();
     render();
-    showToast('Previous order loaded!');
+    showToast(t('prev_order_loaded'));
   }
 }
 
@@ -991,7 +1105,7 @@ function showInstallBanner() {
   const banner = document.createElement('div');
   banner.id = 'installBanner';
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1B5E20;color:#FFF;padding:14px 20px;z-index:999;display:flex;justify-content:space-between;align-items:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,0.3)';
-  banner.innerHTML = '<span>Install this app for offline use!</span><div><button onclick="installApp()" style="background:#FFF;color:#1B5E20;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;margin-right:8px">INSTALL</button><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#FFF;font-size:20px;padding:4px 8px">&times;</button></div>';
+  banner.innerHTML = '<span>' + t('install_msg') + '</span><div><button onclick="installApp()" style="background:#FFF;color:#1B5E20;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;margin-right:8px">' + t('install_btn') + '</button><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#FFF;font-size:20px;padding:4px 8px">&times;</button></div>';
   document.body.prepend(banner);
 }
 
@@ -999,7 +1113,7 @@ function installApp() {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(result => {
-    if (result.outcome === 'accepted') showToast('App installed!');
+    if (result.outcome === 'accepted') showToast(currentLang==='ko'?'\uC571\uC774 \uC124\uCE58\uB418\uC5C8\uC2B5\uB2C8\uB2E4!':currentLang==='es'?'App instalada!':'App installed!');
     deferredPrompt = null;
     document.getElementById('installBanner')?.remove();
   });

@@ -11414,7 +11414,7 @@ const VENDORS = {
       { id: "302150", brand: "QUIRCH", name: "Fsh Pork Butt Cvp", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 101.38, image: "images/quirch/pork_butt.jpg" },
       { id: "302251", brand: "QUIRCH", name: "Fsh Pork Butt Bnls Cvp Inj", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 148.18, image: "images/quirch/pork_butt.jpg" },
       { id: "304560", brand: "QUIRCH", name: "Fsh Pork Loin Cvp", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 126.28, image: "images/quirch/pork_loin.jpg" },
-      { id: "310001", brand: "QUIRCH", name: "Frzn Pork Ears", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 57.9, image: "images/quirch/_cat_pork.png" },
+      { id: "310001", brand: "QUIRCH", name: "Frzn Pork Ears", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 57.9, image: "images/quirch/pork_ears.jpg" },
       { id: "314062", brand: "QUIRCH", name: "Fsh Pork Backrib Cvp 1Pc", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 164.17, image: "images/quirch/pork_backrib.jpg" },
       { id: "314524", brand: "QUIRCH", name: "Fsh Pork Sparerib Cvp Lgt", nameKr: "", size: "CS", category: "qf-pork", avgQty: 1, price: 76.88, image: "images/quirch/pork_sparerib.jpg" },
       { id: "321057", brand: "QUIRCH", name: "Frzn Pork Feet (Inedible)", nameKr: "", size: "CS", category: "qf-pork", avgQty: 2, price: 22.5, image: "images/quirch/pork_feet.jpg" },

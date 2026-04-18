@@ -564,9 +564,13 @@ function renderBrowse(app) {
   const v = VENDORS[state.vendor];
   if (!v) { state.page='home'; render(); return; }
 
-  // Filter products
+  // Filter products (special pseudo-category "wis-new" matches any isNew product)
   let products = v.products;
-  if (state.category !== 'all') products = products.filter(p => p.category === state.category);
+  if (state.category !== 'all') {
+    products = (state.category === 'wis-new' || state.category === 'new')
+      ? products.filter(p => p.isNew)
+      : products.filter(p => p.category === state.category);
+  }
   if (state.search) {
     const q = state.search.toLowerCase();
     products = products.filter(p =>
@@ -579,7 +583,9 @@ function renderBrowse(app) {
   let sideItems = '<div class="cat-item ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all_items">' + t('all_items') + ' <span class="cat-count">' + v.products.length + '</span></div>';
   let tabs = '<button class="tab ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all">' + t('all') + '</button>';
   for (let c of v.categories) {
-    const cnt = v.products.filter(p => p.category === c.id).length;
+    const cnt = (c.id === 'wis-new' || c.id === 'new')
+      ? v.products.filter(p => p.isNew).length
+      : v.products.filter(p => p.category === c.id).length;
     sideItems += `<div class="cat-item ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name} <span class="cat-count">${cnt}</span></div>`;
     tabs += `<button class="tab ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`;
   }

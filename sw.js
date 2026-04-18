@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v27';
+const CACHE_NAME = 'km-order-v28';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -7,7 +7,8 @@ self.addEventListener('install', event => {
         './',
         './index.html',
         './products.js',
-        './manifest.json'
+        './manifest.json',
+        './wismettac.html'
       ]);
     }).then(() => self.skipWaiting())
   );
@@ -33,7 +34,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Network-first for HTML, JS, and root path (always get latest code)
-  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json')) {
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('wismettac.html')) {
     event.respondWith(
       fetch(event.request).then(response => {
         if (response.ok) {

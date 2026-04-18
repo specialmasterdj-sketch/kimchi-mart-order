@@ -537,12 +537,19 @@ function renderHome(app) {
   const vendorTagsEn = { rhee_frequent: '\u2B50 Frequent', rhee_full: '\uD83D\uDCCB Full Catalog' };
   const vendorTagsEs = { rhee_frequent: '\u2B50 Frecuente', rhee_full: '\uD83D\uDCCB Catalogo Completo' };
   var tagMap = currentLang === 'es' ? vendorTagsEs : (currentLang === 'en' ? vendorTagsEn : vendorTagsKo);
+  // Standalone pages — some vendors open a dedicated HTML file instead of the
+  // built-in browse page (richer UX for that specific vendor's catalog).
+  const STANDALONE = { wismettac: 'wismettac.html' };
+
   for (let vid in VENDORS) {
     const v = VENDORS[vid];
     const cnt = getOrderCount(vid);
     const badge = cnt > 0 ? '<span class="cart-badge">' + cnt + ' ' + t('items_in_cart') + '</span>' : '<span class="cart-badge empty">' + t('empty_cart') + '</span>';
     const tag = tagMap[vid] ? '<div class="tag">' + tagMap[vid] + '</div>' : '';
-    cards += '<div class="vendor-card" style="border-color:' + v.color + '" onclick="state.vendor=\'' + vid + '\';state.category=\'all\';state.search=\'\';state.page=\'browse\';render()">' +
+    const onclickAttr = STANDALONE[vid]
+      ? "location.href='" + STANDALONE[vid] + "'"
+      : "state.vendor='" + vid + "';state.category='all';state.search='';state.page='browse';render()";
+    cards += '<div class="vendor-card" style="border-color:' + v.color + '" onclick="' + onclickAttr + '">' +
       '<h3 style="color:' + v.color + '">' + v.name + '</h3>' +
       '<div class="kr">' + v.nameKr + '</div>' +
       tag +

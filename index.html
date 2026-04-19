@@ -196,12 +196,10 @@ input { font-family:inherit; }
 .risk-badge.caution { background:#FFF8E1; color:#E65100; border:1px solid #FFCC80; }
 .risk-badge.blocked { background:#FFEBEE; color:#B71C1C; border:1px solid #EF9A9A; }
 .risk-badge:active { transform:scale(0.95); }
-.risk-corner { position:absolute; top:6px; left:6px; z-index:2; padding:4px 8px; border-radius:10px; font-size:11px; font-weight:800; box-shadow:0 2px 6px rgba(0,0,0,0.25); display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1; max-width:60%; cursor:pointer; }
-.risk-corner .stars { font-size:10px; letter-spacing:-1px; }
-.risk-corner .verdict { font-size:9px; font-weight:700; letter-spacing:0.3px; }
-.risk-corner.safe { background:#2E7D32; color:#FFF; }
-.risk-corner.caution { background:#F57F17; color:#FFF; }
-.risk-corner.blocked { background:#C62828; color:#FFF; }
+.risk-corner { position:absolute; top:8px; left:8px; z-index:2; width:16px; height:16px; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.35); border:2px solid #FFF; cursor:pointer; }
+.risk-corner.safe { background:#2E7D32; }
+.risk-corner.caution { background:#F9A825; }
+.risk-corner.blocked { background:#C62828; }
 .risk-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1200; align-items:center; justify-content:center; padding:20px; }
 .risk-modal.show { display:flex; }
 .risk-modal-body { background:#FFF; border-radius:14px; max-width:420px; width:100%; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
@@ -766,7 +764,7 @@ function renderBrowse(app) {
     const riskCls = p.riskVerdict === 'SAFE' ? 'safe' : (p.riskVerdict === '수입불가' ? 'blocked' : (p.riskVerdict === '주의' ? 'caution' : ''));
     const riskIcon = riskCls === 'safe' ? '✓' : (riskCls === 'caution' ? '⚠' : (riskCls === 'blocked' ? '✕' : ''));
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
-    const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"><span class="stars">${p.riskStars || riskIcon}</span><span class="verdict">${riskLabel}</span></div>` : '';
+    const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const riskBadge = '';
     tiles += `<div class="product-tile ${qty>0?'has-qty':''}">
       ${newBadge}
@@ -1307,7 +1305,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 30;
+const SW_VERSION = 31;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1392,12 +1395,13 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 32;
+const SW_VERSION = 33;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');
   if (lastV < SW_VERSION) {
-    // Version mismatch: nuke all old caches and re-register
+    // Version mismatch: nuke all old caches + SW, then force reload so the
+    // browser picks up fresh index.html (not the stale one that's running now).
     console.log('SW upgrade: v' + lastV + ' -> v' + SW_VERSION + ', clearing caches...');
     caches.keys().then(function(keys) {
       return Promise.all(keys.map(function(k) { return caches.delete(k); }));
@@ -1407,9 +1411,8 @@ const SW_VERSION = 32;
       return Promise.all(regs.map(function(r) { return r.unregister(); }));
     }).then(function() {
       localStorage.setItem('km_sw_ver', String(SW_VERSION));
-      return navigator.serviceWorker.register('./sw.js');
-    }).then(function() {
-      console.log('SW fresh install complete');
+      console.log('SW fresh install - reloading to pick up latest HTML');
+      window.location.reload();
     }).catch(function(err) { console.log('SW cleanup error', err); });
   } else {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {

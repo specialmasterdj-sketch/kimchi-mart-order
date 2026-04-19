@@ -704,6 +704,23 @@ function getQty(vendorId, productId) {
   return (state.orders[vendorId] || {})[productId] || 0;
 }
 
+// ===== EA (inner-pack) SUPPORT =====
+// Products with "N/M/unit" size (e.g. "12/15/1.76 OZ") ship as CS of M eaches.
+// Let the user order individual eas in addition to cases by keeping a separate
+// qty under "<productId>__EA" so all existing code (setQty, history, cloud
+// sync, PO rendering) keeps working unchanged — the __EA suffix just walks
+// back to the base product whenever it needs name/price/image.
+function parsePackSize(s){
+  const m = String(s||'').match(/^\s*(\d+)\s*\/\s*(\d+)\s*\/\s*(.+)$/i);
+  if (!m) return null;
+  const outer = +m[1], pack = +m[2];
+  if (!(outer > 0 && pack > 1)) return null;
+  return { outer, pack, unit: m[3].trim() };
+}
+function eaIdOf(id){ return id + '__EA'; }
+function isEaId(id){ return String(id).endsWith('__EA'); }
+function baseIdOf(id){ return String(id).replace(/__EA$/, ''); }
+
 // ===== NUMPAD =====
 let numpadTarget = null;
 function openNumpad(vendorId, productId, currentQty, productName) {
@@ -864,7 +881,18 @@ function renderBrowse(app) {
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const riskBadge = '';
-    tiles += `<div class="product-tile ${qty>0?'has-qty':''}">
+    const pack = parsePackSize(p.size);
+    const eaQty = pack ? getQty(state.vendor, eaIdOf(p.id)) : 0;
+    const anyQty = qty > 0 || eaQty > 0;
+    const safeName = (p.name||p.nameKr||'').replace(/'/g,'');
+    const eaRow = pack ? `
+        <div class="qty-row" data-ea="1" style="margin-top:4px;background:#fff4e0">
+          <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty-1})" ${eaQty<=0?'disabled':''}>−</button>
+          <input class="qty-input ${eaQty>0?'has-qty':''}" type="text" inputmode="numeric" value="${eaQty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${eaIdOf(p.id)}',${eaQty},'${safeName} (ea)')" placeholder="ea">
+          <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+1})">+</button>
+        </div>
+        <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 1 CS = ${pack.pack} ea</div>` : '';
+    tiles += `<div class="product-tile ${anyQty?'has-qty':''}">
       ${newBadge}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">
@@ -876,9 +904,10 @@ function renderBrowse(app) {
         ${priceHtml}
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
-          <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${(p.name||p.nameKr||'').replace(/'/g,'')}')">
+          <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
         </div>
+        ${eaRow}
       </div>
     </div>`;
   }
@@ -907,8 +936,18 @@ function renderOrder(app) {
   if (!v) { state.page='home'; render(); return; }
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
-    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'', size:'' };
-    return { ...p, orderQty: qty, total: (p.price||0) * qty };
+    const isEa = isEaId(id);
+    const lookupId = isEa ? baseIdOf(id) : id;
+    const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', price:0, image:'', size:'' };
+    const pack = isEa ? parsePackSize(base.size) : null;
+    const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    return {
+      ...base,
+      id,
+      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
+      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
+      isEa, price, orderQty: qty, total: (price||0) * qty
+    };
   });
 
   const store = getStoreInfo();
@@ -1029,8 +1068,18 @@ function formatOrderText() {
   const store = getStoreInfo();
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
-    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', size:'', price:0 };
-    return { ...p, orderQty: qty };
+    const isEa = isEaId(id);
+    const lookupId = isEa ? baseIdOf(id) : id;
+    const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', size:'', price:0 };
+    const pack = isEa ? parsePackSize(base.size) : null;
+    const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    return {
+      ...base,
+      id,
+      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
+      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
+      isEa, price, orderQty: qty
+    };
   });
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
@@ -1070,8 +1119,18 @@ function generateOrderHTML() {
   const store = getStoreInfo();
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
-    const p = v.products.find(p => p.id === id) || { id, name:'Unknown', price:0, image:'', size:'' };
-    return { ...p, orderQty: qty, total: (p.price||0) * qty };
+    const isEa = isEaId(id);
+    const lookupId = isEa ? baseIdOf(id) : id;
+    const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', price:0, image:'', size:'' };
+    const pack = isEa ? parsePackSize(base.size) : null;
+    const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    return {
+      ...base,
+      id,
+      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
+      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
+      isEa, price, orderQty: qty, total: (price||0) * qty
+    };
   });
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
@@ -1436,8 +1495,18 @@ function downloadCSV() {
   const v = VENDORS[state.vendor];
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
-    const p = v.products.find(p => p.id === id) || { id, name:'', size:'', price:0 };
-    return { ...p, orderQty: qty };
+    const isEa = isEaId(id);
+    const lookupId = isEa ? baseIdOf(id) : id;
+    const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'', size:'', price:0 };
+    const pack = isEa ? parsePackSize(base.size) : null;
+    const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    return {
+      ...base,
+      id,
+      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
+      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
+      isEa, price, orderQty: qty
+    };
   });
   let csv = 'Item#,Product,Size,Qty,Price,Total\n';
   items.forEach(it => {

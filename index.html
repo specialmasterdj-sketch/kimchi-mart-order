@@ -63,7 +63,7 @@ input { font-family:inherit; }
 .product-tile:active { transform:scale(0.98); }
 .product-tile.has-qty { box-shadow:0 0 0 2px var(--red), 0 1px 3px rgba(0,0,0,0.08); }
 .product-tile .new-badge { position:absolute; top:6px; left:6px; background:#ff9800; color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:10px; z-index:2; letter-spacing:.3px; }
-.product-tile .img-wrap { width:100%; aspect-ratio:1; min-height:120px; background:#fafafa; padding:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.product-tile .img-wrap { position:relative; width:100%; aspect-ratio:1; min-height:120px; background:#fafafa; padding:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .product-tile .img-wrap img { max-width:100%; max-height:100%; object-fit:contain; }
 .product-tile .img-wrap .no-img { color:#CCC; font-size:34px; }
 .product-tile .info { padding:7px 9px 8px; flex:1; display:flex; flex-direction:column; }
@@ -1307,7 +1307,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 29;
+const SW_VERSION = 30;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

@@ -1278,10 +1278,107 @@ const SW_VERSION = 27;
   }
 })();
 
+// ===== EXPOSE FOR FIREBASE MODULE =====
+// `let`/`const` in a classic script don't attach to window, so the ES-module
+// sync block below can't see them. Expose just what that module needs.
+window.KM = {
+  get branch(){ return currentBranch; },
+  get state(){ return state; },
+  render: () => render(),
+  setBranch: (id) => setBranch(id),
+  VENDORS: VENDORS
+};
+
 // ===== INIT =====
 render();
 // First-time load: force branch selection so each device is scoped to a branch.
 if (!currentBranch || !BRANCH_BY_ID[currentBranch]) openBranchModal();
+</script>
+
+<!-- ===== FIREBASE REAL-TIME ORDER SYNC =====
+Real-time cross-device sync per branch. A device writes any qty change to
+orders/<BRANCH> in RTDB; every device subscribed to that path merges the
+remote snapshot into state.orders and re-renders. This means if person A
+on the Miami tablet sets qty=3 for item X, person B on a phone also
+viewing Miami sees qty=3 instantly, and either can continue the cart.
+-->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getDatabase, ref, set, onValue, get, child } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
+  authDomain: "kimchi-mart-order.firebaseapp.com",
+  databaseURL: "https://kimchi-mart-order-default-rtdb.firebaseio.com",
+  projectId: "kimchi-mart-order",
+  storageBucket: "kimchi-mart-order.firebasestorage.app",
+  messagingSenderId: "640942647201",
+  appId: "1:640942647201:web:1e3421fb55c89155230de0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Guard so remote updates don't bounce back as local pushes.
+let applyingRemote = false;
+let currentSubBranch = null;
+let unsubscribe = null;
+
+function branchPath(branchId){ return 'orders/' + branchId; }
+
+// Write: called by saveState() whenever the user changes qty locally.
+window.cloudPushOrders = function(branchId, orders){
+  if (!branchId || applyingRemote) return;
+  const clean = {};
+  for (const v in orders){
+    const items = orders[v] || {};
+    const entries = Object.entries(items).filter(([, q]) => q > 0);
+    if (entries.length) clean[v] = Object.fromEntries(entries);
+  }
+  set(ref(db, branchPath(branchId)), clean).catch(e => console.warn('cloud push failed', e));
+};
+
+function subscribeBranch(branchId){
+  if (unsubscribe){ try { unsubscribe(); } catch(e){} unsubscribe = null; }
+  currentSubBranch = branchId;
+  if (!branchId) return;
+  const branchRef = ref(db, branchPath(branchId));
+  unsubscribe = onValue(branchRef, (snap) => {
+    const remote = snap.val() || {};
+    applyingRemote = true;
+    try {
+      const vendors = window.KM?.VENDORS || {};
+      const next = {};
+      for (const v in vendors){ next[v] = {}; }
+      for (const v in remote){ next[v] = { ...remote[v] }; }
+      if (window.KM){ window.KM.state.orders = next; window.KM.render(); }
+    } finally {
+      applyingRemote = false;
+    }
+  }, (err) => { console.warn('cloud read failed', err); });
+}
+
+// Hook branch switches via KM.setBranch wrapper.
+const origSetBranch = window.KM?.setBranch;
+if (window.KM){
+  window.KM.setBranch = (id) => {
+    origSetBranch && origSetBranch(id);
+    const b = window.KM.branch;
+    if (b && b !== currentSubBranch) subscribeBranch(b);
+  };
+}
+// Also patch the global setBranch (used by the branch-modal buttons).
+const bareSetBranch = window.setBranch;
+window.setBranch = (id) => {
+  bareSetBranch && bareSetBranch(id);
+  const b = window.KM?.branch;
+  if (b && b !== currentSubBranch) subscribeBranch(b);
+};
+
+// First subscribe if a branch is already chosen at load time.
+if (window.KM?.branch) subscribeBranch(window.KM.branch);
+
+console.info('[Firebase] real-time order sync active');
 </script>
 </body>
 </html>

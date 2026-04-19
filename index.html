@@ -195,6 +195,20 @@ input { font-family:inherit; }
 
 <div id="app"></div>
 
+<!-- BRANCH SELECTOR MODAL -->
+<div id="branch-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#C8352A,#A02820);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:16px;font-weight:800">📍 지점 선택 / Branch</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">오더는 지점별로 저장·공유됩니다</div>
+      </div>
+      <button onclick="closeBranchModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
+    </div>
+    <div style="padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px" id="branch-grid"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="modal-overlay" id="numpadModal">
@@ -256,6 +270,25 @@ input { font-family:inherit; }
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+// ===== BRANCHES =====
+// 6 Kimchi Mart branches. Orders are kept per-branch so one person can hand
+// off to the next on the same branch (prices/catalogs are shared; only the
+// in-progress cart is isolated per branch).
+const BRANCHES = [
+  { id: 'MIAMI',          ko: '마이애미',        en: 'Miami' },
+  { id: 'PEMBROKE_PINES', ko: '펨브로크 파인즈', en: 'Pembroke Pines' },
+  { id: 'HOLLYWOOD',      ko: '할리우드',         en: 'Hollywood' },
+  { id: 'CORAL_SPRINGS',  ko: '코럴 스프링스',    en: 'Coral Springs' },
+  { id: 'LASOLAS',        ko: '라스올라스',       en: 'LASOLAS' },
+  { id: 'WEST_PALM',      ko: '웨스트 팜 비치',   en: 'West Palm Beach' },
+];
+const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
+
+let currentBranch = '';
+try { currentBranch = localStorage.getItem('km_branch') || ''; } catch(e){}
+
+function ordersKey(branchId){ return 'km_orders__' + (branchId || ''); }
+
 // ===== STATE =====
 let state = {
   page: 'home',
@@ -266,13 +299,73 @@ let state = {
   history: JSON.parse(localStorage.getItem('km_history') || '[]')
 };
 
-// Load saved orders
-try { state.orders = JSON.parse(localStorage.getItem('km_orders') || '{}'); } catch(e) { state.orders = {}; }
-for (let v in VENDORS) { if (!state.orders[v]) state.orders[v] = {}; }
+// Load saved orders for the current branch (falls back to legacy km_orders
+// if present, one-time migrated into the first picked branch).
+function loadBranchOrders(){
+  if (!currentBranch){ state.orders = {}; return; }
+  try {
+    const raw = localStorage.getItem(ordersKey(currentBranch));
+    state.orders = raw ? JSON.parse(raw) : {};
+  } catch(e){ state.orders = {}; }
+  // Migrate legacy single-key orders into whichever branch is picked first,
+  // only if that branch has nothing yet.
+  if (Object.keys(state.orders).length === 0){
+    try {
+      const legacy = localStorage.getItem('km_orders');
+      if (legacy){
+        const obj = JSON.parse(legacy);
+        if (obj && typeof obj === 'object' && Object.values(obj).some(v => v && Object.keys(v).length)){
+          state.orders = obj;
+          localStorage.setItem(ordersKey(currentBranch), JSON.stringify(state.orders));
+        }
+        localStorage.removeItem('km_orders');
+      }
+    } catch(e){}
+  }
+  for (let v in VENDORS) { if (!state.orders[v]) state.orders[v] = {}; }
+}
+loadBranchOrders();
 
 function saveState() {
-  localStorage.setItem('km_orders', JSON.stringify(state.orders));
+  if (currentBranch){
+    localStorage.setItem(ordersKey(currentBranch), JSON.stringify(state.orders));
+  }
   localStorage.setItem('km_history', JSON.stringify(state.history));
+  // Hook for future cloud sync (Firebase, etc.)
+  if (typeof window.cloudPushOrders === 'function'){
+    try { window.cloudPushOrders(currentBranch, state.orders); } catch(e){}
+  }
+}
+
+function setBranch(id){
+  if (!BRANCH_BY_ID[id]) return;
+  if (currentBranch === id){ closeBranchModal(); return; }
+  currentBranch = id;
+  try { localStorage.setItem('km_branch', id); } catch(e){}
+  loadBranchOrders();
+  closeBranchModal();
+  // Reflect new branch label + reload current view
+  const lbl = document.getElementById('branch-btn-label');
+  if (lbl) lbl.textContent = BRANCH_BY_ID[id].ko;
+  render();
+}
+function openBranchModal(){
+  const grid = document.getElementById('branch-grid');
+  if (grid){
+    grid.innerHTML = BRANCHES.map(b =>
+      '<button onclick="setBranch(\'' + b.id + '\')" style="background:' + (b.id===currentBranch?'#FFEBEE':'#fff') + ';border:1.5px solid ' + (b.id===currentBranch?'#C8352A':'#ddd') + ';border-radius:10px;padding:14px 10px;font-size:13px;font-weight:700;color:' + (b.id===currentBranch?'#C8352A':'#333') + ';cursor:pointer;font-family:inherit;text-align:center">'
+      + '<div>' + b.ko + '</div>'
+      + '<div style="font-size:10px;color:#888;font-weight:500;margin-top:2px">' + b.en + '</div>'
+      + '</button>'
+    ).join('');
+  }
+  const m = document.getElementById('branch-modal');
+  if (m) m.style.display = 'flex';
+}
+function closeBranchModal(){
+  if (!currentBranch) return; // force first-time pick
+  const m = document.getElementById('branch-modal');
+  if (m) m.style.display = 'none';
 }
 
 // ===== LANGUAGE SYSTEM =====
@@ -364,6 +457,11 @@ function langButtons() {
     '<button class="lang-btn ' + (currentLang==='en'?'active':'') + '" onclick="setLang(\'en\')">EN</button>' +
     '<button class="lang-btn ' + (currentLang==='es'?'active':'') + '" onclick="setLang(\'es\')">ES</button>' +
     '</div>';
+}
+
+function branchButton(){
+  const label = currentBranch && BRANCH_BY_ID[currentBranch] ? BRANCH_BY_ID[currentBranch].ko : '지점';
+  return '<button id="branch-btn" onclick="openBranchModal()" style="background:#C8352A;border:none;color:#fff;border-radius:14px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📍 <span id="branch-btn-label">' + label + '</span></button>';
 }
 
 function homeIconHtml() {
@@ -565,7 +663,7 @@ function renderHome(app) {
   app.innerHTML = '<div class="header">' +
       homeIconHtml() +
       '<h1>' + t('app_title') + '<small>' + t('app_subtitle') + '</small></h1>' +
-      '<div class="header-right">' + langButtons() + '</div>' +
+      '<div class="header-right">' + branchButton() + langButtons() + '</div>' +
     '</div>' +
     '<div class="home">' +
       '<h2 data-t="select_vendor">' + t('select_vendor') + '</h2>' +
@@ -640,7 +738,7 @@ function renderBrowse(app) {
   app.innerHTML = '<div class="header">' +
       '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
       '<h1 style="color:' + v.color + '">' + v.name + '<small>' + v.nameKr + '</small></h1>' +
-      '<div class="header-right">' + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
+      '<div class="header-right">' + branchButton() + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
     '</div>' +
     '<div class="browse">' +
       '<div class="sidebar">' + sideItems + '</div>' +
@@ -700,7 +798,7 @@ function renderOrder(app) {
   app.innerHTML = '<div class="header">' +
       '<button class="back-btn" onclick="state.page=\'browse\';render()">&larr;</button>' +
       '<h1 style="color:' + v.color + '" data-t="order_form">' + t('order_form') + '<small>' + v.name + '</small></h1>' +
-      '<div class="header-right">' + langButtons() + '<button class="back-btn" onclick="openStoreSettings()" title="' + t('store_settings') + '">&#9881;</button></div>' +
+      '<div class="header-right">' + branchButton() + langButtons() + '<button class="back-btn" onclick="openStoreSettings()" title="' + t('store_settings') + '">&#9881;</button></div>' +
     '</div>' +
     '<div class="order-page">' +
       (items.length === 0 ? '<p style="text-align:center;padding:60px;color:#999;font-size:18px" data-t="no_items_msg">' + t('no_items_msg') + '</p>' :
@@ -767,7 +865,7 @@ function renderHistory(app) {
   app.innerHTML = '<div class="header">' +
       '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
       '<h1 data-t="history_title">' + t('history_title') + '<small data-t="history_subtitle">' + t('history_subtitle') + '</small></h1>' +
-      '<div class="header-right">' + langButtons() + '</div>' +
+      '<div class="header-right">' + branchButton() + langButtons() + '</div>' +
     '</div>' +
     '<div class="history-page">' +
       (items || '<p style="text-align:center;padding:40px;color:#999" data-t="no_history">' + t('no_history') + '</p>') +
@@ -1182,6 +1280,8 @@ const SW_VERSION = 27;
 
 // ===== INIT =====
 render();
+// First-time load: force branch selection so each device is scoped to a branch.
+if (!currentBranch || !BRANCH_BY_ID[currentBranch]) openBranchModal();
 </script>
 </body>
 </html>

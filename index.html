@@ -454,7 +454,12 @@ function setQty(vendorId, productId, qty) {
         // Update the minus/plus button onclick values
         const minus = tile.querySelector('.minus');
         const plus = tile.querySelector('.plus');
-        if (minus) minus.setAttribute('onclick', "event.stopPropagation();setQty('" + vendorId + "','" + productId + "'," + (newQty-1) + ")");
+        if (minus) {
+          minus.setAttribute('onclick', "event.stopPropagation();setQty('" + vendorId + "','" + productId + "'," + (newQty-1) + ")");
+          // Toggle disabled so qty>0 re-enables the minus button
+          if (newQty > 0) minus.removeAttribute('disabled');
+          else minus.setAttribute('disabled', '');
+        }
         if (plus) plus.setAttribute('onclick', "event.stopPropagation();setQty('" + vendorId + "','" + productId + "'," + (newQty+1) + ")");
         // Update numpad onclick
         const pName = (input.getAttribute('onclick') || '').match(/,'([^']*)'\)/);

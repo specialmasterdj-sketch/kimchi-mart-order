@@ -15703,8 +15703,8 @@ wang: {
     ]
   },
   fiko: {
-    name: "FIKO - JL Trading (Busan Container)",
-    nameKr: "FIKO - 제이엘무역 부산 컨테이너",
+    name: "FIKO",
+    nameKr: "FIKO",
     email: "jltrading.busan@gmail.com",
     color: "#D4AF37",
     categories: [

@@ -220,7 +220,25 @@ try {
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const saveCart = () => { try { localStorage.setItem('wismettac-cart-v2', JSON.stringify(CART)); } catch(e){} };
+const saveCart = () => {
+  try { localStorage.setItem('wismettac-cart-v2', JSON.stringify(CART)); } catch(e){}
+  // Cross-device sync — push current cart to Firebase under the selected branch.
+  try { if (typeof window.cloudPushCart === 'function') window.cloudPushCart(CART); } catch(e){}
+};
+
+// Expose CART + render for the Firebase module so it can apply remote updates.
+window.KM_W = {
+  get CART(){ return CART; },
+  applyRemote(obj){
+    // Replace CART contents in-place so the `const` ref keeps pointing at it.
+    for (const k of Object.keys(CART)) delete CART[k];
+    if (obj && typeof obj === 'object') Object.assign(CART, obj);
+    try { localStorage.setItem('wismettac-cart-v2', JSON.stringify(CART)); } catch(e){}
+    render();
+    if ($('cart-modal').classList.contains('show')) renderCart();
+    updateCartBar();
+  }
+};
 
 function toast(msg, ms=1800){
   const t = $('toast');
@@ -596,6 +614,52 @@ function exportOrder(){
 setLang(LANG);
 $('cart-modal').addEventListener('click', (e) => { if (e.target.id === 'cart-modal') closeCart(); });
 $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal') closePd(); });
+</script>
+
+<!-- Real-time cart sync per branch (mirrors the main order app) -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
+  authDomain: "kimchi-mart-order.firebaseapp.com",
+  databaseURL: "https://kimchi-mart-order-default-rtdb.firebaseio.com",
+  projectId: "kimchi-mart-order",
+  storageBucket: "kimchi-mart-order.firebasestorage.app",
+  messagingSenderId: "640942647201",
+  appId: "1:640942647201:web:1e3421fb55c89155230de0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let applyingRemote = false;
+let unsub = null;
+function getBranch(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
+function path(b){ return 'carts/wismettac/' + b; }
+
+window.cloudPushCart = function(cart){
+  if (applyingRemote) return;
+  const b = getBranch(); if (!b) return;
+  const clean = {};
+  for (const k in cart){ if (cart[k] > 0) clean[k] = cart[k]; }
+  set(ref(db, path(b)), clean).catch(e => console.warn('cart push failed', e));
+};
+
+function subscribe(){
+  if (unsub){ try { unsub(); } catch(e){} unsub = null; }
+  const b = getBranch(); if (!b) return;
+  unsub = onValue(ref(db, path(b)), (snap) => {
+    const remote = snap.val() || {};
+    applyingRemote = true;
+    try { if (window.KM_W) window.KM_W.applyRemote(remote); }
+    finally { applyingRemote = false; }
+  }, (err) => console.warn('cart read failed', err));
+}
+subscribe();
+// Re-subscribe if the user changes branch in another tab.
+window.addEventListener('storage', (e) => { if (e.key === 'km_branch') subscribe(); });
+console.info('[Firebase] Wismettac cart sync active');
 </script>
 </body>
 </html>

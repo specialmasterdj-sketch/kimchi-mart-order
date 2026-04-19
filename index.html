@@ -1350,17 +1350,24 @@ async function emailWithPDF() {
     ].join('\r\n');
 
     var emlBlob = new Blob([emlContent], { type: 'message/rfc822' });
-    var emlUrl = URL.createObjectURL(emlBlob);
-    var emlLink = document.createElement('a');
-    emlLink.href = emlUrl;
-    emlLink.download = 'Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.eml';
-    emlLink.click();
-    URL.revokeObjectURL(emlUrl);
+    var emlUrl  = URL.createObjectURL(emlBlob);
+
+    // Try to open the .eml directly via the OS mail handler (Outlook on Windows,
+    // Mail on macOS, etc.) so there is no visible 'download then click' step.
+    // Falls back to an anchor-download if the popup is blocked.
+    var opened = window.open(emlUrl, '_blank');
+    if (!opened) {
+      var emlLink = document.createElement('a');
+      emlLink.href = emlUrl;
+      emlLink.download = 'Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.eml';
+      emlLink.click();
+    }
+    setTimeout(function(){ URL.revokeObjectURL(emlUrl); }, 8000);
 
     // Remove loading
     document.getElementById('pdfLoading')?.remove();
 
-    showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uD30C\uC77C \uC0DD\uC131 \uC644\uB8CC! .eml \uD30C\uC77C\uC744 \uC5F4\uC5B4\uC8FC\uC138\uC694.':currentLang==='es'?'Email generado! Abra el archivo .eml descargado.':'Email file created! Open the downloaded .eml file.');
+    showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uC131\uC131 \uC644\uB8CC - Outlook\uC744 \uC5EC\uB294 \uC911...':currentLang==='es'?'Email listo - abriendo Outlook...':'Email ready - opening Outlook...');
 
     // Save to history (local + cloud per branch)
     const histEntry = {
@@ -1461,7 +1468,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 35;
+const SW_VERSION = 36;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

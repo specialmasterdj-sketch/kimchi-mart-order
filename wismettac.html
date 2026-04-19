@@ -326,13 +326,14 @@ function render(){
     const pack = parsePackSize(p.packSize);
     const eaQty = pack ? (CART[eaIdOf(p.detailId)] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0;
+    const eaStep = pack ? pack.pack : 1;
     const eaRow = pack ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:4px;background:#fff4e0;border-radius:8px;padding:2px">' +
-        '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-1)"' + (eaQty<=0?' disabled':'') + '>−</button>' +
+        '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-' + eaStep + ')"' + (eaQty<=0?' disabled':'') + '>−</button>' +
         '<span class="qnum">' + eaQty + '</span>' +
-        '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',1)">+</button>' +
+        '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',' + eaStep + ')">+</button>' +
       '</div>' +
-      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 1 CS = ' + pack.pack + ' ea</div>'
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ' + eaStep + '개 (1 CS)</div>'
     ) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + '" onclick="openPd(\''+p.detailId+'\')">' +

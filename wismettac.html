@@ -224,8 +224,32 @@ let CUR_CAT = '';
 let LANG = 'ko';
 let CURRENT_PD_ID = '';
 
+// CART is stored per-branch (wismettac-cart-v2-<BRANCH>) so prices/quantities
+// never leak between stores — same rule as the lookup/invoice apps.
+function _branchForCartKey(){
+  try { return localStorage.getItem('km_branch') || 'UNASSIGNED'; } catch(e){ return 'UNASSIGNED'; }
+}
+function _cartKey(){ return 'wismettac-cart-v2-' + _branchForCartKey(); }
+
+// One-time migration: the old code stored a single shared cart under
+// 'wismettac-cart-v2' which leaked across branches. Move that data under
+// whatever branch is currently selected (best-guess attribution) and delete
+// the legacy key so no future cross-contamination can occur.
+(function migrateLegacyCart(){
+  try {
+    const legacy = localStorage.getItem('wismettac-cart-v2');
+    if (!legacy) return;
+    const cur = _branchForCartKey();
+    if (cur === 'UNASSIGNED') return;  // keep legacy until user picks a branch
+    const brKey = 'wismettac-cart-v2-' + cur;
+    if (!localStorage.getItem(brKey)) localStorage.setItem(brKey, legacy);
+    localStorage.removeItem('wismettac-cart-v2');
+    console.info('[wismettac] migrated legacy cart to branch:', cur);
+  } catch(e){}
+})();
+
 try {
-  const saved = localStorage.getItem('wismettac-cart-v2');
+  const saved = localStorage.getItem(_cartKey());
   if (saved) Object.assign(CART, JSON.parse(saved));
 } catch(e){}
 try {
@@ -236,7 +260,7 @@ try {
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const saveCart = () => {
-  try { localStorage.setItem('wismettac-cart-v2', JSON.stringify(CART)); } catch(e){}
+  try { localStorage.setItem(_cartKey(), JSON.stringify(CART)); } catch(e){}
   // Cross-device sync — push current cart to Firebase under the selected branch.
   try { if (typeof window.cloudPushCart === 'function') window.cloudPushCart(CART); } catch(e){}
 };
@@ -248,7 +272,7 @@ window.KM_W = {
     // Replace CART contents in-place so the `const` ref keeps pointing at it.
     for (const k of Object.keys(CART)) delete CART[k];
     if (obj && typeof obj === 'object') Object.assign(CART, obj);
-    try { localStorage.setItem('wismettac-cart-v2', JSON.stringify(CART)); } catch(e){}
+    try { localStorage.setItem(_cartKey(), JSON.stringify(CART)); } catch(e){}
     render();
     if ($('cart-modal').classList.contains('show')) renderCart();
     updateCartBar();
@@ -273,9 +297,24 @@ function updateBranchLabel(){
 }
 function setBranch(id){
   if (!BRANCH_BY_ID[id]) return;
+  const oldBranch = _branchForCartKey();
+  // Persist current CART under old branch's key BEFORE switching so nothing
+  // is lost from the outgoing branch.
+  if (oldBranch && oldBranch !== 'UNASSIGNED'){
+    try { localStorage.setItem('wismettac-cart-v2-' + oldBranch, JSON.stringify(CART)); } catch(e){}
+  }
   try { localStorage.setItem('km_branch', id); } catch(e){}
+  // Swap CART contents in-place — clear, then load the new branch's saved cart.
+  for (const k of Object.keys(CART)) delete CART[k];
+  try {
+    const saved = localStorage.getItem('wismettac-cart-v2-' + id);
+    if (saved) Object.assign(CART, JSON.parse(saved));
+  } catch(e){}
   updateBranchLabel();
   closeBranchModal();
+  render();
+  updateCartBar();
+  if ($('cart-modal').classList.contains('show')) renderCart();
   // Re-subscribe cart sync to the new branch
   if (typeof window.__wismRefreshSub === 'function') window.__wismRefreshSub();
 }

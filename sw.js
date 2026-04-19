@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v63';
+const CACHE_NAME = 'km-order-v64';
 
 self.addEventListener('install', event => {
   event.waitUntil(

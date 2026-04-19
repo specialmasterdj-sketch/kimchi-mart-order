@@ -209,6 +209,12 @@ input { font-family:inherit; }
 .risk-modal-body .note.caution { border-left-color:#F57F17; }
 .risk-modal-body .note.blocked { border-left-color:#C62828; }
 .risk-modal-body .close-btn { width:100%; background:var(--red); color:#FFF; border:none; padding:12px; border-radius:10px; font-size:15px; font-weight:700; margin-top:10px; cursor:pointer; font-family:inherit; }
+
+/* SAVE INDICATOR */
+#save-indicator { position:fixed; top:12px; right:12px; z-index:900; background:rgba(46,125,50,0.95); color:#FFF; padding:6px 12px; border-radius:16px; font-size:12px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.25); opacity:0; transform:translateY(-8px); transition:opacity 0.2s, transform 0.2s; pointer-events:none; }
+#save-indicator.show { opacity:1; transform:translateY(0); }
+.btn-undo { background:#FF6F00; color:#FFF; border:none; padding:12px 18px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:8px; }
+.btn-undo:active { transform:scale(0.97); }
 </style>
 </head>
 <body>
@@ -230,6 +236,9 @@ input { font-family:inherit; }
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- SAVE INDICATOR -->
+<div id="save-indicator">✓ 저장됨</div>
 
 <!-- RISK DETAIL MODAL -->
 <div class="risk-modal" id="riskModal" onclick="if(event.target===this)hideRisk()"></div>
@@ -313,14 +322,30 @@ try { currentBranch = localStorage.getItem('km_branch') || ''; } catch(e){}
 function ordersKey(branchId){ return 'km_orders__' + (branchId || ''); }
 
 // ===== STATE =====
+// Restore last navigation so page reload returns to where the user was.
+const _savedNav = (() => {
+  try { return JSON.parse(localStorage.getItem('km_nav') || 'null'); } catch(e){ return null; }
+})();
 let state = {
-  page: 'home',
-  vendor: null,
-  category: 'all',
-  search: '',
+  page: (_savedNav && _savedNav.page) || 'home',
+  vendor: (_savedNav && _savedNav.vendor) || null,
+  category: (_savedNav && _savedNav.category) || 'all',
+  search: (_savedNav && _savedNav.search) || '',
   orders: {},
   history: JSON.parse(localStorage.getItem('km_history') || '[]')
 };
+// If we landed on browse/order but no vendor is set, reset to home to avoid broken state
+if ((state.page === 'browse' || state.page === 'order') && (!state.vendor || !VENDORS[state.vendor])){
+  state.page = 'home'; state.vendor = null;
+}
+
+function saveNavState(){
+  try {
+    localStorage.setItem('km_nav', JSON.stringify({
+      page: state.page, vendor: state.vendor, category: state.category, search: state.search
+    }));
+  } catch(e){}
+}
 
 // Load saved orders for the current branch (falls back to legacy km_orders
 // if present, one-time migrated into the first picked branch).
@@ -351,14 +376,75 @@ loadBranchOrders();
 
 function saveState() {
   if (currentBranch){
-    localStorage.setItem(ordersKey(currentBranch), JSON.stringify(state.orders));
+    try {
+      const json = JSON.stringify(state.orders);
+      localStorage.setItem(ordersKey(currentBranch), json);
+      // Redundant backup with timestamp for crash recovery
+      localStorage.setItem(ordersKey(currentBranch) + '_backup', JSON.stringify({
+        t: Date.now(), orders: state.orders
+      }));
+      // Flash "saved" indicator
+      flashSavedIndicator();
+    } catch(e){
+      console.error('saveState failed', e);
+      showToast('⚠️ 저장 실패 - 용량 확인 필요');
+    }
   }
-  localStorage.setItem('km_history', JSON.stringify(state.history));
+  try { localStorage.setItem('km_history', JSON.stringify(state.history)); } catch(e){}
   // Hook for future cloud sync (Firebase, etc.)
   if (typeof window.cloudPushOrders === 'function'){
     try { window.cloudPushOrders(currentBranch, state.orders); } catch(e){}
   }
 }
+
+// Show a brief "✓ 저장됨" indicator so the user knows persistence worked
+let _saveFlashTimer = null;
+function flashSavedIndicator(){
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.classList.add('show');
+  clearTimeout(_saveFlashTimer);
+  _saveFlashTimer = setTimeout(() => el.classList.remove('show'), 900);
+}
+
+// Save vendor's orders to a rolling trash bin before wiping them,
+// so accidental "clear all" can be undone.
+function trashVendorOrders(vendorId){
+  if (!currentBranch || !vendorId) return;
+  const snapshot = state.orders[vendorId] || {};
+  if (!Object.keys(snapshot).length) return;
+  const key = 'km_trash_' + currentBranch;
+  let bin = [];
+  try { bin = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){}
+  bin.unshift({ t: Date.now(), vendor: vendorId, orders: snapshot });
+  bin = bin.slice(0, 5); // keep latest 5
+  try { localStorage.setItem(key, JSON.stringify(bin)); } catch(e){}
+}
+
+function restoreLastTrash(){
+  if (!currentBranch) return;
+  let bin = [];
+  try { bin = JSON.parse(localStorage.getItem('km_trash_' + currentBranch) || '[]'); } catch(e){}
+  if (!bin.length){ showToast('되돌릴 항목이 없습니다'); return; }
+  const latest = bin.shift();
+  state.orders[latest.vendor] = latest.orders;
+  localStorage.setItem('km_trash_' + currentBranch, JSON.stringify(bin));
+  saveState();
+  render();
+  showToast('✓ ' + latest.vendor + ' 주문 복원됨');
+}
+
+// Auto-save safety nets: save on tab hide / close
+(function installAutoSaveHooks(){
+  const kick = () => { try { saveState(); } catch(e){} };
+  window.addEventListener('beforeunload', kick);
+  window.addEventListener('pagehide', kick);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') kick();
+  });
+  // Periodic safety save every 15 seconds
+  setInterval(kick, 15000);
+})();
 
 function setBranch(id){
   if (!BRANCH_BY_ID[id]) return;
@@ -678,6 +764,7 @@ function render() {
   else if (state.page === 'browse') renderBrowse(app);
   else if (state.page === 'order') renderOrder(app);
   else if (state.page === 'history') renderHistory(app);
+  saveNavState();
   requestAnimationFrame(() => window.scrollTo(0, scrollPos));
 }
 
@@ -1305,7 +1392,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 31;
+const SW_VERSION = 32;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

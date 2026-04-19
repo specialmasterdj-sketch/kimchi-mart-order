@@ -704,6 +704,39 @@ function getQty(vendorId, productId) {
   return (state.orders[vendorId] || {})[productId] || 0;
 }
 
+// ===== SEARCH INPUT (IME-safe) =====
+// Firing render() on every keystroke blows away the <input> element, which
+// breaks Korean IME composition — users saw "한번 치면 끝" (typing one char
+// closed the composition). Instead, update state.search and ONLY re-render
+// the parts that depend on it — keeping the input alive preserves caret +
+// IME state. Debounced a tiny amount so fast typing doesn't thrash.
+let _searchRenderTimer = null;
+function onSearchInput(val){
+  state.search = val;
+  try { saveState(); } catch(e){}
+  clearTimeout(_searchRenderTimer);
+  _searchRenderTimer = setTimeout(() => {
+    if (state.page !== 'browse') { render(); return; }
+    // Remember the current input so we can restore focus + selection
+    const inp = document.getElementById('search-input-box');
+    const hadFocus = inp && document.activeElement === inp;
+    const selStart = inp?.selectionStart;
+    const selEnd   = inp?.selectionEnd;
+    // Re-render the grid only. We still call render() but immediately restore
+    // focus + selection + value so IME state isn't visually disrupted.
+    render();
+    if (hadFocus){
+      const next = document.getElementById('search-input-box');
+      if (next){
+        next.focus();
+        if (selStart != null && typeof next.setSelectionRange === 'function'){
+          try { next.setSelectionRange(selStart, selEnd ?? selStart); } catch(e){}
+        }
+      }
+    }
+  }, 90);
+}
+
 // ===== HANGUL JAMO DECOMPOSITION =====
 // Decompose Korean syllables into their initial/medial/final jamo so search
 // works during IME composition. "오" (U+C624) → "ㅇㅗ", which means typing
@@ -953,7 +986,7 @@ function renderBrowse(app) {
       '<div class="sidebar">' + sideItems + '</div>' +
       '<div class="main-content">' +
         '<div class="cat-tabs">' + tabs + '</div>' +
-        '<div class="search-bar"><input type="search" placeholder="' + t('search_placeholder') + '" oninput="state.search=this.value;render()" value="' + state.search + '"></div>' +
+        '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oninput="onSearchInput(this.value)" oncompositionend="onSearchInput(this.value)" value="' + state.search + '"></div>' +
         '<div class="product-grid">' + tiles + '</div>' +
       '</div>' +
     '</div>' +

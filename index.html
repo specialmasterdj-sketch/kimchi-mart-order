@@ -1251,9 +1251,12 @@ async function emailWithPDF() {
     var dateStr = new Date().toISOString().slice(0,10);
     var fileName = 'KimchiMart_Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.pdf';
 
-    // Get PDF as base64
+    // Get PDF as base64 + as a File for native Web Share API (phones: Gmail,
+    // Mail, Outlook, Naver, etc. all pick it up from the share sheet).
     var pdfDataUri = pdf.output('datauristring');
     var pdfBase64 = pdfDataUri.split(',')[1];
+    var pdfBlob = pdf.output('blob');
+    var pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
     // Embed the same order snapshot (JPEG of the canvas) inline in the HTML body
     // so the email shows the same formatted order as the attached PDF.
@@ -1349,25 +1352,50 @@ async function emailWithPDF() {
       '--' + boundaryMixed + '--'
     ].join('\r\n');
 
-    var emlBlob = new Blob([emlContent], { type: 'message/rfc822' });
-    var emlUrl  = URL.createObjectURL(emlBlob);
-
-    // Try to open the .eml directly via the OS mail handler (Outlook on Windows,
-    // Mail on macOS, etc.) so there is no visible 'download then click' step.
-    // Falls back to an anchor-download if the popup is blocked.
-    var opened = window.open(emlUrl, '_blank');
-    if (!opened) {
-      var emlLink = document.createElement('a');
-      emlLink.href = emlUrl;
-      emlLink.download = 'Order_' + v.name.replace(/\s/g,'_') + '_' + dateStr + '.eml';
-      emlLink.click();
-    }
-    setTimeout(function(){ URL.revokeObjectURL(emlUrl); }, 8000);
-
-    // Remove loading
+    // Remove loading before any native UI appears (share sheet / mail client)
     document.getElementById('pdfLoading')?.remove();
 
-    showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uC131\uC131 \uC644\uB8CC - Outlook\uC744 \uC5EC\uB294 \uC911...':currentLang==='es'?'Email listo - abriendo Outlook...':'Email ready - opening Outlook...');
+    var shared = false;
+
+    // 1. Phones + modern browsers: native share sheet with the PDF attached.
+    //    User picks any email app (Gmail, Mail, Outlook, Naver, Daum, etc.)
+    //    and the PDF + subject/body are pre-filled.
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        await navigator.share({
+          title: subject,
+          text: bodyText + (v.email ? '\n\nTo: ' + v.email : ''),
+          files: [pdfFile]
+        });
+        shared = true;
+      } catch (err) {
+        // User cancelled or share failed — fall through to other methods.
+        if (err && err.name === 'AbortError') shared = 'cancelled';
+      }
+    }
+
+    if (shared !== true && shared !== 'cancelled') {
+      // 2. Desktop fallback: mailto: opens the OS default mail app directly
+      //    (Outlook / Mail / Thunderbird / webmail handler). Attaches via .eml
+      //    blob open in parallel so Outlook-style clients still get the PDF.
+      var mailto = 'mailto:' + encodeURIComponent(v.email || '') +
+        '?subject=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(bodyText);
+
+      var emlBlob = new Blob([emlContent], { type: 'message/rfc822' });
+      var emlUrl  = URL.createObjectURL(emlBlob);
+      // Trigger the rich .eml (has PDF + HTML body) first — Windows/Outlook
+      // users see the full pre-composed email.
+      window.open(emlUrl, '_blank');
+      // Also save the PDF so non-.eml clients (Gmail web, Apple Mail) can
+      // drag-drop it into the compose window.
+      pdf.save(fileName);
+      // Open mailto after a tick so the browser doesn't swallow both.
+      setTimeout(function(){ window.location.href = mailto; }, 400);
+      setTimeout(function(){ URL.revokeObjectURL(emlUrl); }, 8000);
+    }
+
+    showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uC900\uBE44 \uC644\uB8CC':currentLang==='es'?'Email listo':'Email ready');
 
     // Save to history (local + cloud per branch)
     const histEntry = {
@@ -1468,7 +1496,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 36;
+const SW_VERSION = 37;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

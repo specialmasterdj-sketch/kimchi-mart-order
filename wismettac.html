@@ -323,8 +323,19 @@ function render(){
 
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
+    const pack = parsePackSize(p.packSize);
+    const eaQty = pack ? (CART[eaIdOf(p.detailId)] || 0) : 0;
+    const anyQty = qty > 0 || eaQty > 0;
+    const eaRow = pack ? (
+      '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:4px;background:#fff4e0;border-radius:8px;padding:2px">' +
+        '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-1)"' + (eaQty<=0?' disabled':'') + '>−</button>' +
+        '<span class="qnum">' + eaQty + '</span>' +
+        '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',1)">+</button>' +
+      '</div>' +
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 1 CS = ' + pack.pack + ' ea</div>'
+    ) : '';
     return (
-      '<div class="card ' + (qty>0?'has-qty':'') + '" onclick="openPd(\''+p.detailId+'\')">' +
+      '<div class="card ' + (anyQty?'has-qty':'') + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
         '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' +
         '<div class="pbody">' +
@@ -336,6 +347,7 @@ function render(){
             '<span class="qnum">' + qty + '</span>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
+          eaRow +
         '</div>' +
       '</div>'
     );
@@ -370,6 +382,18 @@ function setQty(id, n){
   render();
   if ($('cart-modal').classList.contains('show')) renderCart();
 }
+
+// 3-tier pack sizes like "12/ 15/ 1.76 OZ" support per-ea ordering too.
+function parsePackSize(s){
+  const m = String(s||'').match(/^\s*(\d+)\s*\/\s*(\d+)\s*\/\s*(.+)$/i);
+  if (!m) return null;
+  const outer = +m[1], pack = +m[2];
+  if (!(outer > 0 && pack > 1)) return null;
+  return { outer, pack, unit: m[3].trim() };
+}
+function eaIdOf(id){ return id + '__EA'; }
+function isEaId(id){ return String(id).endsWith('__EA'); }
+function baseIdOf(id){ return String(id).replace(/__EA$/, ''); }
 
 function updateCartBar(){
   const types = Object.keys(CART).length;
@@ -476,19 +500,24 @@ function renderCart(){
     return;
   }
   body.innerHTML = entries.map(([id, qty]) => {
-    const p = BY_ID[id];
+    const ea = isEaId(id);
+    const lookupId = ea ? baseIdOf(id) : id;
+    const p = BY_ID[lookupId];
     if (!p) return '';
+    const pack = ea ? parsePackSize(p.packSize) : null;
+    const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (p.packSize||'-');
+    const nameSuffix = ea ? ' (ea)' : '';
     return (
       '<div class="ci" onclick="closeCart();openPd(\''+p.detailId+'\');">' +
         '<img src="' + esc(p.image) + '" onerror="this.style.visibility=\'hidden\'">' +
         '<div class="ci-info">' +
-          '<div class="ci-name">' + esc(p.name) + '</div>' +
-          '<div class="ci-meta">#' + esc(p.id) + ' · ' + esc(p.packSize||'-') + (p.brand?' · ' + esc(p.brand):'') + '</div>' +
+          '<div class="ci-name">' + esc(p.name) + nameSuffix + '</div>' +
+          '<div class="ci-meta">#' + esc(p.id) + ' · ' + esc(sizeLabel) + (p.brand?' · ' + esc(p.brand):'') + '</div>' +
         '</div>' +
         '<div class="ci-qrow" onclick="event.stopPropagation()">' +
-          '<button onclick="bumpQty(\''+p.detailId+'\',-1)">−</button>' +
-          '<input type="number" min="0" max="999" value="'+qty+'" onchange="setQty(\''+p.detailId+'\', this.value)">' +
-          '<button onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
+          '<button onclick="bumpQty(\''+id+'\',-1)">−</button>' +
+          '<input type="number" min="0" max="999" value="'+qty+'" onchange="setQty(\''+id+'\', this.value)">' +
+          '<button onclick="bumpQty(\''+id+'\',1)">+</button>' +
         '</div>' +
       '</div>'
     );

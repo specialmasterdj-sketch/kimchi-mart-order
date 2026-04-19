@@ -647,6 +647,7 @@ function renderCart(){
           '<button onclick="bumpQty(\''+id+'\',-1)">−</button>' +
           '<input type="number" min="0" max="999" value="'+qty+'" onchange="setQty(\''+id+'\', this.value)">' +
           '<button onclick="bumpQty(\''+id+'\',1)">+</button>' +
+          '<span style="font-size:12px;font-weight:800;margin-left:6px;color:' + (ea?'#ff9800':'#1976d2') + '">' + (ea?'小 ea':'cs') + '</span>' +
         '</div>' +
       '</div>'
     );

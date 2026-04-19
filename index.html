@@ -1043,6 +1043,7 @@ function renderOrder(app) {
         <button class="qty-btn minus" style="width:34px;height:34px;font-size:16px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty-1})">-</button>
         <input class="qty-input has-qty" style="width:48px;height:34px;font-size:16px" value="${it.orderQty}" readonly onclick="openNumpad('${state.vendor}','${it.id}',${it.orderQty},'${safeName}')">
         <button class="qty-btn plus" style="width:34px;height:34px;font-size:16px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty+1})">+</button>
+        <span style="font-size:12px;font-weight:800;margin-left:6px;color:${it.isEa?'#ff9800':'#1976d2'}">${it.isEa?'小 ea':'cs'}</span>
       </div></td>
       <td style="text-align:right">${it.price ? '$'+it.price.toFixed(2) : '-'}</td>
       <td style="text-align:right;font-weight:600">${it.total ? '$'+it.total.toFixed(2) : '-'}</td>

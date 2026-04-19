@@ -143,6 +143,7 @@
     <p>위스메탁 · Orlando</p>
   </div>
   <div class="hdr-acts">
+    <button id="branch-btn" onclick="openBranchModal()" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">📍 <span id="branch-btn-label">지점</span></button>
     <div class="lang-sel">
       <button class="on" data-lang="ko" onclick="setLang('ko')">KO</button>
       <button data-lang="en" onclick="setLang('en')">EN</button>
@@ -151,6 +152,20 @@
       🛒
       <span class="cart-badge" id="cart-badge">0</span>
     </button>
+  </div>
+</div>
+
+<!-- BRANCH SELECTOR MODAL -->
+<div id="branch-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#C8352A,#A02820);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:16px;font-weight:800">📍 지점 선택</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">장바구니는 지점별로 실시간 공유됩니다</div>
+      </div>
+      <button onclick="closeBranchModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
+    </div>
+    <div style="padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px" id="branch-grid"></div>
   </div>
 </div>
 
@@ -239,6 +254,52 @@ window.KM_W = {
     updateCartBar();
   }
 };
+
+// ===== BRANCH SELECTOR =====
+const BRANCHES = [
+  { id:'MIAMI',          ko:'마이애미',        en:'Miami' },
+  { id:'PEMBROKE_PINES', ko:'펨브로크 파인즈', en:'Pembroke Pines' },
+  { id:'HOLLYWOOD',      ko:'할리우드',        en:'Hollywood' },
+  { id:'CORAL_SPRINGS',  ko:'코럴 스프링스',   en:'Coral Springs' },
+  { id:'LASOLAS',        ko:'라스올라스',      en:'LASOLAS' },
+  { id:'WEST_PALM',      ko:'웨스트 팜 비치',  en:'West Palm Beach' }
+];
+const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
+function getBranchId(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
+function updateBranchLabel(){
+  const b = getBranchId();
+  const el = $('branch-btn-label');
+  if (el) el.textContent = (BRANCH_BY_ID[b] && BRANCH_BY_ID[b].ko) || '지점 선택';
+}
+function setBranch(id){
+  if (!BRANCH_BY_ID[id]) return;
+  try { localStorage.setItem('km_branch', id); } catch(e){}
+  updateBranchLabel();
+  closeBranchModal();
+  // Re-subscribe cart sync to the new branch
+  if (typeof window.__wismRefreshSub === 'function') window.__wismRefreshSub();
+}
+function openBranchModal(){
+  const grid = $('branch-grid');
+  const cur = getBranchId();
+  if (grid){
+    grid.innerHTML = BRANCHES.map(b => (
+      '<button onclick="setBranch(\''+b.id+'\')" style="background:'+(b.id===cur?'#FFEBEE':'#fff')+';border:1.5px solid '+(b.id===cur?'#C8352A':'#ddd')+';border-radius:10px;padding:14px 10px;font-size:13px;font-weight:700;color:'+(b.id===cur?'#C8352A':'#333')+';cursor:pointer;font-family:inherit;text-align:center">'
+      + '<div>'+b.ko+'</div>'
+      + '<div style="font-size:10px;color:#888;font-weight:500;margin-top:2px">'+b.en+'</div>'
+      + '</button>'
+    )).join('');
+  }
+  const m = $('branch-modal'); if (m) m.style.display = 'flex';
+}
+function closeBranchModal(){
+  const m = $('branch-modal'); if (m) m.style.display = 'none';
+}
+window.addEventListener('DOMContentLoaded', () => {
+  updateBranchLabel();
+  // Force selection on first visit so cart sync has a scope.
+  if (!getBranchId()) openBranchModal();
+});
 
 function toast(msg, ms=1800){
   const t = $('toast');
@@ -646,17 +707,48 @@ window.cloudPushCart = function(cart){
   set(ref(db, path(b)), clean).catch(e => console.warn('cart push failed', e));
 };
 
+let firstSync = true;
 function subscribe(){
   if (unsub){ try { unsub(); } catch(e){} unsub = null; }
+  firstSync = true; // reset per-branch
   const b = getBranch(); if (!b) return;
+  console.info('[Firebase] Wismettac subscribing to carts/wismettac/' + b);
   unsub = onValue(ref(db, path(b)), (snap) => {
     const remote = snap.val() || {};
+    if (firstSync){
+      firstSync = false;
+      // Protect against data loss on first sync: merge remote + local
+      // by keeping the MAX qty per item. This way neither side wipes the
+      // other — if a colleague already added items on their phone and
+      // this device had its own local items, both are preserved.
+      const local = (window.KM_W && window.KM_W.CART) || {};
+      const merged = {};
+      const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+      keys.forEach(k => {
+        const lq = +local[k] || 0, rq = +remote[k] || 0;
+        const mx = Math.max(lq, rq);
+        if (mx > 0) merged[k] = mx;
+      });
+      applyingRemote = true;
+      try { if (window.KM_W) window.KM_W.applyRemote(merged); }
+      finally { applyingRemote = false; }
+      // Push merged back so cloud reflects the union.
+      if (JSON.stringify(merged) !== JSON.stringify(remote)){
+        set(ref(db, path(b)), merged).catch(e => console.warn('merged push failed', e));
+      }
+      console.info('[Firebase] first sync merged', Object.keys(merged).length, 'items');
+      return;
+    }
+    // Subsequent updates: remote is authoritative — reflects deliberate edits
+    // from other devices (including removals).
     applyingRemote = true;
     try { if (window.KM_W) window.KM_W.applyRemote(remote); }
     finally { applyingRemote = false; }
   }, (err) => console.warn('cart read failed', err));
 }
 subscribe();
+// Exposed hook so the branch selector can re-subscribe after picking a branch.
+window.__wismRefreshSub = subscribe;
 // Re-subscribe if the user changes branch in another tab.
 window.addEventListener('storage', (e) => { if (e.key === 'km_branch') subscribe(); });
 console.info('[Firebase] Wismettac cart sync active');

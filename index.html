@@ -718,33 +718,15 @@ let _searchRenderTimer = null;
 function onSearchInput(val, event){
   state.search = val;
   try { saveState(); } catch(e){}
-  // InputEvent.isComposing is true during Korean IME composition — skip.
-  if (window.imeComposing || (event && event.isComposing)) return;
   clearTimeout(_searchRenderTimer);
-  const doRender = () => {
-    // Re-check at fire time; the user may have started composing the next
-    // syllable between our schedule and now. If so, defer instead of rendering.
-    if (window.imeComposing){
-      _searchRenderTimer = setTimeout(doRender, 120);
-      return;
-    }
-    if (state.page !== 'browse') { render(); return; }
-    const inp = document.getElementById('search-input-box');
-    const hadFocus = inp && document.activeElement === inp;
-    const selStart = inp?.selectionStart;
-    const selEnd   = inp?.selectionEnd;
+  const doUpdate = () => {
+    // On browse page, update ONLY the product grid so the <input> element
+    // stays alive and IME composition (Korean 한글 조합) isn't interrupted.
+    // The input element is NEVER re-rendered while typing here.
+    if (state.page === 'browse' && updateProductGridOnly()) return;
     render();
-    if (hadFocus){
-      const next = document.getElementById('search-input-box');
-      if (next){
-        next.focus();
-        if (selStart != null && typeof next.setSelectionRange === 'function'){
-          try { next.setSelectionRange(selStart, selEnd ?? selStart); } catch(e){}
-        }
-      }
-    }
   };
-  _searchRenderTimer = setTimeout(doRender, 180);
+  _searchRenderTimer = setTimeout(doUpdate, 120);
 }
 
 // ===== HANGUL JAMO DECOMPOSITION =====
@@ -906,11 +888,7 @@ function renderHome(app) {
     '</div>';
 }
 
-function renderBrowse(app) {
-  const v = VENDORS[state.vendor];
-  if (!v) { state.page='home'; render(); return; }
-
-  // Filter products (special pseudo-category "wis-new" matches any isNew product)
+function filterBrowseProducts(v){
   let products = v.products;
   if (state.category !== 'all') {
     products = (state.category === 'wis-new' || state.category === 'new')
@@ -919,27 +897,15 @@ function renderBrowse(app) {
   }
   if (state.search) {
     const q = hangulDecompose(state.search.toLowerCase());
-    // Decompose Hangul syllables so "ㅇ" matches "오", "오징어" etc. This
-    // covers IME composition states where the trailing character is still
-    // a standalone jamo ("오징ㅇ" mid-typing for "오징어" also matches).
     products = products.filter(p => {
       const blob = hangulDecompose(((p.name||'') + ' ' + (p.nameKr||'') + ' ' + (p.id||'') + ' ' + (p.brand||'')).toLowerCase());
       return blob.includes(q);
     });
   }
+  return products;
+}
 
-  // Sidebar categories
-  let sideItems = '<div class="cat-item ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all_items">' + t('all_items') + ' <span class="cat-count">' + v.products.length + '</span></div>';
-  let tabs = '<button class="tab ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all">' + t('all') + '</button>';
-  for (let c of v.categories) {
-    const cnt = (c.id === 'wis-new' || c.id === 'new')
-      ? v.products.filter(p => p.isNew).length
-      : v.products.filter(p => p.category === c.id).length;
-    sideItems += `<div class="cat-item ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name} <span class="cat-count">${cnt}</span></div>`;
-    tabs += `<button class="tab ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`;
-  }
-
-  // Product tiles
+function buildTilesHtml(v, products){
   let tiles = '';
   for (let p of products) {
     const qty = getQty(state.vendor, p.id);
@@ -948,10 +914,8 @@ function renderBrowse(app) {
     const newBadge = p.isNew ? '<span class="new-badge">NEW</span>' : '';
     const brandHtml = p.brand ? `<div class="brand">${p.brand}</div>` : '';
     const riskCls = p.riskVerdict === 'SAFE' ? 'safe' : (p.riskVerdict === '수입불가' ? 'blocked' : (p.riskVerdict === '주의' ? 'caution' : ''));
-    const riskIcon = riskCls === 'safe' ? '✓' : (riskCls === 'caution' ? '⚠' : (riskCls === 'blocked' ? '✕' : ''));
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
-    const riskBadge = '';
     const pack = parsePackSize(p.size);
     const eaQty = pack ? getQty(state.vendor, eaIdOf(p.id)) : 0;
     const anyQty = qty > 0 || eaQty > 0;
@@ -972,7 +936,6 @@ function renderBrowse(app) {
         ${p.nameKr && p.name ? `<div class="name-kr">${p.nameKr}</div>` : ''}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
         ${brandHtml}
-        ${riskBadge}
         ${priceHtml}
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
@@ -983,6 +946,40 @@ function renderBrowse(app) {
       </div>
     </div>`;
   }
+  return tiles;
+}
+
+// Live-update just the product grid without re-rendering the search input.
+// Keeping the <input> element alive is critical for Korean IME composition —
+// rebuilding the input mid-compose dumps raw jamo ("ㄱㅜㅇ" instead of "구운").
+function updateProductGridOnly(){
+  if (state.page !== 'browse') return false;
+  const v = VENDORS[state.vendor];
+  if (!v) return false;
+  const grid = document.querySelector('.product-grid');
+  if (!grid) return false;
+  grid.innerHTML = buildTilesHtml(v, filterBrowseProducts(v));
+  return true;
+}
+
+function renderBrowse(app) {
+  const v = VENDORS[state.vendor];
+  if (!v) { state.page='home'; render(); return; }
+
+  let products = filterBrowseProducts(v);
+
+  // Sidebar categories
+  let sideItems = '<div class="cat-item ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all_items">' + t('all_items') + ' <span class="cat-count">' + v.products.length + '</span></div>';
+  let tabs = '<button class="tab ' + (state.category==='all'?'active':'') + '" onclick="state.category=\'all\';render()" data-t="all">' + t('all') + '</button>';
+  for (let c of v.categories) {
+    const cnt = (c.id === 'wis-new' || c.id === 'new')
+      ? v.products.filter(p => p.isNew).length
+      : v.products.filter(p => p.category === c.id).length;
+    sideItems += `<div class="cat-item ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name} <span class="cat-count">${cnt}</span></div>`;
+    tabs += `<button class="tab ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`;
+  }
+
+  const tiles = buildTilesHtml(v, products);
 
   const orderCount = getOrderCount(state.vendor);
   const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
@@ -996,7 +993,7 @@ function renderBrowse(app) {
       '<div class="sidebar">' + sideItems + '</div>' +
       '<div class="main-content">' +
         '<div class="cat-tabs">' + tabs + '</div>' +
-        '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oncompositionstart="imeComposing=true;clearTimeout(_searchRenderTimer)" oncompositionend="imeComposing=false;onSearchInput(this.value)" oninput="onSearchInput(this.value, event)" value="' + state.search + '"></div>' +
+        '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oninput="onSearchInput(this.value, event)" oncompositionend="onSearchInput(this.value)" value="' + state.search + '"></div>' +
         '<div class="product-grid">' + tiles + '</div>' +
       '</div>' +
     '</div>' +

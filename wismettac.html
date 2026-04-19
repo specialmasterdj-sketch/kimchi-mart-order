@@ -375,15 +375,33 @@ function matchesGroup(p){
 }
 
 /* -------- RENDER -------- */
+// Decompose Hangul syllables so IME mid-composition jamo ("ㅇ") still matches "오".
+const _CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const _JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const _JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function hangulDecompose(s){
+  if (!s) return '';
+  let out = '';
+  for (let i = 0; i < s.length; i++){
+    const c = s.charCodeAt(i);
+    if (c >= 0xAC00 && c <= 0xD7A3){
+      const n = c - 0xAC00;
+      out += _CHO[Math.floor(n / 588)] + _JUNG[Math.floor((n % 588) / 28)] + _JONG[n % 28];
+    } else { out += s[i]; }
+  }
+  return out;
+}
+
 function render(){
   CUR_CAT = $('cat-select').value;
-  const q = ($('search').value || '').trim().toLowerCase();
+  const raw = ($('search').value || '').trim().toLowerCase();
+  const q = hangulDecompose(raw);
 
   const filtered = PRODUCTS.filter(p => {
     if (!matchesGroup(p)) return false;
     if (CUR_CAT && p.category !== CUR_CAT) return false;
     if (q){
-      const hay = (p.name + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase();
+      const hay = hangulDecompose((p.name + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase());
       if (!hay.includes(q)) return false;
     }
     return true;

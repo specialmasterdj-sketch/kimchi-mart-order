@@ -1639,7 +1639,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 38;
+const SW_VERSION = 39;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');
@@ -1674,10 +1674,58 @@ const SW_VERSION = 38;
 // ===== EXPOSE FOR FIREBASE MODULE =====
 // `let`/`const` in a classic script don't attach to window, so the ES-module
 // sync block below can't see them. Expose just what that module needs.
+// Refresh qty inputs + cart badge on the browse page without touching the
+// rest of the DOM. Used by the Firebase listener so remote echoes don't
+// collapse scroll position during ordering.
+function refreshBrowseQtys(){
+  if (state.page !== 'browse' || !state.vendor) return;
+  const v = VENDORS[state.vendor];
+  const orders = state.orders[state.vendor] || {};
+  const tiles = document.querySelectorAll('.product-tile');
+  for (const tile of tiles) {
+    const input = tile.querySelector('.qty-input');
+    if (!input) continue;
+    const m = (input.getAttribute('onclick') || '').match(/openNumpad\('[^']*','([^']*)'/);
+    if (!m) continue;
+    const productId = m[1];
+    const newQty = orders[productId] || 0;
+    if (String(input.value) === String(newQty)) continue;
+    input.value = newQty;
+    input.className = 'qty-input' + (newQty > 0 ? ' has-qty' : '');
+    tile.classList.toggle('has-qty', newQty > 0);
+    const minus = tile.querySelector('.minus');
+    const plus = tile.querySelector('.plus');
+    if (minus) {
+      minus.setAttribute('onclick', "event.stopPropagation();setQty('" + state.vendor + "','" + productId + "'," + (newQty-1) + ")");
+      if (newQty > 0) minus.removeAttribute('disabled'); else minus.setAttribute('disabled', '');
+    }
+    if (plus) plus.setAttribute('onclick', "event.stopPropagation();setQty('" + state.vendor + "','" + productId + "'," + (newQty+1) + ")");
+    const pName = (input.getAttribute('onclick') || '').match(/,'([^']*)'\)/);
+    input.setAttribute('onclick', "openNumpad('" + state.vendor + "','" + productId + "'," + newQty + ",'" + (pName ? pName[1] : '') + "')");
+  }
+  // Floating cart badge
+  const orderCount = Object.values(orders).filter(q => q > 0).length;
+  const existing = document.querySelector('.float-order');
+  if (orderCount > 0) {
+    if (existing) existing.querySelector('.badge').textContent = orderCount;
+    else {
+      const btn = document.createElement('button');
+      btn.className = 'float-order';
+      btn.style.background = v.color;
+      btn.innerHTML = t('view_order') + ' <span class="badge">' + orderCount + '</span>';
+      btn.onclick = function() { state.page='order'; render(); };
+      document.getElementById('app').appendChild(btn);
+    }
+  } else if (existing) {
+    existing.remove();
+  }
+}
+
 window.KM = {
   get branch(){ return currentBranch; },
   get state(){ return state; },
   render: () => render(),
+  refreshBrowseQtys: () => refreshBrowseQtys(),
   setBranch: (id) => setBranch(id),
   VENDORS: VENDORS
 };
@@ -1749,7 +1797,21 @@ function subscribeBranch(branchId){
       const next = {};
       for (const v in vendors){ next[v] = {}; }
       for (const v in remote){ next[v] = { ...remote[v] }; }
-      if (window.KM){ window.KM.state.orders = next; window.KM.render(); }
+      if (!window.KM) return;
+      // Skip re-render if remote matches local (echo from our own write).
+      // Otherwise every +/- tap would snap the grid scroll back to the top
+      // because render() rebuilds the entire product list.
+      const prev = JSON.stringify(window.KM.state.orders || {});
+      const incoming = JSON.stringify(next);
+      window.KM.state.orders = next;
+      if (prev === incoming) return;
+      // Remote actually differs. On browse page, avoid a full rebuild; just
+      // refresh qty inputs + floating cart badge in place so scroll stays put.
+      if (window.KM.state.page === 'browse' && typeof window.KM.refreshBrowseQtys === 'function'){
+        window.KM.refreshBrowseQtys();
+      } else {
+        window.KM.render();
+      }
     } finally {
       applyingRemote = false;
     }

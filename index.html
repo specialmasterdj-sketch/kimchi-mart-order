@@ -715,12 +715,19 @@ function getQty(vendorId, productId) {
 //      focus + caret restored so the input feels continuous.
 window.imeComposing = false;
 let _searchRenderTimer = null;
-function onSearchInput(val){
+function onSearchInput(val, event){
   state.search = val;
   try { saveState(); } catch(e){}
-  if (window.imeComposing) return; // let the IME finish; compositionend fires this again
+  // InputEvent.isComposing is true during Korean IME composition — skip.
+  if (window.imeComposing || (event && event.isComposing)) return;
   clearTimeout(_searchRenderTimer);
-  _searchRenderTimer = setTimeout(() => {
+  const doRender = () => {
+    // Re-check at fire time; the user may have started composing the next
+    // syllable between our schedule and now. If so, defer instead of rendering.
+    if (window.imeComposing){
+      _searchRenderTimer = setTimeout(doRender, 120);
+      return;
+    }
     if (state.page !== 'browse') { render(); return; }
     const inp = document.getElementById('search-input-box');
     const hadFocus = inp && document.activeElement === inp;
@@ -736,7 +743,8 @@ function onSearchInput(val){
         }
       }
     }
-  }, 120);
+  };
+  _searchRenderTimer = setTimeout(doRender, 180);
 }
 
 // ===== HANGUL JAMO DECOMPOSITION =====
@@ -988,7 +996,7 @@ function renderBrowse(app) {
       '<div class="sidebar">' + sideItems + '</div>' +
       '<div class="main-content">' +
         '<div class="cat-tabs">' + tabs + '</div>' +
-        '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oncompositionstart="imeComposing=true" oncompositionend="imeComposing=false;onSearchInput(this.value)" oninput="onSearchInput(this.value)" value="' + state.search + '"></div>' +
+        '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oncompositionstart="imeComposing=true;clearTimeout(_searchRenderTimer)" oncompositionend="imeComposing=false;onSearchInput(this.value)" oninput="onSearchInput(this.value, event)" value="' + state.search + '"></div>' +
         '<div class="product-grid">' + tiles + '</div>' +
       '</div>' +
     '</div>' +

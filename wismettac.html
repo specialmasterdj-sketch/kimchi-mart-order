@@ -171,7 +171,7 @@
 
 <div class="groups" id="groups"></div>
 <div class="cbar"><select id="cat-select" onchange="render()"></select></div>
-<div class="sbar"><input class="sbox" id="search" placeholder="제품명·코드·바코드 검색..." oninput="debouncedSearch()" oncompositionend="debouncedSearch()"></div>
+<div class="sbar"><input class="sbox" id="search" placeholder="제품명·코드·바코드 검색..." oncompositionstart="imeComposing=true" oncompositionend="imeComposing=false;debouncedSearch()" oninput="debouncedSearch()"></div>
 <div class="stats" id="stats"></div>
 <div class="grid" id="grid"></div>
 
@@ -392,10 +392,11 @@ function hangulDecompose(s){
   return out;
 }
 
-// Debounced search render — keeps the <input> element alive so Korean IME
-// composition doesn't get cut off mid-compose.
+// Debounced search render that waits for Korean IME composition.
+window.imeComposing = false;
 let _sTimer = null;
 function debouncedSearch(){
+  if (window.imeComposing) return;     // skip while IME is composing
   clearTimeout(_sTimer);
   _sTimer = setTimeout(() => {
     const inp = $('search');
@@ -412,7 +413,7 @@ function debouncedSearch(){
         }
       }
     }
-  }, 90);
+  }, 120);
 }
 
 function render(){

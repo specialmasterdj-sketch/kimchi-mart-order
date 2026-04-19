@@ -1032,10 +1032,13 @@ function renderOrder(app) {
       ? `<img class="of-thumb" src="${it.image}" onerror="this.outerHTML='<div class=of-no-thumb>&#128230;</div>'">`
       : '<div class="of-no-thumb">&#128230;</div>';
     const safeName = (it.name||'').replace(/'/g,'');
+    const unitChip = it.isEa
+      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 7px;border-radius:9px;font-size:11px;margin-left:6px;vertical-align:middle">小 ea</span>'
+      : '<span style="display:inline-block;background:#1976d2;color:#fff;font-weight:800;padding:2px 7px;border-radius:9px;font-size:11px;margin-left:6px;vertical-align:middle">CS</span>';
     rows += `<tr>
       <td style="text-align:center;color:#999">${i+1}</td>
       <td>${imgHtml}</td>
-      <td><div class="of-item-name">${it.name || it.nameKr}</div><div class="of-item-meta">${it.id} | ${it.size||''}</div></td>
+      <td><div class="of-item-name">${it.name || it.nameKr}${unitChip}</div><div class="of-item-meta">${it.id} | ${it.size||''}</div></td>
       <td><div class="qty-row" style="border:0;padding:0">
         <button class="qty-btn minus" style="width:34px;height:34px;font-size:16px" onclick="setQty('${state.vendor}','${it.id}',${it.orderQty-1})">-</button>
         <input class="qty-input has-qty" style="width:48px;height:34px;font-size:16px" value="${it.orderQty}" readonly onclick="openNumpad('${state.vendor}','${it.id}',${it.orderQty},'${safeName}')">
@@ -1577,10 +1580,11 @@ function downloadCSV() {
       isEa, price, orderQty: qty
     };
   });
-  let csv = 'Item#,Product,Size,Qty,Price,Total\n';
+  let csv = 'Unit,Item#,Product,Size,Qty,Price,Total\n';
   items.forEach(it => {
     const name = (it.name||it.nameKr||'').replace(/,/g,' ');
-    csv += `${it.id},"${name}",${it.size||''},${it.orderQty},${it.price||0},${((it.price||0)*it.orderQty).toFixed(2)}\n`;
+    const unit = it.isEa ? '小' : 'CS';
+    csv += `${unit},${it.id},"${name}",${it.size||''},${it.orderQty},${it.price||0},${((it.price||0)*it.orderQty).toFixed(2)}\n`;
   });
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);

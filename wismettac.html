@@ -633,12 +633,14 @@ function renderCart(){
     if (!p) return '';
     const pack = ea ? parsePackSize(p.packSize) : null;
     const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (p.packSize||'-');
-    const nameSuffix = ea ? ' (ea)' : '';
+    const unitChip = ea
+      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">小 ea</span>'
+      : '<span style="display:inline-block;background:#1976d2;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">CS</span>';
     return (
       '<div class="ci" onclick="closeCart();openPd(\''+p.detailId+'\');">' +
         '<img src="' + esc(p.image) + '" onerror="this.style.visibility=\'hidden\'">' +
         '<div class="ci-info">' +
-          '<div class="ci-name">' + esc(p.name) + nameSuffix + '</div>' +
+          '<div class="ci-name">' + esc(p.name) + unitChip + '</div>' +
           '<div class="ci-meta">#' + esc(p.id) + ' · ' + esc(sizeLabel) + (p.brand?' · ' + esc(p.brand):'') + '</div>' +
         '</div>' +
         '<div class="ci-qrow" onclick="event.stopPropagation()">' +
@@ -672,9 +674,12 @@ function buildOrderText(){
   const today = new Date().toISOString().slice(0,10);
   const lines = ['[김치마트 주문 - Wismettac Orlando / ' + today + ']', ''];
   entries.forEach(([id, qty]) => {
-    const p = BY_ID[id];
+    const ea = isEaId(id);
+    const lookupId = ea ? baseIdOf(id) : id;
+    const p = BY_ID[lookupId];
     if (!p) return;
-    lines.push('#' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
+    const unit = ea ? '小' : 'CS';
+    lines.push('[' + unit + '] #' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
   });
   const units = entries.reduce((s, [,q]) => s + q, 0);
   lines.push('', '합계: ' + entries.length + '종 / ' + units + '개');
@@ -704,13 +709,16 @@ function fallbackCopy(txt){
 function exportOrder(){
   const entries = Object.entries(CART);
   if (!entries.length){ toast(t('noCart')); return; }
-  const header = ['ItemCode', 'Product Name', 'Brand', 'Group', 'Category', 'Pack Size', 'Min Order', 'Barcode', 'Order Qty'];
+  const header = ['Unit', 'ItemCode', 'Product Name', 'Brand', 'Group', 'Category', 'Pack Size', 'Min Order', 'Barcode', 'Order Qty'];
   const rows = entries.map(([id, qty]) => {
-    const p = BY_ID[id] || {};
-    return [p.id||'', p.name||'', p.brand||'', p.group||'', p.category||'', p.packSize||'', p.minOrder||'', p.barcode||'', qty];
+    const ea = isEaId(id);
+    const lookupId = ea ? baseIdOf(id) : id;
+    const p = BY_ID[lookupId] || {};
+    const unit = ea ? '小' : 'CS';
+    return [unit, p.id||'', p.name||'', p.brand||'', p.group||'', p.category||'', p.packSize||'', p.minOrder||'', p.barcode||'', qty];
   });
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-  ws['!cols'] = [{wch:10},{wch:44},{wch:16},{wch:10},{wch:24},{wch:14},{wch:10},{wch:14},{wch:10}];
+  ws['!cols'] = [{wch:6},{wch:10},{wch:44},{wch:16},{wch:10},{wch:24},{wch:14},{wch:10},{wch:14},{wch:10}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '주문');
   const today = new Date().toISOString().slice(0,10);

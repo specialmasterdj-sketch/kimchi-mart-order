@@ -1153,14 +1153,20 @@ async function emailWithPDF() {
 
     showToast(currentLang==='ko'?'\uC774\uBA54\uC77C \uD30C\uC77C \uC0DD\uC131 \uC644\uB8CC! .eml \uD30C\uC77C\uC744 \uC5F4\uC5B4\uC8FC\uC138\uC694.':currentLang==='es'?'Email generado! Abra el archivo .eml descargado.':'Email file created! Open the downloaded .eml file.');
 
-    // Save to history
-    state.history.unshift({
+    // Save to history (local + cloud per branch)
+    const histEntry = {
       vendor: v.name, date: new Date().toLocaleDateString('en-US'),
       count: orderItems.length, total: getOrderTotal(state.vendor),
-      items: { ...orders }
-    });
+      items: { ...orders },
+      branch: currentBranch,
+      ts: Date.now()
+    };
+    state.history.unshift(histEntry);
     if (state.history.length > 20) state.history = state.history.slice(0, 20);
     saveState();
+    if (typeof window.cloudPushHistory === 'function'){
+      try { window.cloudPushHistory(currentBranch, histEntry); } catch(e){}
+    }
 
   } catch(err) {
     if (wrap.parentNode) document.body.removeChild(wrap);
@@ -1304,7 +1310,7 @@ viewing Miami sees qty=3 instantly, and either can continue the cart.
 -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, get, child } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -1323,8 +1329,10 @@ const db = getDatabase(app);
 let applyingRemote = false;
 let currentSubBranch = null;
 let unsubscribe = null;
+let unsubscribeHistory = null;
 
 function branchPath(branchId){ return 'orders/' + branchId; }
+function historyPath(branchId){ return 'history/' + branchId; }
 
 // Write: called by saveState() whenever the user changes qty locally.
 window.cloudPushOrders = function(branchId, orders){
@@ -1340,8 +1348,11 @@ window.cloudPushOrders = function(branchId, orders){
 
 function subscribeBranch(branchId){
   if (unsubscribe){ try { unsubscribe(); } catch(e){} unsubscribe = null; }
+  if (unsubscribeHistory){ try { unsubscribeHistory(); } catch(e){} unsubscribeHistory = null; }
   currentSubBranch = branchId;
   if (!branchId) return;
+
+  // Orders
   const branchRef = ref(db, branchPath(branchId));
   unsubscribe = onValue(branchRef, (snap) => {
     const remote = snap.val() || {};
@@ -1356,7 +1367,26 @@ function subscribeBranch(branchId){
       applyingRemote = false;
     }
   }, (err) => { console.warn('cloud read failed', err); });
+
+  // History (latest 50 by timestamp; we reverse for newest-first UI)
+  const histRef = query(ref(db, historyPath(branchId)), orderByChild('ts'), limitToLast(50));
+  unsubscribeHistory = onValue(histRef, (snap) => {
+    const entries = [];
+    snap.forEach(child => { entries.push(child.val()); });
+    entries.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    if (window.KM){
+      window.KM.state.history = entries;
+      window.KM.render();
+    }
+  }, (err) => { console.warn('history read failed', err); });
 }
+
+// Write: called after a PO is generated so every device in the branch sees it.
+window.cloudPushHistory = function(branchId, entry){
+  if (!branchId || !entry) return;
+  try { push(ref(db, historyPath(branchId)), entry); }
+  catch(e){ console.warn('history push failed', e); }
+};
 
 // Hook branch switches via KM.setBranch wrapper.
 const origSetBranch = window.KM?.setBranch;

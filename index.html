@@ -1255,9 +1255,30 @@ async function emailWithPDF() {
     var pdfDataUri = pdf.output('datauristring');
     var pdfBase64 = pdfDataUri.split(',')[1];
 
-    // Create .eml file with PDF attached + X-Unsent:1 (opens in Outlook compose mode)
-    var boundary = '----=_NextPart_' + Date.now();
+    // Embed the same order snapshot (JPEG of the canvas) inline in the HTML body
+    // so the email shows the same formatted order as the attached PDF.
+    var imgBase64 = imgData.split(',')[1];
+    var inlineCid = 'order-snapshot@kimchimart';
+
+    // Encode Korean subject per RFC 2047 (UTF-8 Base64) so Outlook/Gmail render it
+    function rfc2047(s){
+      try { return '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(s))) + '?='; }
+      catch(e){ return s; }
+    }
+
+    // Create .eml file with:
+    //   multipart/mixed
+    //   ├── multipart/alternative  (text + HTML versions of the body)
+    //   │   ├── text/plain
+    //   │   └── multipart/related
+    //   │       ├── text/html  (with cid: image reference)
+    //   │       └── image/jpeg (inline, referenced by cid)
+    //   └── application/pdf (attachment)
+    var boundaryMixed  = '----=_Mixed_'   + Date.now();
+    var boundaryAlt    = '----=_Alt_'     + Date.now();
+    var boundaryRel    = '----=_Related_' + Date.now();
     var subject = 'Purchase Order - ' + storeName + ' to ' + v.name + ' - ' + new Date().toLocaleDateString('en-US');
+
     var bodyText = 'Dear ' + v.name + ',\r\n\r\n' +
       'Please find attached our purchase order.\r\n\r\n' +
       'Order #: KM-' + dateStr.replace(/-/g,'') + '\r\n' +
@@ -1268,27 +1289,64 @@ async function emailWithPDF() {
       (store.city ? '\r\n' + store.city : '') +
       (store.phone ? '\r\nTel: ' + store.phone : '');
 
+    var bodyHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:14px;background:#F5F5F5;font-family:Segoe UI,Malgun Gothic,sans-serif">' +
+      '<p style="max-width:800px;margin:0 auto 12px;color:#333;font-size:14px;line-height:1.6">' +
+      'Dear ' + v.name + ',<br><br>' +
+      'Please find our purchase order below (identical to the attached PDF).' +
+      '</p>' +
+      '<div style="max-width:800px;margin:0 auto;background:#FFF;box-shadow:0 2px 10px rgba(0,0,0,0.08)">' +
+      '<img src="cid:' + inlineCid + '" alt="Purchase Order" style="display:block;width:100%;height:auto">' +
+      '</div>' +
+      '<p style="max-width:800px;margin:14px auto 0;color:#666;font-size:12px;text-align:center">Thank you! / 감사합니다!<br><strong>KIMCHI MART</strong></p>' +
+      '</body></html>';
+
+    function chunk76(s){ return s.match(/.{1,76}/g).join('\r\n'); }
+
     var emlContent = [
       'To: ' + (v.email || ''),
-      'Subject: ' + subject,
+      'Subject: ' + rfc2047(subject),
       'X-Unsent: 1',
       'MIME-Version: 1.0',
-      'Content-Type: multipart/mixed; boundary="' + boundary + '"',
+      'Content-Type: multipart/mixed; boundary="' + boundaryMixed + '"',
       '',
-      '--' + boundary,
+      '--' + boundaryMixed,
+      'Content-Type: multipart/alternative; boundary="' + boundaryAlt + '"',
+      '',
+      '--' + boundaryAlt,
       'Content-Type: text/plain; charset="utf-8"',
-      'Content-Transfer-Encoding: 7bit',
+      'Content-Transfer-Encoding: base64',
       '',
-      bodyText,
+      chunk76(btoa(unescape(encodeURIComponent(bodyText)))),
       '',
-      '--' + boundary,
+      '--' + boundaryAlt,
+      'Content-Type: multipart/related; boundary="' + boundaryRel + '"',
+      '',
+      '--' + boundaryRel,
+      'Content-Type: text/html; charset="utf-8"',
+      'Content-Transfer-Encoding: base64',
+      '',
+      chunk76(btoa(unescape(encodeURIComponent(bodyHtml)))),
+      '',
+      '--' + boundaryRel,
+      'Content-Type: image/jpeg',
+      'Content-Transfer-Encoding: base64',
+      'Content-ID: <' + inlineCid + '>',
+      'Content-Disposition: inline; filename="order-preview.jpg"',
+      '',
+      chunk76(imgBase64),
+      '',
+      '--' + boundaryRel + '--',
+      '',
+      '--' + boundaryAlt + '--',
+      '',
+      '--' + boundaryMixed,
       'Content-Type: application/pdf; name="' + fileName + '"',
       'Content-Transfer-Encoding: base64',
       'Content-Disposition: attachment; filename="' + fileName + '"',
       '',
-      pdfBase64.match(/.{1,76}/g).join('\r\n'),
+      chunk76(pdfBase64),
       '',
-      '--' + boundary + '--'
+      '--' + boundaryMixed + '--'
     ].join('\r\n');
 
     var emlBlob = new Blob([emlContent], { type: 'message/rfc822' });
@@ -1403,7 +1461,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 34;
+const SW_VERSION = 35;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

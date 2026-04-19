@@ -762,13 +762,21 @@ function showToast(msg) {
 // ===== RENDER =====
 function render() {
   const scrollPos = window.scrollY;
+  // .product-grid has its own internal scroll on desktop layout — preserve it
+  // too, otherwise ordering on FIKO (large catalog) jumps back to the top.
+  const gridScroll = (document.querySelector('.product-grid') || {}).scrollTop || 0;
+  const sidebarScroll = (document.querySelector('.sidebar') || {}).scrollTop || 0;
   const app = document.getElementById('app');
   if (state.page === 'home') renderHome(app);
   else if (state.page === 'browse') renderBrowse(app);
   else if (state.page === 'order') renderOrder(app);
   else if (state.page === 'history') renderHistory(app);
   saveNavState();
-  requestAnimationFrame(() => window.scrollTo(0, scrollPos));
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollPos);
+    const g = document.querySelector('.product-grid'); if (g) g.scrollTop = gridScroll;
+    const s = document.querySelector('.sidebar'); if (s) s.scrollTop = sidebarScroll;
+  });
 }
 
 function renderHome(app) {
@@ -1395,7 +1403,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 33;
+const SW_VERSION = 34;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

@@ -704,6 +704,31 @@ function getQty(vendorId, productId) {
   return (state.orders[vendorId] || {})[productId] || 0;
 }
 
+// ===== HANGUL JAMO DECOMPOSITION =====
+// Decompose Korean syllables into their initial/medial/final jamo so search
+// works during IME composition. "오" (U+C624) → "ㅇㅗ", which means typing
+// just "ㅇ" in the search box correctly matches "오징어", "HANKUKMI" no-op,
+// etc. Non-Hangul chars pass through unchanged.
+const _HANGUL_CHO  = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const _HANGUL_JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const _HANGUL_JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function hangulDecompose(s){
+  if (!s) return '';
+  let out = '';
+  for (let i = 0; i < s.length; i++){
+    const code = s.charCodeAt(i);
+    if (code >= 0xAC00 && code <= 0xD7A3){
+      const n = code - 0xAC00;
+      out += _HANGUL_CHO[Math.floor(n / 588)];
+      out += _HANGUL_JUNG[Math.floor((n % 588) / 28)];
+      out += _HANGUL_JONG[n % 28];
+    } else {
+      out += s[i];
+    }
+  }
+  return out;
+}
+
 // ===== EA (inner-pack) SUPPORT =====
 // Products with "N/M/unit" size (e.g. "12/15/1.76 OZ") ship as CS of M eaches.
 // Let the user order individual eas in addition to cases by keeping a separate
@@ -850,11 +875,14 @@ function renderBrowse(app) {
       : products.filter(p => p.category === state.category);
   }
   if (state.search) {
-    const q = state.search.toLowerCase();
-    products = products.filter(p =>
-      (p.name||'').toLowerCase().includes(q) || (p.nameKr||'').toLowerCase().includes(q) ||
-      (p.id||'').toLowerCase().includes(q) || (p.brand||'').toLowerCase().includes(q)
-    );
+    const q = hangulDecompose(state.search.toLowerCase());
+    // Decompose Hangul syllables so "ㅇ" matches "오", "오징어" etc. This
+    // covers IME composition states where the trailing character is still
+    // a standalone jamo ("오징ㅇ" mid-typing for "오징어" also matches).
+    products = products.filter(p => {
+      const blob = hangulDecompose(((p.name||'') + ' ' + (p.nameKr||'') + ' ' + (p.id||'') + ' ' + (p.brand||'')).toLowerCase());
+      return blob.includes(q);
+    });
   }
 
   // Sidebar categories

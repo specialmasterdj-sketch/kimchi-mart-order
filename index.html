@@ -891,7 +891,10 @@ function renderHome(app) {
 function filterBrowseProducts(v){
   let products = v.products;
   if (state.category !== 'all') {
-    products = (state.category === 'wis-new' || state.category === 'new')
+    // Treat any category id that ends in "-new" (or is bare "new") as the
+    // New Releases filter — isNew is a flag that overlays the main-catalog
+    // category so a product appears both in its real section and here.
+    products = (state.category === 'new' || /-new$/.test(state.category))
       ? products.filter(p => p.isNew)
       : products.filter(p => p.category === state.category);
   }

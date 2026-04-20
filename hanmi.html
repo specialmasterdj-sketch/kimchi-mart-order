@@ -169,10 +169,9 @@
   </div>
 </div>
 
-<!-- Group tabs removed (FOOD/SEASONING/BEVERAGE/SNACK was an artificial
-     4-bucket split). The dropdown below lists the catalog's own TOC
-     sections with their page ranges. -->
-<div class="groups" id="groups" style="display:none"></div>
+<!-- Top click-bar: scrollable TOC tabs (전체 + each catalog section).
+     Clicking a tab filters the grid and keeps the dropdown below in sync. -->
+<div class="groups" id="groups"></div>
 <div class="cbar"><select id="cat-select" onchange="render()"></select></div>
 <div class="sbar"><input class="sbox" id="search" placeholder="제품명·코드·바코드 검색..." oncompositionstart="imeComposing=true;clearTimeout(_sTimer)" oncompositionend="imeComposing=false;debouncedSearch()" oninput="debouncedSearch(event)"></div>
 <div class="stats" id="stats"></div>
@@ -404,24 +403,31 @@ function onBack(){
   else location.reload();
 }
 
-/* -------- GROUPS -------- */
+/* -------- GROUPS (top click-bar: catalog TOC sections) -------- */
+// Renders the TOC sections as scrollable horizontal tabs. CUR_CAT drives
+// the filter — clicking a tab sets it; the dropdown below stays synced.
 function buildGroups(){
-  const groups = ['FOOD','SEASONING','BEVERAGE','SNACK'];
-  const counts = { FOOD:0, SEASONING:0, BEVERAGE:0, SNACK:0 };
-  let newCount = 0;
-  PRODUCTS.forEach(p => {
-    if (counts[p.group] !== undefined) counts[p.group]++;
-    if (p.isNew) newCount++;
-  });
+  const cats = window.HANMI_CATEGORIES || [];
   const tabs = [
-    '<button class="gtab ' + (CUR_GROUP===''?'on':'') + '" onclick="selGroup(\'\')">' + t('all') + ' (' + PRODUCTS.length + ')</button>',
-    '<button class="gtab new-tab ' + (CUR_GROUP==='NEW'?'on':'') + '" onclick="selGroup(\'NEW\')">' + t('new') + ' (' + newCount + ')</button>'
+    '<button class="gtab ' + (!CUR_CAT ? 'on' : '') + '" onclick="selCat(\'\')">' + t('all') + ' (' + PRODUCTS.length + ')</button>'
   ];
-  groups.forEach(g => {
-    tabs.push('<button class="gtab ' + (CUR_GROUP===g?'on':'') + '" onclick="selGroup(\''+g+'\')">' + g + ' (' + counts[g] + ')</button>');
-  });
+  for (const c of cats){
+    const n = PRODUCTS.filter(p => p.category === c.name).length;
+    if (!n) continue;
+    const label = (c.nameKr || c.name) + ' (' + n + ')';
+    const safeName = c.name.replace(/'/g, "\\'");
+    tabs.push('<button class="gtab ' + (CUR_CAT === c.name ? 'on' : '') + '" onclick="selCat(\'' + safeName + '\')" title="' + esc((c.pageRange ? (c.pageRange + ' · ') : '') + c.name) + '">' + esc(label) + '</button>');
+  }
   $('groups').innerHTML = tabs.join('');
 }
+function selCat(name){
+  CUR_CAT = name;
+  CUR_GROUP = '';
+  const sel = $('cat-select'); if (sel) sel.value = name;
+  buildGroups();
+  render();
+}
+// Legacy API kept so older calls don't break
 function selGroup(g){ CUR_GROUP = g; CUR_CAT = ''; buildGroups(); buildCategorySelect(); render(); }
 
 /* -------- CATEGORIES -------- */

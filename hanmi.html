@@ -529,17 +529,16 @@ function hangulDecompose(s){
   return out;
 }
 
-// Debounced search render that actively waits for Korean IME composition.
+// Debounced search render. Always schedules a render — the hangulDecompose
+// path handles partially-composed jamo ("김치" typed as ㄱㅣㅁㅊㅣ still
+// matches), so we don't need to bail out during IME composition. Grid
+// redraw only touches the product list, not the search input, so the
+// composer isn't disturbed.
 window.imeComposing = false;
 let _sTimer = null;
 function debouncedSearch(event){
-  if (window.imeComposing || (event && event.isComposing)) return;
   clearTimeout(_sTimer);
   const doRender = () => {
-    if (window.imeComposing){
-      _sTimer = setTimeout(doRender, 120);
-      return;
-    }
     const inp = $('search');
     const hadFocus = inp && document.activeElement === inp;
     const selStart = inp?.selectionStart;

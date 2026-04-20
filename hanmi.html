@@ -508,12 +508,14 @@ function render(){
   const q = hangulDecompose(raw);
 
   const filtered = PRODUCTS.filter(p => {
-    if (!matchesGroup(p)) return false;
-    if (CUR_CAT && p.category !== CUR_CAT) return false;
+    // When actively searching, bypass category/tab filters so a query
+    // across the whole catalog is never silently hidden by a tab pick.
     if (q){
       const hay = hangulDecompose((p.name + ' ' + (p.nameKr||'') + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase());
-      if (!hay.includes(q)) return false;
+      return hay.includes(q);
     }
+    if (!matchesGroup(p)) return false;
+    if (CUR_CAT && p.category !== CUR_CAT) return false;
     return true;
   });
 

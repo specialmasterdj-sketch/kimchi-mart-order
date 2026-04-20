@@ -157,8 +157,9 @@
 </div>
 
 <!-- BRAND PICKER — full-screen chooser shown when no brand is selected.
-     Click Hanmi or CJ to enter that catalog. -->
-<div id="brand-picker" style="display:none;position:fixed;inset:58px 0 0 0;background:#F5F5F7;z-index:80;padding:30px 20px;overflow-y:auto">
+     Click Hanmi or CJ to enter that catalog. z-index sits above the
+     sticky top bars (groups / cbar / sbar are 89-91). -->
+<div id="brand-picker" style="display:none;position:fixed;inset:0;background:#F5F5F7;z-index:150;padding:30px 20px;overflow-y:auto">
   <div style="max-width:700px;margin:0 auto">
     <div style="text-align:center;margin-bottom:24px">
       <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:6px">Wang Global</div>

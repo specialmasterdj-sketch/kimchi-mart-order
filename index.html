@@ -985,7 +985,7 @@ function renderBrowse(app) {
   const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
 
   app.innerHTML = '<div class="header">' +
-      '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
+      '<button class="back-btn" onclick="goHomeOrHub()">&larr;</button>' +
       '<h1 style="color:' + v.color + '">' + v.name + '<small>' + v.nameKr + '</small></h1>' +
       '<div class="header-right">' + branchButton() + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
     '</div>' +
@@ -1733,7 +1733,9 @@ window.KM = {
 // ===== INIT =====
 // Deep-link via ?vendor=<id> so external hubs (e.g. 벤더 오더 센타) can
 // jump straight into a vendor's browse page instead of landing on the
-// vendor picker.
+// vendor picker. When entered this way, the back button on browse/order
+// returns to the referring hub instead of showing the in-app vendor list.
+window.__deepLinkReturn = null;
 try {
   const params = new URLSearchParams(window.location.search);
   const vid = params.get('vendor');
@@ -1742,8 +1744,17 @@ try {
     state.category = 'all';
     state.search = '';
     state.page = 'browse';
+    window.__deepLinkReturn = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
   }
 } catch(e){}
+window.goHomeOrHub = function(){
+  if (window.__deepLinkReturn){
+    window.location.href = window.__deepLinkReturn;
+    return;
+  }
+  state.page = 'home';
+  render();
+};
 render();
 // First-time load: force branch selection so each device is scoped to a branch.
 if (!currentBranch || !BRANCH_BY_ID[currentBranch]) openBranchModal();

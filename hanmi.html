@@ -231,7 +231,8 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     brand: '',
     category: p.category || '',
     packSize: p.size || '',
-    barcode: '',
+    barcode: p.barcode || '',
+    barcodeDisplay: p.barcodeDisplay || '',
     minOrder: '',
     image: p.image || '',
     group,
@@ -521,6 +522,7 @@ function render(){
         '<div class="pbody">' +
           '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
           '<div class="pmeta"><span class="code">#' + esc(p.id) + '</span> · ' + esc(p.packSize||'-') + '</div>' +
+          (p.barcodeDisplay ? '<div class="pmeta" style="font-family:monospace;font-size:9.5px;color:#666">' + esc(p.barcodeDisplay) + '</div>' : '') +
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +

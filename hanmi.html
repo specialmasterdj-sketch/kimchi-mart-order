@@ -446,6 +446,8 @@ function setLang(l){
 function onBack(){
   if ($('pd-modal').classList.contains('show')) { closePd(); return; }
   if ($('cart-modal').classList.contains('show')) { closeCart(); return; }
+  // If a brand is active, go back to the brand picker instead of leaving the app.
+  if (CUR_BRAND){ openBrandPicker(); return; }
   if (history.length > 1) history.back();
   else location.reload();
 }

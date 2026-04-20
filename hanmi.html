@@ -139,10 +139,11 @@
 <div class="hdr">
   <button class="back-btn" onclick="onBack()">←</button>
   <div class="hdr-title">
-    <h1>Wang Global</h1>
-    <p>한미 + CJ 통합 카다록</p>
+    <h1 id="hdr-h1">Wang Global</h1>
+    <p id="hdr-sub">한미 + CJ 카다록</p>
   </div>
   <div class="hdr-acts">
+    <button id="brand-switch-btn" onclick="openBrandPicker()" title="브랜드 변경" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;display:none">🔄 <span id="brand-label"></span></button>
     <button id="branch-btn" onclick="openBranchModal()" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">📍 <span id="branch-btn-label">지점</span></button>
     <div class="lang-sel">
       <button class="on" data-lang="ko" onclick="setLang('ko')">KO</button>
@@ -152,6 +153,32 @@
       🛒
       <span class="cart-badge" id="cart-badge">0</span>
     </button>
+  </div>
+</div>
+
+<!-- BRAND PICKER — full-screen chooser shown when no brand is selected.
+     Click Hanmi or CJ to enter that catalog. -->
+<div id="brand-picker" style="display:none;position:fixed;inset:58px 0 0 0;background:#F5F5F7;z-index:80;padding:30px 20px;overflow-y:auto">
+  <div style="max-width:700px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:6px">Wang Global</div>
+      <div style="font-size:13px;color:#666">한미 또는 CJ 카다록을 선택하세요</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <button onclick="setBrand('hanmi')" style="background:#fff;border:2px solid #E0E0E0;border-radius:16px;padding:28px 14px;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.05)" onmouseover="this.style.borderColor='#2E7D32';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0E0E0';this.style.transform=''">
+        <div style="font-size:42px;margin-bottom:10px">🥬</div>
+        <div style="font-size:18px;font-weight:800;color:#2E7D32;margin-bottom:4px">Hanmi</div>
+        <div style="font-size:13px;color:#666;margin-bottom:8px">한미</div>
+        <div style="font-size:11px;color:#888">Grocery Catalog · 1,669 제품</div>
+      </button>
+      <button onclick="setBrand('cj')" style="background:#fff;border:2px solid #E0E0E0;border-radius:16px;padding:28px 14px;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.05)" onmouseover="this.style.borderColor='#C8352A';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E0E0E0';this.style.transform=''">
+        <div style="font-size:42px;margin-bottom:10px">🍚</div>
+        <div style="font-size:18px;font-weight:800;color:#C8352A;margin-bottom:4px">CJ</div>
+        <div style="font-size:13px;color:#666;margin-bottom:8px">Wang Global CJ</div>
+        <div style="font-size:11px;color:#888">Product Catalog · 328 제품</div>
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:#999">선택 후 상단 🔄 버튼으로 언제든 변경 가능</div>
   </div>
 </div>
 
@@ -266,6 +293,10 @@ let CUR_GROUP = '';
 let CUR_CAT = '';
 let LANG = 'ko';
 let CURRENT_PD_ID = '';
+// Selected brand ('hanmi' or 'cj'). Remembered per browser; picker is shown
+// on first load (and anytime the header 🔄 brand-switch button is pressed).
+let CUR_BRAND = '';
+try { CUR_BRAND = localStorage.getItem('wang-brand') || ''; } catch(e){}
 
 // CART is stored per-branch (hanmi-cart-v1-<BRANCH>) so prices/quantities
 // never leak between stores — same rule as the lookup/invoice apps.
@@ -422,12 +453,17 @@ function onBack(){
 // Renders the TOC sections as scrollable horizontal tabs. CUR_CAT drives
 // the filter — clicking a tab sets it; the dropdown below stays synced.
 function buildGroups(){
-  const cats = window.HANMI_CATEGORIES || [];
+  // Show only the selected brand's categories (all-brands view is not
+  // reachable once the user picks one on the landing chooser).
+  const cats = (window.HANMI_CATEGORIES || []).filter(c =>
+    !CUR_BRAND || !c.source || c.source === CUR_BRAND
+  );
+  const totalInBrand = PRODUCTS.filter(p => !CUR_BRAND || p.source === CUR_BRAND).length;
   const tabs = [
-    '<button class="gtab ' + (!CUR_CAT ? 'on' : '') + '" onclick="selCat(\'\')">' + t('all') + ' (' + PRODUCTS.length + ')</button>'
+    '<button class="gtab ' + (!CUR_CAT ? 'on' : '') + '" onclick="selCat(\'\')">' + t('all') + ' (' + totalInBrand + ')</button>'
   ];
   for (const c of cats){
-    const n = PRODUCTS.filter(p => p.category === c.name).length;
+    const n = PRODUCTS.filter(p => p.category === c.name && (!CUR_BRAND || p.source === CUR_BRAND)).length;
     if (!n) continue;
     const label = (c.nameKr || c.name) + ' (' + n + ')';
     const safeName = c.name.replace(/'/g, "\\'");
@@ -450,11 +486,13 @@ function selGroup(g){ CUR_GROUP = g; CUR_CAT = ''; buildGroups(); buildCategoryS
 // by the extractor). Each option shows PAGE X-Y · English / Korean · (count)
 // so the dropdown reads like a mini table-of-contents.
 function buildCategorySelect(){
-  const totalShown = PRODUCTS.length;
+  const totalShown = PRODUCTS.filter(p => !CUR_BRAND || p.source === CUR_BRAND).length;
   const opts = ['<option value="">전체 (' + totalShown + ')</option>'];
-  const cats = window.HANMI_CATEGORIES || [];
+  const cats = (window.HANMI_CATEGORIES || []).filter(c =>
+    !CUR_BRAND || !c.source || c.source === CUR_BRAND
+  );
   for (const c of cats){
-    const count = PRODUCTS.filter(p => p.category === c.name).length;
+    const count = PRODUCTS.filter(p => p.category === c.name && (!CUR_BRAND || p.source === CUR_BRAND)).length;
     if (!count) continue;
     const label = (c.pageRange ? (c.pageRange + ' · ') : '')
       + c.name
@@ -523,8 +561,12 @@ function render(){
   const q = hangulDecompose(raw);
 
   const filtered = PRODUCTS.filter(p => {
+    // Brand filter (Hanmi vs CJ). The user picks one on the landing chooser
+    // and can switch via the 🔄 button in the header. Search and tabs
+    // operate within the selected brand.
+    if (CUR_BRAND && p.source !== CUR_BRAND) return false;
     // When actively searching, bypass category/tab filters so a query
-    // across the whole catalog is never silently hidden by a tab pick.
+    // across the selected brand is never silently hidden by a tab pick.
     if (q){
       const hay = hangulDecompose((p.name + ' ' + (p.nameKr||'') + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase());
       return hay.includes(q);
@@ -817,8 +859,52 @@ function exportOrder(){
   toast('✓ 엑셀 저장 완료');
 }
 
+/* -------- BRAND PICKER -------- */
+const BRAND_LABELS = { hanmi: 'Hanmi', cj: 'CJ' };
+const BRAND_SUB    = { hanmi: '한미 Grocery Catalog', cj: 'CJ Wang Global' };
+function applyBrandUI(){
+  const picker = document.getElementById('brand-picker');
+  const switchBtn = document.getElementById('brand-switch-btn');
+  const label = document.getElementById('brand-label');
+  const h1 = document.getElementById('hdr-h1');
+  const sub = document.getElementById('hdr-sub');
+  if (!CUR_BRAND){
+    if (picker) picker.style.display = 'block';
+    if (switchBtn) switchBtn.style.display = 'none';
+    if (h1) h1.textContent = 'Wang Global';
+    if (sub) sub.textContent = '한미 + CJ 카다록';
+  } else {
+    if (picker) picker.style.display = 'none';
+    if (switchBtn){ switchBtn.style.display = ''; }
+    if (label) label.textContent = BRAND_LABELS[CUR_BRAND] || CUR_BRAND;
+    if (h1) h1.textContent = BRAND_LABELS[CUR_BRAND] || CUR_BRAND;
+    if (sub) sub.textContent = BRAND_SUB[CUR_BRAND] || '';
+  }
+}
+function setBrand(b){
+  if (b !== 'hanmi' && b !== 'cj') return;
+  CUR_BRAND = b;
+  try { localStorage.setItem('wang-brand', b); } catch(e){}
+  // Reset category so we don't land on a section from the other brand.
+  CUR_CAT = '';
+  applyBrandUI();
+  buildGroups();
+  buildCategorySelect();
+  render();
+  window.scrollTo(0, 0);
+}
+function openBrandPicker(){
+  CUR_BRAND = '';
+  try { localStorage.removeItem('wang-brand'); } catch(e){}
+  CUR_CAT = '';
+  applyBrandUI();
+}
+window.setBrand = setBrand;
+window.openBrandPicker = openBrandPicker;
+
 /* -------- INIT -------- */
 setLang(LANG);
+applyBrandUI();
 $('cart-modal').addEventListener('click', (e) => { if (e.target.id === 'cart-modal') closeCart(); });
 $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal') closePd(); });
 </script>

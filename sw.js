@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v69';
+const CACHE_NAME = 'km-order-v70';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -10,7 +10,9 @@ self.addEventListener('install', event => {
         './manifest.json',
         './wismettac.html',
         './hanmi.html',
-        './hanmi_products.js'
+        './hanmi_products.js',
+        './cj.html',
+        './cj_products.js'
       ]);
     }).then(() => self.skipWaiting())
   );
@@ -36,7 +38,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Network-first for HTML, JS, and root path (always get latest code)
-  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('wismettac.html') || url.pathname.endsWith('hanmi.html') || url.pathname.endsWith('hanmi_products.js')) {
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('wismettac.html') || url.pathname.endsWith('hanmi.html') || url.pathname.endsWith('hanmi_products.js') || url.pathname.endsWith('cj.html') || url.pathname.endsWith('cj_products.js')) {
     event.respondWith(
       fetch(event.request).then(response => {
         if (response.ok) {

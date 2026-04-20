@@ -564,16 +564,15 @@ function render(){
   const q = hangulDecompose(raw);
 
   const filtered = PRODUCTS.filter(p => {
-    // Brand filter (Hanmi vs CJ). The user picks one on the landing chooser
-    // and can switch via the 🔄 button in the header. Search and tabs
-    // operate within the selected brand.
-    if (CUR_BRAND && p.source !== CUR_BRAND) return false;
-    // When actively searching, bypass category/tab filters so a query
-    // across the selected brand is never silently hidden by a tab pick.
+    // When actively searching, bypass EVERY other filter — brand, tab,
+    // category — so queries hit the whole merged catalog. Clearing the
+    // box returns the view to the selected brand + tab.
     if (q){
       const hay = hangulDecompose((p.name + ' ' + (p.nameKr||'') + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase());
       return hay.includes(q);
     }
+    // Brand filter (Hanmi vs CJ) — only applied when not searching.
+    if (CUR_BRAND && p.source !== CUR_BRAND) return false;
     if (!matchesGroup(p)) return false;
     if (CUR_CAT && p.category !== CUR_CAT) return false;
     return true;

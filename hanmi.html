@@ -95,8 +95,8 @@
   .modal-foot{padding:12px 14px;border-top:1px solid #eee;background:#fafafa}
   .summary{display:flex;justify-content:space-between;font-size:12px;margin-bottom:9px;color:#444}
   .summary b{color:var(--red);font-size:14px}
-  .btns{display:flex;gap:6px}
-  .btns button{flex:1;border:none;border-radius:8px;padding:10px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btns{display:flex;gap:6px;flex-wrap:wrap}
+  .btns button{flex:1 1 calc(50% - 3px);min-width:0;border:none;border-radius:8px;padding:10px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
   .btns .primary{background:var(--red);color:#fff}
   .btns .outline{background:#fff;color:var(--red);border:1.5px solid var(--red)}
   .btns .gray{background:#eee;color:#555}
@@ -234,6 +234,7 @@
       <div class="btns">
         <button class="gray" onclick="clearCart()">🗑 비우기</button>
         <button class="outline" onclick="exportOrder()">📥 엑셀</button>
+        <button class="outline" onclick="emailOrder()">📧 이메일</button>
         <button class="primary" onclick="copyOrderText()">📋 복사</button>
       </div>
     </div>
@@ -857,6 +858,22 @@ function exportOrder(){
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, 'Hanmi_Order_' + today + '.xlsx');
   toast('✓ 엑셀 저장 완료');
+}
+
+// Download the xlsx and open the mail client with the order pre-filled so the
+// user just has to attach the file that was just saved. mailto: has no
+// attachment mechanism — this gives the next-best one-click flow.
+function emailOrder(){
+  const txt = buildOrderText();
+  if (!txt){ toast(t('noCart')); return; }
+  exportOrder();
+  const branch = (localStorage.getItem('km_branch') || '').toUpperCase();
+  const today = new Date().toISOString().slice(0,10);
+  const subject = 'Wang Global Order' + (branch ? ' - ' + branch : '') + ' - ' + today;
+  const body = txt + '\n\n(엑셀 파일이 다운로드 폴더에 저장되었습니다. 첨부해 주세요.)';
+  const href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = href;
+  toast('✉ 메일 앱 열림');
 }
 
 /* -------- BRAND PICKER -------- */

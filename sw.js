@@ -8,7 +8,9 @@ self.addEventListener('install', event => {
         './index.html',
         './products.js',
         './manifest.json',
-        './wismettac.html'
+        './wismettac.html',
+        './hanmi.html',
+        './hanmi_products.js'
       ]);
     }).then(() => self.skipWaiting())
   );
@@ -34,7 +36,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Network-first for HTML, JS, and root path (always get latest code)
-  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('wismettac.html')) {
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname.endsWith('products.js') || url.pathname.endsWith('manifest.json') || url.pathname.endsWith('wismettac.html') || url.pathname.endsWith('hanmi.html') || url.pathname.endsWith('hanmi_products.js')) {
     event.respondWith(
       fetch(event.request).then(response => {
         if (response.ok) {

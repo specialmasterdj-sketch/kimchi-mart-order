@@ -139,8 +139,8 @@
 <div class="hdr">
   <button class="back-btn" onclick="onBack()">←</button>
   <div class="hdr-title">
-    <h1>Hanmi</h1>
-    <p>한미 · Grocery Catalog</p>
+    <h1>Wang Global</h1>
+    <p>한미 + CJ 통합 카다록</p>
   </div>
   <div class="hdr-acts">
     <button id="branch-btn" onclick="openBranchModal()" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">📍 <span id="branch-btn-label">지점</span></button>
@@ -215,11 +215,25 @@
 <div class="toast" id="toast"></div>
 
 <script src="hanmi_products.js"></script>
+<script src="cj_products.js"></script>
 <script>
-/* Hanmi catalog — products loaded from hanmi_products.js (generated from PDF). */
-const _HANMI_RAW = (window.HANMI_PRODUCTS || []);
-const PRODUCTS = _HANMI_RAW.map(p => {
-  // Map the 47 fine-grained categories down to 4 broad groups for the tab bar.
+/* Wang Global combined catalog — merges Hanmi + CJ products.
+   Each product is tagged with `source` so the UI can badge its origin. */
+const _HANMI_RAW = (window.HANMI_PRODUCTS || []).map(p => ({ ...p, _src: 'hanmi' }));
+const _CJ_RAW    = (window.CJ_PRODUCTS    || []).map(p => ({ ...p, _src: 'cj' }));
+const _HANMI_CATS = window.HANMI_CATEGORIES || [];
+const _CJ_CATS    = window.CJ_CATEGORIES    || [];
+// Merged category list — Hanmi first (larger catalog, displayed on top),
+// then CJ sections appended. Each category name is prefixed with a source
+// tag so two sections named "RICE" on different catalogs stay distinct.
+window.HANMI_CATEGORIES = [
+  ..._HANMI_CATS.map(c => ({ ...c, name: c.name, source: 'hanmi' })),
+  ..._CJ_CATS.map(c => ({ ...c, name: '[CJ] ' + c.name, source: 'cj' }))
+];
+const _ALL_RAW = _HANMI_RAW.concat(
+  _CJ_RAW.map(p => ({ ...p, category: '[CJ] ' + (p.category || '') }))
+);
+const PRODUCTS = _ALL_RAW.map(p => {
   const catU = String(p.category || '').toUpperCase();
   let group = 'FOOD';
   if (/BEVERAGE|\bTEA\b/.test(catU))                                  group = 'BEVERAGE';
@@ -230,7 +244,7 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     detailId: p.id,
     name: (p.name || p.nameKr || p.id).trim(),
     nameKr: (p.nameKr || '').trim(),
-    brand: '',
+    brand: p._src === 'cj' ? 'CJ' : '',
     category: p.category || '',
     packSize: p.size || '',
     barcode: p.barcode || '',
@@ -239,6 +253,7 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     catalogPage: p.catalogPage || null,
     minOrder: '',
     image: p.image || '',
+    source: p._src || '',
     group,
     isNew: 0
   };

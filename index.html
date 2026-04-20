@@ -1731,6 +1731,19 @@ window.KM = {
 };
 
 // ===== INIT =====
+// Deep-link via ?vendor=<id> so external hubs (e.g. 벤더 오더 센타) can
+// jump straight into a vendor's browse page instead of landing on the
+// vendor picker.
+try {
+  const params = new URLSearchParams(window.location.search);
+  const vid = params.get('vendor');
+  if (vid && VENDORS[vid]){
+    state.vendor = vid;
+    state.category = 'all';
+    state.search = '';
+    state.page = 'browse';
+  }
+} catch(e){}
 render();
 // First-time load: force branch selection so each device is scoped to a branch.
 if (!currentBranch || !BRANCH_BY_ID[currentBranch]) openBranchModal();

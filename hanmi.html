@@ -169,8 +169,10 @@
   </div>
 </div>
 
-<div class="groups" id="groups"></div>
-<div class="cbar"><select id="cat-select" onchange="render()"></select></div>
+<!-- Category tabs / dropdown hidden — Hanmi products are displayed in
+     catalog page order so the user browses the book rather than filtering. -->
+<div class="groups" id="groups" style="display:none"></div>
+<div class="cbar" style="display:none"><select id="cat-select" onchange="render()"></select></div>
 <div class="sbar"><input class="sbox" id="search" placeholder="제품명·코드·바코드 검색..." oncompositionstart="imeComposing=true;clearTimeout(_sTimer)" oncompositionend="imeComposing=false;debouncedSearch()" oninput="debouncedSearch(event)"></div>
 <div class="stats" id="stats"></div>
 <div class="grid" id="grid"></div>

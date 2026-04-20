@@ -511,18 +511,9 @@ function render(){
 
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
-    const pack = parsePackSize(p.packSize);
-    const eaQty = pack ? (CART[eaIdOf(p.detailId)] || 0) : 0;
-    const anyQty = qty > 0 || eaQty > 0;
-    const eaStep = pack ? pack.pack : 1;
-    const eaRow = pack ? (
-      '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:4px;background:#fff4e0;border-radius:8px;padding:2px">' +
-        '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-' + eaStep + ')"' + (eaQty<=0?' disabled':'') + '>−</button>' +
-        '<span class="qnum">' + eaQty + '</span>' +
-        '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',' + eaStep + ')">+</button>' +
-      '</div>' +
-      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ' + eaStep + '개 (1 CS)</div>'
-    ) : '';
+    // Hanmi orders at case-pack granularity only — no inner-pack EA row.
+    const anyQty = qty > 0;
+    const eaRow = '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +

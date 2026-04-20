@@ -169,10 +169,11 @@
   </div>
 </div>
 
-<!-- Category tabs / dropdown hidden — Hanmi products are displayed in
-     catalog page order so the user browses the book rather than filtering. -->
+<!-- Group tabs removed (FOOD/SEASONING/BEVERAGE/SNACK was an artificial
+     4-bucket split). The dropdown below lists the catalog's own TOC
+     sections with their page ranges. -->
 <div class="groups" id="groups" style="display:none"></div>
-<div class="cbar" style="display:none"><select id="cat-select" onchange="render()"></select></div>
+<div class="cbar"><select id="cat-select" onchange="render()"></select></div>
 <div class="sbar"><input class="sbox" id="search" placeholder="제품명·코드·바코드 검색..." oncompositionstart="imeComposing=true;clearTimeout(_sTimer)" oncompositionend="imeComposing=false;debouncedSearch()" oninput="debouncedSearch(event)"></div>
 <div class="stats" id="stats"></div>
 <div class="grid" id="grid"></div>
@@ -235,6 +236,8 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     packSize: p.size || '',
     barcode: p.barcode || '',
     barcodeDisplay: p.barcodeDisplay || '',
+    pageRange: p.pageRange || '',
+    catalogPage: p.catalogPage || null,
     minOrder: '',
     image: p.image || '',
     group,
@@ -422,15 +425,22 @@ function buildGroups(){
 function selGroup(g){ CUR_GROUP = g; CUR_CAT = ''; buildGroups(); buildCategorySelect(); render(); }
 
 /* -------- CATEGORIES -------- */
+// Options render in catalog TOC order (the order HANMI_CATEGORIES is defined
+// by the extractor). Each option shows PAGE X-Y · English / Korean · (count)
+// so the dropdown reads like a mini table-of-contents.
 function buildCategorySelect(){
-  const filtered = PRODUCTS.filter(p => matchesGroup(p));
-  const catCounts = {};
-  filtered.forEach(p => catCounts[p.category] = (catCounts[p.category]||0)+1);
-  const cats = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
-  const opts = ['<option value="">'+ t('allCats') +' (' + filtered.length + ')</option>'];
-  cats.forEach(([c, n]) => {
-    opts.push('<option value="'+esc(c)+'" '+(c===CUR_CAT?'selected':'')+'>'+esc(c)+' ('+n+')</option>');
-  });
+  const totalShown = PRODUCTS.length;
+  const opts = ['<option value="">전체 (' + totalShown + ')</option>'];
+  const cats = window.HANMI_CATEGORIES || [];
+  for (const c of cats){
+    const count = PRODUCTS.filter(p => p.category === c.name).length;
+    if (!count) continue;
+    const label = (c.pageRange ? (c.pageRange + ' · ') : '')
+      + c.name
+      + (c.nameKr ? ' (' + c.nameKr + ')' : '')
+      + ' — ' + count;
+    opts.push('<option value="' + esc(c.name) + '" ' + (c.name === CUR_CAT ? 'selected' : '') + '>' + esc(label) + '</option>');
+  }
   $('cat-select').innerHTML = opts.join('');
 }
 function matchesGroup(p){

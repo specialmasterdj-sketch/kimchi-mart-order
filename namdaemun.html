@@ -20,9 +20,25 @@
     padding: 14px 16px 0;
     box-shadow: 0 2px 8px rgba(0,0,0,.15);
   }
-  .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
   h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: -0.3px; }
   .meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .branch-btn {
+    flex-shrink: 0;
+    background: #374151; color: #fff;
+    border: 1px solid #4b5563;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .branch-btn:active, .branch-btn:hover { background: #4b5563; }
+  .branch-btn .caret { font-size: 10px; opacity: 0.8; }
+  .branch-btn.unset { background: #dc2626; border-color: #ef4444; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.4); } 50% { box-shadow: 0 0 0 6px rgba(220,38,38,0); } }
   .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .tab {
@@ -242,23 +258,26 @@
   .ol-sub { font-size: 12px; color: #6b7280; text-align: right; margin-top: 2px; }
   .modal-footer {
     padding: 14px 18px; border-top: 1px solid #e5e7eb;
-    display: flex; gap: 8px; flex-wrap: wrap;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
   }
   .modal-footer .total-row {
-    width: 100%;
+    grid-column: 1 / -1;
     display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
-  .modal-footer .total-row .label { font-size: 13px; color: #6b7280; }
-  .modal-footer .total-row .total { font-size: 22px; font-weight: 800; }
+  .modal-footer .total-row .label { font-size: 13px; color: #6b7280; font-weight: 600; }
+  .modal-footer .total-row .total { font-size: 18px; font-weight: 800; color: #111827; }
   .btn {
-    flex: 1; min-width: 110px;
-    padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 11px 10px; border: 1px solid #d1d5db; border-radius: 10px;
     background: #fff; color: #374151;
-    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   }
   .btn:active { background: #f3f4f6; }
-  .btn.danger { color: #dc2626; border-color: #fecaca; }
+  .btn.danger { color: #dc2626; border-color: #fecaca; background: #fff; }
+  .btn.primary { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .btn.primary:active { background: #b91c1c; }
+  .btn .icon { font-size: 15px; }
 
   .toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
@@ -276,6 +295,24 @@
   .placeholder .emoji { font-size: 48px; margin-bottom: 12px; }
   .placeholder .hint { font-size: 13px; margin-top: 8px; }
 
+  /* Branch selector modal */
+  .branch-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    padding: 4px 0;
+  }
+  .branch-card {
+    padding: 18px 12px;
+    border: 2px solid #e5e7eb; border-radius: 12px;
+    background: #fff; cursor: pointer;
+    text-align: center;
+    transition: all .12s;
+  }
+  .branch-card:hover, .branch-card:active { border-color: #dc2626; background: #fef2f2; }
+  .branch-card.current { border-color: #22c55e; background: #f0fdf4; }
+  .branch-card .bko { font-weight: 700; font-size: 15px; color: #111827; }
+  .branch-card .ben { font-size: 11px; color: #6b7280; margin-top: 3px; letter-spacing: 0.3px; }
+  .branch-card .badge { font-size: 10px; color: #22c55e; font-weight: 600; margin-top: 4px; }
+
   @media print {
     header, .controls, .summary-bar, .modal-footer, .close-btn { display: none !important; }
     .modal-backdrop { position: static; background: none; }
@@ -291,6 +328,10 @@
       <h1>Namdaemun Vendor Order</h1>
       <div class="meta">남대문 벤더 주문서 · Prices as of <span id="priceDate">2026-04-21</span> <span id="priceEditedCount" style="color:#fbbf24"></span></div>
     </div>
+    <button class="branch-btn unset" id="branchBtn" type="button">
+      <span id="branchLabel">지점 선택</span>
+      <span class="caret">▼</span>
+    </button>
   </div>
   <div class="tabs" id="tabs"></div>
 </header>
@@ -325,12 +366,26 @@
     <div class="modal-body" id="orderList"></div>
     <div class="modal-footer">
       <div class="total-row">
-        <span class="label">총 품목</span>
-        <span class="total" id="modalTotal">0종</span>
+        <span class="label" id="modalBranch">지점 미선택</span>
+        <span class="total" id="modalTotal">0종 · 총 0개</span>
       </div>
-      <button class="btn" id="copyBtn">텍스트 복사</button>
-      <button class="btn" id="printBtn">인쇄</button>
-      <button class="btn danger" id="clearBtn">전체 삭제</button>
+      <button class="btn danger" id="clearBtn"><span class="icon">🗑️</span>비우기</button>
+      <button class="btn" id="excelBtn"><span class="icon">📊</span>엑셀</button>
+      <button class="btn" id="emailBtn"><span class="icon">✉️</span>이메일</button>
+      <button class="btn primary" id="copyBtn"><span class="icon">📋</span>복사</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="branchModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>지점 선택 / Select Branch</h2>
+      <button class="close-btn" id="closeBranchModal">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:#6b7280;margin-bottom:12px">주문은 지점별로 따로 저장됩니다. 지점을 바꾸면 해당 지점의 주문으로 전환됩니다.</div>
+      <div class="branch-grid" id="branchGrid"></div>
     </div>
   </div>
 </div>
@@ -472,31 +527,117 @@ const SECTIONS = [
   { id: "jayeon", label: "자연나라", items: [], enabled: false },
 ];
 
+// ============ BRANCHES ============
+const BRANCHES = [
+  { id: 'MIAMI',          ko: '마이애미',        en: 'Miami' },
+  { id: 'PEMBROKE_PINES', ko: '펨브로크 파인즈', en: 'Pembroke Pines' },
+  { id: 'HOLLYWOOD',      ko: '할리우드',         en: 'Hollywood' },
+  { id: 'CORAL_SPRINGS',  ko: '코럴 스프링스',    en: 'Coral Springs' },
+  { id: 'LASOLAS',        ko: '라스올라스',       en: 'LASOLAS' },
+  { id: 'WEST_PALM',      ko: '웨스트 팜 비치',   en: 'West Palm Beach' },
+];
+const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
+const BRANCH_KEY = "km_branch"; // shared across Kimchi Mart apps
+const cartKey = (branchId) => `ndm_cart_v1__${branchId || ''}`;
+
 // ============ STATE ============
-const STORAGE_KEY = "ndm_order_v1";
+// Shared (not per-branch): prices, priceDate, activeSection/sub (UI navigation)
+// Per-branch (isolated): qty
+const SHARED_KEY = "ndm_app_v1";
 const DEFAULT_PRICE_DATE = "2026-04-21";
 let state = loadState();
 
 function loadState() {
-  try {
-    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return {
-      activeSection: s?.activeSection || "veg",
-      activeSub: s?.activeSub || "all",
-      search: "",
-      qty: s?.qty || {},
-      prices: s?.prices || {},
-      priceDate: s?.priceDate || DEFAULT_PRICE_DATE,
-    };
-  } catch {
-    return { activeSection: "veg", activeSub: "all", search: "", qty: {}, prices: {}, priceDate: DEFAULT_PRICE_DATE };
+  let branchId = "";
+  try { branchId = localStorage.getItem(BRANCH_KEY) || ""; } catch {}
+  let shared = {};
+  try { shared = JSON.parse(localStorage.getItem(SHARED_KEY)) || {}; } catch {}
+  let qty = {};
+  if (branchId) {
+    try { qty = JSON.parse(localStorage.getItem(cartKey(branchId))) || {}; } catch {}
   }
+  return {
+    activeSection: shared.activeSection || "veg",
+    activeSub: shared.activeSub || "all",
+    search: "",
+    qty,
+    prices: shared.prices || {},
+    priceDate: shared.priceDate || DEFAULT_PRICE_DATE,
+    branchId,
+  };
 }
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    activeSection: state.activeSection, activeSub: state.activeSub, qty: state.qty,
-    prices: state.prices, priceDate: state.priceDate
+  localStorage.setItem(SHARED_KEY, JSON.stringify({
+    activeSection: state.activeSection, activeSub: state.activeSub,
+    prices: state.prices, priceDate: state.priceDate,
   }));
+  if (state.branchId) {
+    localStorage.setItem(cartKey(state.branchId), JSON.stringify(state.qty));
+  }
+}
+
+function setBranch(newId) {
+  if (!BRANCH_BY_ID[newId]) return;
+  // Save outgoing branch's qty
+  if (state.branchId) {
+    localStorage.setItem(cartKey(state.branchId), JSON.stringify(state.qty));
+  }
+  state.branchId = newId;
+  try { localStorage.setItem(BRANCH_KEY, newId); } catch {}
+  // Load incoming branch's qty
+  try {
+    state.qty = JSON.parse(localStorage.getItem(cartKey(newId))) || {};
+  } catch {
+    state.qty = {};
+  }
+  updateBranchUI();
+  renderContent();
+  updateSummary();
+}
+
+function updateBranchUI() {
+  const btn = document.getElementById("branchBtn");
+  const lbl = document.getElementById("branchLabel");
+  if (state.branchId && BRANCH_BY_ID[state.branchId]) {
+    const b = BRANCH_BY_ID[state.branchId];
+    lbl.textContent = `📍 ${b.ko}`;
+    btn.classList.remove("unset");
+  } else {
+    lbl.textContent = "⚠️ 지점 선택";
+    btn.classList.add("unset");
+  }
+  const modalBranch = document.getElementById("modalBranch");
+  if (modalBranch) {
+    modalBranch.textContent = state.branchId
+      ? `📍 ${BRANCH_BY_ID[state.branchId].ko}`
+      : "지점 미선택";
+  }
+}
+
+function openBranchModal() {
+  const grid = document.getElementById("branchGrid");
+  grid.innerHTML = BRANCHES.map(b => {
+    const cart = (function() { try { return JSON.parse(localStorage.getItem(cartKey(b.id))) || {}; } catch { return {}; } })();
+    const count = Object.values(cart).filter(v => v > 0).length;
+    const current = b.id === state.branchId;
+    return `
+      <div class="branch-card ${current?'current':''}" data-id="${b.id}">
+        <div class="bko">${b.ko}</div>
+        <div class="ben">${b.en}</div>
+        ${count > 0 ? `<div class="badge">· ${count}종 주문중</div>` : (current ? `<div class="badge">· 현재 지점</div>` : '')}
+      </div>
+    `;
+  }).join("");
+  grid.querySelectorAll(".branch-card").forEach(card => {
+    card.addEventListener("click", () => {
+      setBranch(card.dataset.id);
+      closeBranchModal();
+    });
+  });
+  document.getElementById("branchModal").classList.add("show");
+}
+function closeBranchModal() {
+  document.getElementById("branchModal").classList.remove("show");
 }
 
 function itemKey(secId, item) {
@@ -765,12 +906,51 @@ function closeOrderModal() {
 function orderAsText() {
   const lines = getOrderLines();
   const today = new Date().toISOString().slice(0,10);
-  let out = `[남대문 주문서 - ${today}]\n\n`;
+  const branch = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
+  const header = branch ? `[남대문 주문 · ${branch.ko} / ${branch.en} · ${today}]` : `[남대문 주문 · ${today}]`;
+  let out = `${header}\n\n`;
   for (const l of lines) {
     out += `${l.item.plu ? `#${l.item.plu} ` : ''}${l.item.en} (${l.item.ko})${l.item.unit ? ' ' + l.item.unit : ''} × ${l.qty}\n`;
   }
   out += `\n총 ${lines.length}종 / ${lines.reduce((a,l)=>a+l.qty,0)}개`;
   return out;
+}
+
+function orderAsCSV() {
+  const lines = getOrderLines();
+  const today = new Date().toISOString().slice(0,10);
+  const branch = state.branchId ? BRANCH_BY_ID[state.branchId] : { ko: '', en: '' };
+  const esc = (v) => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = `# Namdaemun Order / ${branch.ko} ${branch.en} / ${today}`;
+  const cols = ["PLU", "Item (EN)", "Item (KO)", "Unit", "Qty"];
+  const rows = lines.map(l => [l.item.plu || '', l.item.en, l.item.ko, l.item.unit || '', l.qty].map(esc).join(","));
+  return `${header}\n${cols.join(",")}\n${rows.join("\n")}`;
+}
+
+function downloadCSV() {
+  const csv = "\ufeff" + orderAsCSV();
+  const today = new Date().toISOString().slice(0,10);
+  const branch = state.branchId || "NOBRANCH";
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `namdaemun_${branch}_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function sendEmail() {
+  const today = new Date().toISOString().slice(0,10);
+  const branch = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
+  const subject = branch ? `[남대문 주문] ${branch.ko} - ${today}` : `[남대문 주문] ${today}`;
+  const body = orderAsText();
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 // ============ UTIL ============
@@ -801,7 +981,10 @@ document.getElementById("searchClear").addEventListener("click", () => {
   document.getElementById("searchClear").classList.remove("show");
   renderContent();
 });
-document.getElementById("openOrderBtn").addEventListener("click", openOrderModal);
+document.getElementById("openOrderBtn").addEventListener("click", () => {
+  if (!state.branchId) { openBranchModal(); return; }
+  openOrderModal();
+});
 document.getElementById("closeModal").addEventListener("click", closeOrderModal);
 document.getElementById("modal").addEventListener("click", e => {
   if (e.target.id === "modal") closeOrderModal();
@@ -811,7 +994,6 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
     await navigator.clipboard.writeText(orderAsText());
     showToast("주문서를 복사했습니다");
   } catch {
-    // fallback
     const ta = document.createElement("textarea");
     ta.value = orderAsText();
     document.body.appendChild(ta);
@@ -821,11 +1003,14 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
     showToast("주문서를 복사했습니다");
   }
 });
-document.getElementById("printBtn").addEventListener("click", () => {
-  window.print();
+document.getElementById("excelBtn").addEventListener("click", () => {
+  downloadCSV();
+  showToast("CSV 파일을 다운로드했습니다");
 });
+document.getElementById("emailBtn").addEventListener("click", sendEmail);
 document.getElementById("clearBtn").addEventListener("click", () => {
-  if (!confirm("주문 내역을 모두 삭제할까요?")) return;
+  const b = state.branchId ? BRANCH_BY_ID[state.branchId].ko : "현재 지점";
+  if (!confirm(`${b}의 주문 내역을 모두 삭제할까요?`)) return;
   state.qty = {};
   saveState();
   closeOrderModal();
@@ -834,15 +1019,26 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   showToast("주문 내역을 초기화했습니다");
 });
 
+document.getElementById("branchBtn").addEventListener("click", openBranchModal);
+document.getElementById("closeBranchModal").addEventListener("click", closeBranchModal);
+document.getElementById("branchModal").addEventListener("click", e => {
+  if (e.target.id === "branchModal") closeBranchModal();
+});
+
 function renderAll() {
   renderTabs();
   renderSubcats();
   renderContent();
   updateSummary();
   updatePriceHeader();
+  updateBranchUI();
 }
 
 renderAll();
+// Prompt for branch on first visit
+if (!state.branchId) {
+  setTimeout(openBranchModal, 120);
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>남대문 벤더 주문</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: #f5f6f8;
+    color: #1a1a1a;
+    font-size: 15px;
+    padding-bottom: 140px;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: #1f2937; color: #fff;
+    padding: 14px 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: -0.3px; }
+  .meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    background: transparent;
+    color: #9ca3af;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  .tab.active { color: #fff; border-bottom-color: #22c55e; }
+  .tab:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .controls {
+    position: sticky; top: 95px; z-index: 9;
+    background: #f5f6f8;
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .search-wrap { position: relative; margin-bottom: 10px; }
+  .search-wrap input {
+    width: 100%;
+    padding: 11px 36px 11px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #fff;
+    outline: none;
+  }
+  .search-wrap input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.15); }
+  .search-clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    background: #e5e7eb; border: none; border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer;
+    display: none; font-size: 13px; color: #4b5563;
+  }
+  .search-clear.show { display: flex; align-items: center; justify-content: center; }
+
+  .subcats { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .subcats::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+  .chip .count { opacity: 0.6; margin-left: 4px; font-size: 11px; }
+
+  main { padding: 12px 16px 16px; }
+  .subcat-header {
+    font-size: 13px; font-weight: 700; color: #6b7280;
+    margin: 14px 0 6px; padding-left: 2px;
+    text-transform: none; letter-spacing: 0;
+  }
+  .subcat-header:first-child { margin-top: 0; }
+
+  .item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    background: #fff;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid #e5e7eb;
+    transition: border-color .1s, box-shadow .1s;
+  }
+  .item.has-qty { border-color: #22c55e; box-shadow: 0 0 0 1px #22c55e inset; }
+  .item-info { min-width: 0; }
+  .name-ko { font-weight: 600; font-size: 15px; line-height: 1.25; }
+  .name-en { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .detail-row { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12px; }
+  .plu { font-family: "SF Mono", Menlo, Consolas, monospace; color: #9ca3af; }
+  .unit { color: #6b7280; }
+  .price { font-weight: 700; color: #059669; font-size: 14px; margin-left: auto; }
+  .qty-control {
+    display: flex; align-items: center; gap: 4px;
+    background: #f3f4f6; border-radius: 8px; padding: 3px;
+  }
+  .qty-btn {
+    width: 30px; height: 30px;
+    border: none; background: #fff;
+    border-radius: 6px; font-size: 17px; font-weight: 700;
+    color: #374151; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  }
+  .qty-btn:active { background: #e5e7eb; }
+  .qty-input {
+    width: 44px; height: 30px; text-align: center;
+    border: none; background: transparent;
+    font-size: 15px; font-weight: 700; color: #111827;
+    outline: none; padding: 0;
+    -moz-appearance: textfield;
+  }
+  .qty-input::-webkit-outer-spin-button,
+  .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: #9ca3af; font-size: 14px;
+  }
+
+  .summary-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,.08);
+    z-index: 20;
+  }
+  .summary-info { flex: 1; }
+  .summary-label { font-size: 11px; color: #6b7280; }
+  .summary-total { font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.3px; }
+  .summary-count { font-size: 12px; color: #4b5563; margin-left: 6px; }
+  .btn-primary {
+    padding: 12px 22px; border: none; border-radius: 10px;
+    background: #22c55e; color: #fff;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-primary:disabled { background: #d1d5db; cursor: not-allowed; }
+  .btn-primary:active:not(:disabled) { background: #16a34a; }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 100;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: #fff; width: 100%; max-width: 520px;
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+    display: flex; flex-direction: column;
+    animation: slideUp .2s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @media (min-width: 600px) {
+    .modal-backdrop { align-items: center; }
+    .modal { border-radius: 16px; margin: 20px; }
+  }
+  .modal-header {
+    padding: 16px 18px; border-bottom: 1px solid #e5e7eb;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h2 { margin: 0; font-size: 17px; }
+  .close-btn {
+    background: transparent; border: none; font-size: 24px;
+    color: #6b7280; cursor: pointer; padding: 0 4px;
+    line-height: 1;
+  }
+  .modal-body { flex: 1; overflow-y: auto; padding: 12px 18px; }
+  .order-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .order-line:last-child { border-bottom: none; }
+  .ol-name { font-weight: 600; }
+  .ol-detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .ol-qty { font-weight: 700; text-align: right; }
+  .ol-sub { font-size: 12px; color: #6b7280; text-align: right; margin-top: 2px; }
+  .modal-footer {
+    padding: 14px 18px; border-top: 1px solid #e5e7eb;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .modal-footer .total-row {
+    width: 100%;
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .modal-footer .total-row .label { font-size: 13px; color: #6b7280; }
+  .modal-footer .total-row .total { font-size: 22px; font-weight: 800; }
+  .btn {
+    flex: 1; min-width: 110px;
+    padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+    background: #fff; color: #374151;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn:active { background: #f3f4f6; }
+  .btn.danger { color: #dc2626; border-color: #fecaca; }
+
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: #111827; color: #fff; padding: 10px 18px;
+    border-radius: 999px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+    z-index: 200;
+  }
+  .toast.show { opacity: 0.95; }
+
+  .placeholder {
+    text-align: center; padding: 60px 24px;
+    color: #9ca3af;
+  }
+  .placeholder .emoji { font-size: 48px; margin-bottom: 12px; }
+  .placeholder .hint { font-size: 13px; margin-top: 8px; }
+
+  @media print {
+    header, .controls, .summary-bar, .modal-footer, .close-btn { display: none !important; }
+    .modal-backdrop { position: static; background: none; }
+    .modal { max-height: none; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <div>
+      <h1>남대문 벤더 주문서</h1>
+      <div class="meta">Namdaemun Vendor Order · 가격 기준일 2026-04-21</div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<div class="controls" id="controls">
+  <div class="search-wrap">
+    <input type="text" id="search" placeholder="품목 검색 (한글/영문/PLU)" autocomplete="off">
+    <button class="search-clear" id="searchClear" aria-label="지우기">×</button>
+  </div>
+  <div class="subcats" id="subcats"></div>
+</div>
+
+<main id="content"></main>
+
+<div class="summary-bar">
+  <div class="summary-info">
+    <div class="summary-label">총 주문액</div>
+    <div>
+      <span class="summary-total" id="totalAmount">$0</span>
+      <span class="summary-count" id="totalCount"></span>
+    </div>
+  </div>
+  <button class="btn-primary" id="openOrderBtn" disabled>주문서 보기</button>
+</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>주문 내역</h2>
+      <button class="close-btn" id="closeModal">×</button>
+    </div>
+    <div class="modal-body" id="orderList"></div>
+    <div class="modal-footer">
+      <div class="total-row">
+        <span class="label">합계</span>
+        <span class="total" id="modalTotal">$0</span>
+      </div>
+      <button class="btn" id="copyBtn">텍스트 복사</button>
+      <button class="btn" id="printBtn">인쇄</button>
+      <button class="btn danger" id="clearBtn">전체 삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ DATA ============
+const VEGETABLES = [
+  {plu:"4080", en:"ASPARAGUS", ko:"아스파라거스", unit:"11BH", price:64, cat:"열매"},
+  {plu:"4540", en:"BEET LOOSE", ko:"비트", unit:"25LB", price:25, cat:"뿌리"},
+  {plu:"4462", en:"BITTER MELON CHINESE", ko:"여주 (중국)", unit:"", price:57, cat:"열매"},
+  {plu:"4463", en:"BITTER MELON INDIAN", ko:"여주 (인도)", unit:"", price:40, cat:"열매"},
+  {plu:"", en:"BROCCOLI", ko:"브로콜리", unit:"", price:32, cat:"열매"},
+  {plu:"", en:"CABBAGE GREEN", ko:"양배추", unit:"", price:24, cat:"잎"},
+  {plu:"", en:"CABBAGE RED", ko:"적양배추", unit:"", price:24, cat:"잎"},
+  {plu:"3210", en:"CABBAGE TAIWAN", ko:"대만양배추", unit:"", price:40, cat:"잎"},
+  {plu:"4070", en:"AM CELERY", ko:"미국 셀러리", unit:"*30", price:32, cat:"잎"},
+  {plu:"", en:"CELERY CHINESE", ko:"중국 셀러리", unit:"", price:32, cat:"잎"},
+  {plu:"4761", en:"CHAYOTE", ko:"차요테", unit:"", price:34, cat:"열매"},
+  {plu:"", en:"CHIVE CHINESE", ko:"부추", unit:"25LB", price:47, cat:"잎"},
+  {plu:"", en:"CHIVE FLOWER", ko:"부추꽃", unit:"15LB", price:105, cat:"잎"},
+  {plu:"", en:"CHIVE YELLOW", ko:"노란부추", unit:"10LB", price:75, cat:"잎"},
+  {plu:"4889", en:"CILANTRO", ko:"고수", unit:"", price:22, cat:"허브"},
+  {plu:"", en:"COCONUT YOUNG", ko:"어린코코넛", unit:"", price:22, cat:"과일"},
+  {plu:"4592", en:"CUCUMBER AM", ko:"미국오이", unit:"", price:62, cat:"열매"},
+  {plu:"4593", en:"CUCUMBER EURO", ko:"유럽오이", unit:"12CT", price:18, cat:"열매"},
+  {plu:"", en:"CUCUMBER KIRBY", ko:"키르비 오이", unit:"", price:43, cat:"열매"},
+  {plu:"4597", en:"CUCUMBER PERSIAN", ko:"페르시안 오이", unit:"", price:22, cat:"열매"},
+  {plu:"", en:"CARROT", ko:"당근", unit:"", price:40, cat:"뿌리"},
+  {plu:"4495", en:"DAIKON", ko:"다이콘 무", unit:"", price:32, cat:"뿌리"},
+  {plu:"", en:"EGGPLANT CHINESE", ko:"중국 가지", unit:"", price:42, cat:"열매"},
+  {plu:"4840", en:"EGGPLANT AM", ko:"미국 가지", unit:"", price:36, cat:"열매"},
+  {plu:"4426", en:"EGGPLANT INDIAN", ko:"인도 가지", unit:"", price:32, cat:"열매"},
+  {plu:"4425", en:"EGGPLANT THAI", ko:"태국 가지", unit:"", price:47, cat:"열매"},
+  {plu:"", en:"GAICHOY", ko:"갓 (가이초이)", unit:"", price:44, cat:"잎"},
+  {plu:"", en:"GAILAN", ko:"가이란 (중국 브로콜리)", unit:"", price:44, cat:"잎"},
+  {plu:"4608", en:"GARLIC FRESH", ko:"생마늘", unit:"", price:59, cat:"뿌리"},
+  {plu:"", en:"GARLIC PEELED", ko:"깐마늘", unit:"5lb/6", price:99, cat:"뿌리"},
+  {plu:"", en:"GINGER", ko:"생강", unit:"", price:34, cat:"뿌리"},
+  {plu:"", en:"GOBO", ko:"우엉", unit:"", price:52, cat:"뿌리"},
+  {plu:"4066", en:"GREEN BEAN", ko:"껍질콩", unit:"", price:30, cat:"열매"},
+  {plu:"4693", en:"JALAPENO", ko:"할라피뇨", unit:"", price:66, cat:"허브"},
+  {plu:"", en:"NAPA", ko:"배추", unit:"", price:29.9, cat:"잎"},
+  {plu:"", en:"K. RADISH", ko:"한국 무", unit:"", price:17.9, cat:"뿌리"},
+  {plu:"", en:"K. SWEET POTATO M", ko:"한국 고구마 (중)", unit:"", price:40, cat:"뿌리"},
+  {plu:"", en:"SESAME LEAF", ko:"깻잎", unit:"*50", price:45, cat:"잎"},
+  {plu:"", en:"KOREAN PEPPER", ko:"한국 고추", unit:"20LB", price:57, cat:"허브"},
+  {plu:"4414", en:"A-CHOY", ko:"아초이", unit:"", price:42, cat:"잎"},
+  {plu:"4604", en:"RED SHEN CHOY", ko:"적아마란스", unit:"", price:52, cat:"잎"},
+  {plu:"4329", en:"PURPLE YAM", ko:"자색 고구마", unit:"", price:119, cat:"뿌리"},
+  {plu:"4817", en:"AM SWEET POTATO", ko:"미국 고구마", unit:"", price:22, cat:"뿌리"},
+  {plu:"4782", en:"YELLOW SQUASH", ko:"노란 호박", unit:"", price:16, cat:"열매"},
+  {plu:"4769", en:"KABOCHA", ko:"단호박", unit:"", price:32, cat:"열매"},
+  {plu:"4033", en:"LEMON", ko:"레몬", unit:"", price:49, cat:"과일"},
+  {plu:"4445", en:"LEMON GRASS", ko:"레몬그라스", unit:"", price:42, cat:"허브"},
+  {plu:"", en:"LETTUCE GREEN LEAF", ko:"청상추", unit:"", price:24, cat:"잎"},
+  {plu:"", en:"LETTUCE RED LEAF", ko:"적상추", unit:"", price:34, cat:"잎"},
+  {plu:"", en:"LETTUCE ICEBERG", ko:"양상추", unit:"", price:34, cat:"잎"},
+  {plu:"4048", en:"LIME", ko:"라임", unit:"", price:60, cat:"과일"},
+  {plu:"4959", en:"MANGO MEX", ko:"멕시코 망고", unit:"8CT", price:9.99, cat:"과일"},
+  {plu:"4961", en:"YELLOW MANGO", ko:"노란 망고", unit:"18CT", price:13.99, cat:"과일"},
+  {plu:"4629", en:"LEEK", ko:"리크 (서양 대파)", unit:"", price:30, cat:"잎"},
+  {plu:"", en:"QUAIL EGG", ko:"메추리알", unit:"24PC/20", price:82, cat:"기타"},
+  {plu:"4527", en:"LONG BEAN", ko:"긴 콩 (장두)", unit:"10LB", price:115, cat:"열매"},
+  {plu:"3099", en:"LOTUS ROOT", ko:"연근", unit:"30LB", price:62, cat:"뿌리"},
+  {plu:"3114", en:"MANGO GREEN", ko:"그린 망고", unit:"", price:89, cat:"과일"},
+  {plu:"", en:"TARO SMALL", ko:"토란 (소)", unit:"", price:38, cat:"뿌리"},
+  {plu:"46774", en:"MUSHROOM MINI", ko:"미니 버섯", unit:"/12PK", price:29, cat:"버섯"},
+  {plu:"4698", en:"MALANGA COCO", ko:"말랑가 코코", unit:"", price:34, cat:"뿌리"},
+  {plu:"4252", en:"MUSHROOM ENOKI", ko:"팽이버섯", unit:"", price:22, cat:"버섯"},
+  {plu:"42523", en:"MUSHROOM SEAFOOD", ko:"해물 버섯", unit:"", price:28, cat:"버섯"},
+  {plu:"42541", en:"MUSHROOM PORTABELLA", ko:"포토벨라 버섯", unit:"", price:16, cat:"버섯"},
+  {plu:"46771", en:"MUSHROOM KING OYSTER", ko:"새송이 버섯", unit:"11LB", price:19, cat:"버섯"},
+  {plu:"", en:"MUSHROOM WHITE", ko:"양송이 버섯", unit:"", price:24, cat:"버섯"},
+  {plu:"42522", en:"SHIMEJI BROWN", ko:"만가닥버섯 (갈색)", unit:"", price:49, cat:"버섯"},
+  {plu:"42521", en:"SHIMEJI WHITE", ko:"만가닥버섯 (흰색)", unit:"", price:49, cat:"버섯"},
+  {plu:"", en:"NAGAIMO", ko:"마 (나가이모)", unit:"", price:82, cat:"뿌리"},
+  {plu:"4655", en:"OKRA AM", ko:"미국 오크라", unit:"", price:40, cat:"열매"},
+  {plu:"4442", en:"OKRA CHINESE", ko:"중국 오크라", unit:"", price:28, cat:"열매"},
+  {plu:"", en:"ONION GREEN", ko:"대파", unit:"", price:30, cat:"잎"},
+  {plu:"", en:"ONION YELLOW JUMBO", ko:"양파 (점보)", unit:"", price:23, cat:"뿌리"},
+  {plu:"", en:"RED ONION", ko:"적양파", unit:"25LB", price:18, cat:"뿌리"},
+  {plu:"", en:"PAPAYA GREEN", ko:"그린 파파야", unit:"", price:29, cat:"열매"},
+  {plu:"3112", en:"PAPAYA YELLOW", ko:"파파야", unit:"30LB", price:36, cat:"과일"},
+  {plu:"", en:"PEPPER GREEN BELL", ko:"초록 피망", unit:"", price:52, cat:"열매"},
+  {plu:"4696", en:"PEPPER LONG HOT", ko:"청양고추 (긴)", unit:"19LB", price:34, cat:"허브"},
+  {plu:"", en:"PEPPER RED BELL", ko:"빨강 피망", unit:"11LB", price:27, cat:"열매"},
+  {plu:"", en:"THAI HOT CHILI GREEN", ko:"태국 고추 (녹색)", unit:"LB", price:4.5, cat:"허브"},
+  {plu:"", en:"THAI HOT CHILI RED", ko:"태국 고추 (적색)", unit:"LB", price:7.9, cat:"허브"},
+  {plu:"", en:"POTATO", ko:"감자", unit:"", price:28, cat:"뿌리"},
+  {plu:"", en:"SHANGHAI BOCKCHOY", ko:"상해 청경채", unit:"", price:32, cat:"잎"},
+  {plu:"", en:"SHANGHAI BOCKCHOY TIP", ko:"상해 청경채 순", unit:"", price:32, cat:"잎"},
+  {plu:"4411", en:"BABY BOCKCHOY", ko:"베이비 청경채", unit:"", price:36, cat:"잎"},
+  {plu:"", en:"SHER LI HON", ko:"설리홍", unit:"", price:36, cat:"잎"},
+  {plu:"4092", en:"SNOW PEA", ko:"스노우피", unit:"", price:33, cat:"열매"},
+  {plu:"4447", en:"SNOW PEA TIP", ko:"스노우피 순", unit:"", price:57, cat:"잎"},
+  {plu:"", en:"TAIWAN SPINACH", ko:"대만 시금치", unit:"", price:36, cat:"잎"},
+  {plu:"4090", en:"SPINACH", ko:"시금치", unit:"", price:27, cat:"잎"},
+  {plu:"4326", en:"SQUASH FUZZY", ko:"털호박", unit:"", price:76, cat:"열매"},
+  {plu:"4460", en:"SQUASH OPO", ko:"박", unit:"", price:46, cat:"열매"},
+  {plu:"", en:"TOMATO 5X6", ko:"토마토", unit:"5X6", price:78, cat:"열매"},
+  {plu:"4807", en:"TOMATO GRAPE", ko:"대추 토마토", unit:"", price:39, cat:"열매"},
+  {plu:"", en:"TOMATO ROME", ko:"로마 토마토", unit:"", price:59, cat:"열매"},
+  {plu:"", en:"TOMATO GREEN", ko:"그린 토마토", unit:"25LB", price:78, cat:"열매"},
+  {plu:"4819", en:"YUCA", ko:"유카 (카사바)", unit:"", price:42, cat:"뿌리"},
+  {plu:"", en:"YUCHOY", ko:"유채", unit:"", price:44, cat:"잎"},
+  {plu:"", en:"ZUCCHINI", ko:"주키니", unit:"20LB", price:14, cat:"열매"},
+  {plu:"4787", en:"MEXICAN ZUCCHINI", ko:"멕시칸 주키니", unit:"35LB", price:34, cat:"열매"},
+  {plu:"", en:"WHITE COCONUT", ko:"흰 코코넛", unit:"", price:46, cat:"과일"},
+  {plu:"4439", en:"TURMERIC", ko:"강황", unit:"30LB", price:109, cat:"뿌리"},
+  {plu:"", en:"WATER CRESS", ko:"물냉이", unit:"", price:28, cat:"잎"},
+  {plu:"", en:"TONG HO", ko:"쑥갓", unit:"", price:40, cat:"잎"},
+  {plu:"", en:"DAIKON SPROUT", ko:"무순", unit:"", price:20, cat:"잎"},
+  {plu:"4662", en:"SHALLOT", ko:"샬롯", unit:"40LB", price:58, cat:"뿌리"},
+  {plu:"", en:"MUNG BEAN SPROUT", ko:"숙주나물", unit:"", price:122, cat:"잎"},
+  {plu:"", en:"SOY BEAN SPROUT", ko:"콩나물", unit:"", price:102, cat:"잎"},
+  {plu:"", en:"SOY BEAN SPROUT PK", ko:"콩나물 소포장", unit:"1.5LB/20PK", price:132, cat:"잎"},
+  {plu:"", en:"MINT", ko:"민트", unit:"", price:0, cat:"허브"},
+];
+
+const SUBCAT_ORDER = ["잎", "뿌리", "열매", "버섯", "허브", "과일", "기타"];
+const SUBCAT_LABEL = {
+  "잎": "🥬 잎채소",
+  "뿌리": "🥕 뿌리·구근",
+  "열매": "🍅 열매채소",
+  "버섯": "🍄 버섯",
+  "허브": "🌶️ 허브·향신",
+  "과일": "🍋 과일",
+  "기타": "📦 기타"
+};
+
+const SECTIONS = [
+  { id: "veg", label: "야채", items: VEGETABLES, enabled: true },
+  { id: "meat", label: "고기/생선", items: [], enabled: false },
+  { id: "ottogi", label: "오뚜기", items: [], enabled: false },
+  { id: "pulmuone", label: "풀무원", items: [], enabled: false },
+  { id: "chungjungone", label: "청정원", items: [], enabled: false },
+  { id: "jayeon", label: "자연나라", items: [], enabled: false },
+];
+
+// ============ STATE ============
+const STORAGE_KEY = "ndm_order_v1";
+let state = loadState();
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return { activeSection: s?.activeSection || "veg", activeSub: s?.activeSub || "all", search: "", qty: s?.qty || {} };
+  } catch {
+    return { activeSection: "veg", activeSub: "all", search: "", qty: {} };
+  }
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    activeSection: state.activeSection, activeSub: state.activeSub, qty: state.qty
+  }));
+}
+
+function itemKey(secId, item) {
+  return secId + ":" + (item.plu || item.en);
+}
+
+// ============ RENDER ============
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = SECTIONS.map(s => `
+    <button class="tab ${state.activeSection===s.id?'active':''}"
+            data-id="${s.id}" ${s.enabled ? '' : 'disabled'}>
+      ${s.label}${s.enabled ? '' : ' <small>(준비중)</small>'}
+    </button>
+  `).join("");
+  el.querySelectorAll(".tab").forEach(b => {
+    b.addEventListener("click", () => {
+      if (b.disabled) return;
+      state.activeSection = b.dataset.id;
+      state.activeSub = "all";
+      saveState();
+      renderAll();
+    });
+  });
+}
+
+function activeSection() {
+  return SECTIONS.find(s => s.id === state.activeSection);
+}
+
+function renderSubcats() {
+  const sec = activeSection();
+  const el = document.getElementById("subcats");
+  if (!sec.enabled || sec.items.length === 0) { el.innerHTML = ""; return; }
+  const counts = { all: sec.items.length };
+  for (const it of sec.items) counts[it.cat] = (counts[it.cat] || 0) + 1;
+  const chips = [`<button class="chip ${state.activeSub==='all'?'active':''}" data-sub="all">전체<span class="count">${counts.all}</span></button>`];
+  for (const c of SUBCAT_ORDER) {
+    if (!counts[c]) continue;
+    chips.push(`<button class="chip ${state.activeSub===c?'active':''}" data-sub="${c}">${SUBCAT_LABEL[c]}<span class="count">${counts[c]}</span></button>`);
+  }
+  el.innerHTML = chips.join("");
+  el.querySelectorAll(".chip").forEach(c => {
+    c.addEventListener("click", () => {
+      state.activeSub = c.dataset.sub;
+      saveState();
+      renderContent();
+    });
+  });
+}
+
+function filterItems(items) {
+  const q = state.search.trim().toLowerCase();
+  let filtered = state.activeSub === "all" ? items : items.filter(it => it.cat === state.activeSub);
+  if (q) {
+    filtered = filtered.filter(it =>
+      it.en.toLowerCase().includes(q) ||
+      it.ko.toLowerCase().includes(q) ||
+      (it.plu && it.plu.includes(q))
+    );
+  }
+  return filtered;
+}
+
+function renderContent() {
+  const sec = activeSection();
+  const main = document.getElementById("content");
+  if (!sec.enabled) {
+    main.innerHTML = `
+      <div class="placeholder">
+        <div class="emoji">🚧</div>
+        <div><strong>${sec.label}</strong> 섹션 준비 중</div>
+        <div class="hint">해당 카테고리의 품목 리스트를 추가하면 바로 주문 가능해집니다.</div>
+      </div>`;
+    return;
+  }
+  const items = filterItems(sec.items);
+  if (items.length === 0) {
+    main.innerHTML = `<div class="empty-state">검색 결과가 없습니다.</div>`;
+    return;
+  }
+  let html = "";
+  if (state.activeSub === "all" && !state.search.trim()) {
+    // group by subcategory
+    for (const c of SUBCAT_ORDER) {
+      const group = items.filter(it => it.cat === c);
+      if (!group.length) continue;
+      html += `<div class="subcat-header">${SUBCAT_LABEL[c]} <span style="color:#9ca3af;font-weight:500">· ${group.length}</span></div>`;
+      html += group.map(it => itemHtml(sec.id, it)).join("");
+    }
+  } else {
+    html = items.map(it => itemHtml(sec.id, it)).join("");
+  }
+  main.innerHTML = html;
+  main.querySelectorAll(".item").forEach(el => bindItemEvents(el));
+}
+
+function itemHtml(secId, it) {
+  const key = itemKey(secId, it);
+  const qty = state.qty[key] || 0;
+  const priceStr = it.price > 0 ? `$${formatPrice(it.price)}` : '—';
+  const unitStr = it.unit ? `<span class="unit">· ${escapeHtml(it.unit)}</span>` : '';
+  const pluStr = it.plu ? `<span class="plu">#${it.plu}</span>` : '';
+  return `
+    <div class="item ${qty>0?'has-qty':''}" data-key="${key}">
+      <div class="item-info">
+        <div class="name-ko">${escapeHtml(it.ko)}</div>
+        <div class="name-en">${escapeHtml(it.en)}</div>
+        <div class="detail-row">
+          ${pluStr}
+          ${unitStr}
+          <span class="price">${priceStr}</span>
+        </div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn" data-act="dec">−</button>
+        <input class="qty-input" type="number" min="0" step="1" value="${qty || ''}" placeholder="0">
+        <button class="qty-btn" data-act="inc">+</button>
+      </div>
+    </div>`;
+}
+
+function bindItemEvents(el) {
+  const key = el.dataset.key;
+  const input = el.querySelector(".qty-input");
+  el.querySelector('[data-act="inc"]').addEventListener("click", () => {
+    setQty(key, (state.qty[key] || 0) + 1);
+    input.value = state.qty[key] || '';
+    updateItemHighlight(el, key);
+    updateSummary();
+  });
+  el.querySelector('[data-act="dec"]').addEventListener("click", () => {
+    const next = Math.max(0, (state.qty[key] || 0) - 1);
+    setQty(key, next);
+    input.value = state.qty[key] || '';
+    updateItemHighlight(el, key);
+    updateSummary();
+  });
+  input.addEventListener("input", () => {
+    const v = Math.max(0, Math.floor(Number(input.value) || 0));
+    setQty(key, v);
+    updateItemHighlight(el, key);
+    updateSummary();
+  });
+}
+
+function updateItemHighlight(el, key) {
+  el.classList.toggle("has-qty", (state.qty[key] || 0) > 0);
+}
+
+function setQty(key, v) {
+  if (v > 0) state.qty[key] = v;
+  else delete state.qty[key];
+  saveState();
+}
+
+// ============ SUMMARY ============
+function getOrderLines() {
+  const lines = [];
+  for (const sec of SECTIONS) {
+    if (!sec.enabled) continue;
+    for (const it of sec.items) {
+      const key = itemKey(sec.id, it);
+      const q = state.qty[key];
+      if (q && q > 0) lines.push({ section: sec.label, item: it, qty: q, subtotal: q * it.price });
+    }
+  }
+  return lines;
+}
+
+function updateSummary() {
+  const lines = getOrderLines();
+  const total = lines.reduce((a, l) => a + l.subtotal, 0);
+  const count = lines.reduce((a, l) => a + l.qty, 0);
+  document.getElementById("totalAmount").textContent = `$${formatPrice(total)}`;
+  document.getElementById("totalCount").textContent = count > 0 ? `· ${lines.length}종 / ${count}개` : "";
+  document.getElementById("openOrderBtn").disabled = lines.length === 0;
+}
+
+// ============ MODAL ============
+function openOrderModal() {
+  const lines = getOrderLines();
+  const body = document.getElementById("orderList");
+  body.innerHTML = lines.map(l => `
+    <div class="order-line">
+      <div>
+        <div class="ol-name">${escapeHtml(l.item.ko)}</div>
+        <div class="ol-detail">${l.item.plu ? `#${l.item.plu} · ` : ''}${escapeHtml(l.item.en)}${l.item.unit ? ' · ' + escapeHtml(l.item.unit) : ''} · $${formatPrice(l.item.price)}</div>
+      </div>
+      <div>
+        <div class="ol-qty">× ${l.qty}</div>
+        <div class="ol-sub">$${formatPrice(l.subtotal)}</div>
+      </div>
+    </div>
+  `).join("");
+  const total = lines.reduce((a, l) => a + l.subtotal, 0);
+  document.getElementById("modalTotal").textContent = `$${formatPrice(total)}`;
+  document.getElementById("modal").classList.add("show");
+}
+
+function closeOrderModal() {
+  document.getElementById("modal").classList.remove("show");
+}
+
+function orderAsText() {
+  const lines = getOrderLines();
+  const today = new Date().toISOString().slice(0,10);
+  let out = `[남대문 주문서 - ${today}]\n\n`;
+  let total = 0;
+  for (const l of lines) {
+    out += `${l.item.plu ? `#${l.item.plu} ` : ''}${l.item.ko} (${l.item.en})${l.item.unit ? ' ' + l.item.unit : ''} × ${l.qty} = $${formatPrice(l.subtotal)}\n`;
+    total += l.subtotal;
+  }
+  out += `\n합계: $${formatPrice(total)}`;
+  return out;
+}
+
+// ============ UTIL ============
+function formatPrice(n) {
+  if (!n && n !== 0) return "0";
+  const rounded = Math.round(n * 100) / 100;
+  return rounded.toLocaleString("en-US", { minimumFractionDigits: rounded % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1600);
+}
+
+// ============ EVENTS ============
+document.getElementById("search").addEventListener("input", e => {
+  state.search = e.target.value;
+  document.getElementById("searchClear").classList.toggle("show", state.search.length > 0);
+  renderContent();
+});
+document.getElementById("searchClear").addEventListener("click", () => {
+  document.getElementById("search").value = "";
+  state.search = "";
+  document.getElementById("searchClear").classList.remove("show");
+  renderContent();
+});
+document.getElementById("openOrderBtn").addEventListener("click", openOrderModal);
+document.getElementById("closeModal").addEventListener("click", closeOrderModal);
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target.id === "modal") closeOrderModal();
+});
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(orderAsText());
+    showToast("주문서를 복사했습니다");
+  } catch {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = orderAsText();
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("주문서를 복사했습니다");
+  }
+});
+document.getElementById("printBtn").addEventListener("click", () => {
+  window.print();
+});
+document.getElementById("clearBtn").addEventListener("click", () => {
+  if (!confirm("주문 내역을 모두 삭제할까요?")) return;
+  state.qty = {};
+  saveState();
+  closeOrderModal();
+  renderContent();
+  updateSummary();
+  showToast("주문 내역을 초기화했습니다");
+});
+
+function renderAll() {
+  renderTabs();
+  renderSubcats();
+  renderContent();
+  updateSummary();
+}
+
+renderAll();
+</script>
+</body>
+</html>

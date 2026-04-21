@@ -83,51 +83,88 @@
   .chip.active { background: #1f2937; color: #fff; border-color: #1f2937; }
   .chip .count { opacity: 0.6; margin-left: 4px; font-size: 11px; }
 
-  main { padding: 12px 16px 16px; }
+  main { padding: 8px 10px 16px; }
   .subcat-header {
-    font-size: 13px; font-weight: 700; color: #6b7280;
-    margin: 14px 0 6px; padding-left: 2px;
-    text-transform: none; letter-spacing: 0;
+    font-size: 12px; font-weight: 700; color: #6b7280;
+    margin: 12px 0 6px; padding-left: 2px;
   }
   .subcat-header:first-child { margin-top: 0; }
 
-  .item {
+  .items-grid {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: center;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+
+  .item {
     background: #fff;
-    padding: 12px 14px;
-    border-radius: 10px;
-    margin-bottom: 6px;
+    padding: 7px 9px 6px;
+    border-radius: 8px;
     border: 1px solid #e5e7eb;
     transition: border-color .1s, box-shadow .1s;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
   }
   .item.has-qty { border-color: #22c55e; box-shadow: 0 0 0 1px #22c55e inset; }
-  .item-info { min-width: 0; }
-  .name-ko { font-weight: 600; font-size: 15px; line-height: 1.25; }
-  .name-en { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .detail-row { display: flex; gap: 10px; align-items: center; margin-top: 5px; font-size: 12px; }
-  .plu { font-family: "SF Mono", Menlo, Consolas, monospace; color: #9ca3af; }
-  .unit { color: #6b7280; }
-  .price { font-weight: 700; color: #059669; font-size: 14px; margin-left: auto; }
+  .item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; min-width: 0; }
+  .name-en {
+    font-weight: 700; font-size: 13px; line-height: 1.25; color: #111827;
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .name-ko {
+    font-weight: 500; font-size: 13px; line-height: 1.25; color: #4b5563;
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .plu { font-family: "SF Mono", Menlo, Consolas, monospace; color: #9ca3af; font-size: 11px; flex-shrink: 0; white-space: nowrap; }
+  .item-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: auto; padding-top: 4px; }
+  .unit { color: #6b7280; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .price { font-weight: 800; color: #059669; font-size: 13px; flex-shrink: 0; display: inline-flex; align-items: baseline; }
+  .price-input {
+    border: none; background: transparent;
+    font-weight: 800; color: #059669; font-size: 13px;
+    field-sizing: content;
+    min-width: 1ch;
+    text-align: left;
+    padding: 0;
+    font-family: inherit;
+    -moz-appearance: textfield;
+    cursor: text;
+  }
+  .price-input:hover { background: #f9fafb; border-radius: 3px; }
+  .price-input:focus {
+    outline: none;
+    background: #fff;
+    border: 1px solid #22c55e;
+    border-radius: 3px;
+    padding: 0 1px;
+  }
+  .price-input::-webkit-outer-spin-button,
+  .price-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .price.edited .price-input { color: #d97706; }
   .qty-control {
-    display: flex; align-items: center; gap: 4px;
-    background: #f3f4f6; border-radius: 8px; padding: 3px;
+    display: flex; align-items: center;
+    background: #f3f4f6; border-radius: 6px; padding: 2px;
+    margin-top: 4px;
   }
   .qty-btn {
-    width: 30px; height: 30px;
+    width: 26px; height: 26px; flex-shrink: 0;
     border: none; background: #fff;
-    border-radius: 6px; font-size: 17px; font-weight: 700;
+    border-radius: 4px; font-size: 15px; font-weight: 700;
     color: #374151; cursor: pointer;
     box-shadow: 0 1px 2px rgba(0,0,0,.05);
   }
   .qty-btn:active { background: #e5e7eb; }
   .qty-input {
-    width: 44px; height: 30px; text-align: center;
+    flex: 1; height: 26px; text-align: center;
     border: none; background: transparent;
-    font-size: 15px; font-weight: 700; color: #111827;
-    outline: none; padding: 0;
+    font-size: 13px; font-weight: 700; color: #111827;
+    outline: none; padding: 0; min-width: 0;
     -moz-appearance: textfield;
   }
   .qty-input::-webkit-outer-spin-button,
@@ -251,8 +288,8 @@
 <header>
   <div class="title-row">
     <div>
-      <h1>남대문 벤더 주문서</h1>
-      <div class="meta">Namdaemun Vendor Order · 가격 기준일 2026-04-21</div>
+      <h1>Namdaemun Vendor Order</h1>
+      <div class="meta">남대문 벤더 주문서 · Prices as of <span id="priceDate">2026-04-21</span> <span id="priceEditedCount" style="color:#fbbf24"></span></div>
     </div>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -260,7 +297,7 @@
 
 <div class="controls" id="controls">
   <div class="search-wrap">
-    <input type="text" id="search" placeholder="품목 검색 (한글/영문/PLU)" autocomplete="off">
+    <input type="text" id="search" placeholder="Search items / 품목 검색 (EN · KO · PLU)" autocomplete="off">
     <button class="search-clear" id="searchClear" aria-label="지우기">×</button>
   </div>
   <div class="subcats" id="subcats"></div>
@@ -270,10 +307,10 @@
 
 <div class="summary-bar">
   <div class="summary-info">
-    <div class="summary-label">총 주문액</div>
+    <div class="summary-label">주문 수량</div>
     <div>
-      <span class="summary-total" id="totalAmount">$0</span>
-      <span class="summary-count" id="totalCount"></span>
+      <span class="summary-total" id="totalCount">0종</span>
+      <span class="summary-count" id="totalUnits"></span>
     </div>
   </div>
   <button class="btn-primary" id="openOrderBtn" disabled>주문서 보기</button>
@@ -288,8 +325,8 @@
     <div class="modal-body" id="orderList"></div>
     <div class="modal-footer">
       <div class="total-row">
-        <span class="label">합계</span>
-        <span class="total" id="modalTotal">$0</span>
+        <span class="label">총 품목</span>
+        <span class="total" id="modalTotal">0종</span>
       </div>
       <button class="btn" id="copyBtn">텍스트 복사</button>
       <button class="btn" id="printBtn">인쇄</button>
@@ -437,24 +474,59 @@ const SECTIONS = [
 
 // ============ STATE ============
 const STORAGE_KEY = "ndm_order_v1";
+const DEFAULT_PRICE_DATE = "2026-04-21";
 let state = loadState();
 
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return { activeSection: s?.activeSection || "veg", activeSub: s?.activeSub || "all", search: "", qty: s?.qty || {} };
+    return {
+      activeSection: s?.activeSection || "veg",
+      activeSub: s?.activeSub || "all",
+      search: "",
+      qty: s?.qty || {},
+      prices: s?.prices || {},
+      priceDate: s?.priceDate || DEFAULT_PRICE_DATE,
+    };
   } catch {
-    return { activeSection: "veg", activeSub: "all", search: "", qty: {} };
+    return { activeSection: "veg", activeSub: "all", search: "", qty: {}, prices: {}, priceDate: DEFAULT_PRICE_DATE };
   }
 }
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    activeSection: state.activeSection, activeSub: state.activeSub, qty: state.qty
+    activeSection: state.activeSection, activeSub: state.activeSub, qty: state.qty,
+    prices: state.prices, priceDate: state.priceDate
   }));
 }
 
 function itemKey(secId, item) {
   return secId + ":" + (item.plu || item.en);
+}
+
+function getPrice(secId, it) {
+  const key = itemKey(secId, it);
+  return state.prices[key] !== undefined ? state.prices[key] : it.price;
+}
+
+function setPrice(secId, it, newPrice) {
+  const key = itemKey(secId, it);
+  const clean = Math.max(0, Math.round(Number(newPrice) * 100) / 100) || 0;
+  if (Math.abs(clean - it.price) < 0.001) {
+    delete state.prices[key];
+  } else {
+    state.prices[key] = clean;
+  }
+  state.priceDate = new Date().toISOString().slice(0, 10);
+  saveState();
+  updatePriceHeader();
+}
+
+function updatePriceHeader() {
+  const dateEl = document.getElementById("priceDate");
+  if (dateEl) dateEl.textContent = state.priceDate;
+  const edited = Object.keys(state.prices).length;
+  const editedEl = document.getElementById("priceEditedCount");
+  if (editedEl) editedEl.textContent = edited > 0 ? `· ${edited}개 수정됨` : "";
 }
 
 // ============ RENDER ============
@@ -539,10 +611,10 @@ function renderContent() {
       const group = items.filter(it => it.cat === c);
       if (!group.length) continue;
       html += `<div class="subcat-header">${SUBCAT_LABEL[c]} <span style="color:#9ca3af;font-weight:500">· ${group.length}</span></div>`;
-      html += group.map(it => itemHtml(sec.id, it)).join("");
+      html += `<div class="items-grid">${group.map(it => itemHtml(sec.id, it)).join("")}</div>`;
     }
   } else {
-    html = items.map(it => itemHtml(sec.id, it)).join("");
+    html = `<div class="items-grid">${items.map(it => itemHtml(sec.id, it)).join("")}</div>`;
   }
   main.innerHTML = html;
   main.querySelectorAll(".item").forEach(el => bindItemEvents(el));
@@ -551,19 +623,20 @@ function renderContent() {
 function itemHtml(secId, it) {
   const key = itemKey(secId, it);
   const qty = state.qty[key] || 0;
-  const priceStr = it.price > 0 ? `$${formatPrice(it.price)}` : '—';
-  const unitStr = it.unit ? `<span class="unit">· ${escapeHtml(it.unit)}</span>` : '';
+  const price = getPrice(secId, it);
+  const edited = state.prices[key] !== undefined;
+  const unitStr = it.unit ? escapeHtml(it.unit) : '';
   const pluStr = it.plu ? `<span class="plu">#${it.plu}</span>` : '';
   return `
     <div class="item ${qty>0?'has-qty':''}" data-key="${key}">
-      <div class="item-info">
-        <div class="name-ko">${escapeHtml(it.ko)}</div>
+      <div class="item-head">
         <div class="name-en">${escapeHtml(it.en)}</div>
-        <div class="detail-row">
-          ${pluStr}
-          ${unitStr}
-          <span class="price">${priceStr}</span>
-        </div>
+        ${pluStr}
+      </div>
+      <div class="name-ko">${escapeHtml(it.ko)}</div>
+      <div class="item-foot">
+        <span class="unit">${unitStr}</span>
+        <span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span>
       </div>
       <div class="qty-control">
         <button class="qty-btn" data-act="dec">−</button>
@@ -571,6 +644,11 @@ function itemHtml(secId, it) {
         <button class="qty-btn" data-act="inc">+</button>
       </div>
     </div>`;
+}
+
+function sizePriceInput(inp) {
+  const v = String(inp.value || '0');
+  inp.setAttribute('size', Math.max(1, v.length));
 }
 
 function bindItemEvents(el) {
@@ -595,6 +673,38 @@ function bindItemEvents(el) {
     updateItemHighlight(el, key);
     updateSummary();
   });
+
+  const priceInput = el.querySelector(".price-input");
+  const ref = findItemByKey(key);
+  sizePriceInput(priceInput);
+  priceInput.addEventListener("focus", () => priceInput.select());
+  priceInput.addEventListener("input", () => sizePriceInput(priceInput));
+  priceInput.addEventListener("blur", () => {
+    if (!ref) return;
+    setPrice(ref.sec.id, ref.item, priceInput.value);
+    priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
+    sizePriceInput(priceInput);
+    el.querySelector(".price").classList.toggle("edited", state.prices[key] !== undefined);
+  });
+  priceInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") { priceInput.blur(); }
+    if (e.key === "Escape") {
+      if (ref) priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
+      sizePriceInput(priceInput);
+      priceInput.blur();
+    }
+  });
+}
+
+function findItemByKey(key) {
+  const idx = key.indexOf(":");
+  if (idx < 0) return null;
+  const secId = key.slice(0, idx);
+  const rest = key.slice(idx + 1);
+  const sec = SECTIONS.find(s => s.id === secId);
+  if (!sec) return null;
+  const item = sec.items.find(it => (it.plu || it.en) === rest);
+  return item ? { sec, item } : null;
 }
 
 function updateItemHighlight(el, key) {
@@ -615,7 +725,7 @@ function getOrderLines() {
     for (const it of sec.items) {
       const key = itemKey(sec.id, it);
       const q = state.qty[key];
-      if (q && q > 0) lines.push({ section: sec.label, item: it, qty: q, subtotal: q * it.price });
+      if (q && q > 0) lines.push({ section: sec.label, item: it, qty: q });
     }
   }
   return lines;
@@ -623,10 +733,9 @@ function getOrderLines() {
 
 function updateSummary() {
   const lines = getOrderLines();
-  const total = lines.reduce((a, l) => a + l.subtotal, 0);
-  const count = lines.reduce((a, l) => a + l.qty, 0);
-  document.getElementById("totalAmount").textContent = `$${formatPrice(total)}`;
-  document.getElementById("totalCount").textContent = count > 0 ? `· ${lines.length}종 / ${count}개` : "";
+  const units = lines.reduce((a, l) => a + l.qty, 0);
+  document.getElementById("totalCount").textContent = `${lines.length}종`;
+  document.getElementById("totalUnits").textContent = units > 0 ? `· ${units}개` : "";
   document.getElementById("openOrderBtn").disabled = lines.length === 0;
 }
 
@@ -637,17 +746,15 @@ function openOrderModal() {
   body.innerHTML = lines.map(l => `
     <div class="order-line">
       <div>
-        <div class="ol-name">${escapeHtml(l.item.ko)}</div>
-        <div class="ol-detail">${l.item.plu ? `#${l.item.plu} · ` : ''}${escapeHtml(l.item.en)}${l.item.unit ? ' · ' + escapeHtml(l.item.unit) : ''} · $${formatPrice(l.item.price)}</div>
+        <div class="ol-name">${escapeHtml(l.item.en)}</div>
+        <div class="ol-detail">${l.item.plu ? `#${l.item.plu} · ` : ''}${escapeHtml(l.item.ko)}${l.item.unit ? ' · ' + escapeHtml(l.item.unit) : ''}</div>
       </div>
       <div>
         <div class="ol-qty">× ${l.qty}</div>
-        <div class="ol-sub">$${formatPrice(l.subtotal)}</div>
       </div>
     </div>
   `).join("");
-  const total = lines.reduce((a, l) => a + l.subtotal, 0);
-  document.getElementById("modalTotal").textContent = `$${formatPrice(total)}`;
+  document.getElementById("modalTotal").textContent = `${lines.length}종 / ${lines.reduce((a,l)=>a+l.qty,0)}개`;
   document.getElementById("modal").classList.add("show");
 }
 
@@ -659,12 +766,10 @@ function orderAsText() {
   const lines = getOrderLines();
   const today = new Date().toISOString().slice(0,10);
   let out = `[남대문 주문서 - ${today}]\n\n`;
-  let total = 0;
   for (const l of lines) {
-    out += `${l.item.plu ? `#${l.item.plu} ` : ''}${l.item.ko} (${l.item.en})${l.item.unit ? ' ' + l.item.unit : ''} × ${l.qty} = $${formatPrice(l.subtotal)}\n`;
-    total += l.subtotal;
+    out += `${l.item.plu ? `#${l.item.plu} ` : ''}${l.item.en} (${l.item.ko})${l.item.unit ? ' ' + l.item.unit : ''} × ${l.qty}\n`;
   }
-  out += `\n합계: $${formatPrice(total)}`;
+  out += `\n총 ${lines.length}종 / ${lines.reduce((a,l)=>a+l.qty,0)}개`;
   return out;
 }
 
@@ -734,6 +839,7 @@ function renderAll() {
   renderSubcats();
   renderContent();
   updateSummary();
+  updatePriceHeader();
 }
 
 renderAll();

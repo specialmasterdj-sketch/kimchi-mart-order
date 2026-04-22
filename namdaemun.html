@@ -125,6 +125,13 @@
     min-width: 0;
   }
   .item.has-qty { border-color: #22c55e; box-shadow: 0 0 0 1px #22c55e inset; }
+  .item-thumb {
+    width: 100%; aspect-ratio: 4/3;
+    background: #f9fafb; border-radius: 6px;
+    overflow: hidden; margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .item-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; min-width: 0; }
   .name-en {
     font-weight: 700; font-size: 13px; line-height: 1.25; color: #111827;
@@ -140,6 +147,7 @@
   .plu { font-family: "SF Mono", Menlo, Consolas, monospace; color: #9ca3af; font-size: 11px; flex-shrink: 0; white-space: nowrap; }
   .item-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: auto; padding-top: 4px; }
   .unit { color: #6b7280; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .barcode { font-family: "SF Mono", Menlo, Consolas, monospace; color: #6b7280; font-size: 10px; letter-spacing: 0.3px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .price { font-weight: 800; color: #059669; font-size: 13px; flex-shrink: 0; display: inline-flex; align-items: baseline; }
   .price-input {
     border: none; background: transparent;
@@ -807,17 +815,20 @@ function itemHtml(secId, it) {
   const edited = state.prices[key] !== undefined;
   const unitStr = it.unit ? escapeHtml(it.unit) : '';
   const pluStr = it.plu ? `<span class="plu">#${it.plu}</span>` : '';
+  const imgStr = it.image ? `<div class="item-thumb"><img src="${escapeHtml(it.image)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
+  const hasBarcode = !!it.barcode;
+  const foot = hasBarcode
+    ? `<div class="item-foot"><span class="unit">${unitStr}</span></div><div class="barcode">${escapeHtml(it.barcode)}</div>`
+    : `<div class="item-foot"><span class="unit">${unitStr}</span><span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span></div>`;
   return `
     <div class="item ${qty>0?'has-qty':''}" data-key="${key}">
+      ${imgStr}
       <div class="item-head">
         <div class="name-en">${escapeHtml(it.en)}</div>
         ${pluStr}
       </div>
       <div class="name-ko">${escapeHtml(it.ko)}</div>
-      <div class="item-foot">
-        <span class="unit">${unitStr}</span>
-        <span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span>
-      </div>
+      ${foot}
       <div class="qty-control">
         <button class="qty-btn" data-act="dec">−</button>
         <input class="qty-input" type="number" min="0" step="1" value="${qty || ''}" placeholder="0">
@@ -855,25 +866,27 @@ function bindItemEvents(el) {
   });
 
   const priceInput = el.querySelector(".price-input");
-  const ref = findItemByKey(key);
-  sizePriceInput(priceInput);
-  priceInput.addEventListener("focus", () => priceInput.select());
-  priceInput.addEventListener("input", () => sizePriceInput(priceInput));
-  priceInput.addEventListener("blur", () => {
-    if (!ref) return;
-    setPrice(ref.sec.id, ref.item, priceInput.value);
-    priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
+  if (priceInput) {
+    const ref = findItemByKey(key);
     sizePriceInput(priceInput);
-    el.querySelector(".price").classList.toggle("edited", state.prices[key] !== undefined);
-  });
-  priceInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") { priceInput.blur(); }
-    if (e.key === "Escape") {
-      if (ref) priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
+    priceInput.addEventListener("focus", () => priceInput.select());
+    priceInput.addEventListener("input", () => sizePriceInput(priceInput));
+    priceInput.addEventListener("blur", () => {
+      if (!ref) return;
+      setPrice(ref.sec.id, ref.item, priceInput.value);
+      priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
       sizePriceInput(priceInput);
-      priceInput.blur();
-    }
-  });
+      el.querySelector(".price").classList.toggle("edited", state.prices[key] !== undefined);
+    });
+    priceInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") { priceInput.blur(); }
+      if (e.key === "Escape") {
+        if (ref) priceInput.value = formatPrice(getPrice(ref.sec.id, ref.item));
+        sizePriceInput(priceInput);
+        priceInput.blur();
+      }
+    });
+  }
 }
 
 function findItemByKey(key) {

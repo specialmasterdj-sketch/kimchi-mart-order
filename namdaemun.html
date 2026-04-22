@@ -395,6 +395,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="jayone_products.js"></script>
 <script>
 // ============ DATA ============
 const VEGETABLES = [
@@ -510,8 +511,17 @@ const VEGETABLES = [
   {plu:"", en:"MINT", ko:"민트", unit:"", price:0, cat:"허브"},
 ];
 
-const SUBCAT_ORDER = ["잎", "뿌리", "열매", "버섯", "허브", "과일", "기타"];
+const SUBCAT_ORDER = [
+  "잎", "뿌리", "열매", "버섯", "허브", "과일", "기타",
+  // Jayone subcats
+  "tofu", "noodle", "ricecake", "ramen", "rice", "flour",
+  "paste", "sauce", "broth", "pepper",
+  "seafood", "jeotgal", "banchan", "kimchi",
+  "dumpling", "beverage", "snack", "tea",
+  "nori", "veg", "other", "supp", "hardware"
+];
 const SUBCAT_LABEL = {
+  // Vegetables
   "잎":   "🥬 Leafy 잎채소",
   "뿌리": "🥕 Root 뿌리",
   "열매": "🍅 Fruiting 열매",
@@ -519,7 +529,33 @@ const SUBCAT_LABEL = {
   "허브": "🌶️ Herb 허브",
   "과일": "🍋 Fruit 과일",
   "기타": "📦 Other 기타",
+  // Jayone
+  "tofu":     "🧊 Tofu 두부·유부",
+  "noodle":   "🍜 Noodle 면",
+  "ricecake": "🍡 Rice Cake 떡",
+  "ramen":    "🍲 Ramen 라면",
+  "rice":     "🌾 Rice·Grain 쌀·곡물",
+  "flour":    "🥄 Flour·Powder 가루",
+  "paste":    "🌶️ Paste 장류",
+  "sauce":    "🥫 Sauce·Oil 소스·기름",
+  "broth":    "🫖 Broth·Dashi 육수·다시",
+  "pepper":   "🧂 Pepper·Salt·Sesame 고춧가루·소금·깨",
+  "seafood":  "🐟 Seafood 해산물",
+  "jeotgal":  "🦑 Jeotgal 젓갈",
+  "banchan":  "🥢 Banchan 반찬",
+  "kimchi":   "🥬 Kimchi 김치",
+  "dumpling": "🥟 Dumpling·Bun 만두·빵",
+  "beverage": "🥤 Beverage 음료",
+  "snack":    "🍪 Snack·Candy 과자·사탕",
+  "tea":      "🍵 Tea·Coffee 차·커피",
+  "nori":     "🌊 Seaweed 김·해조",
+  "veg":      "🍎 Fruit·Veg 과일·채소",
+  "other":    "🥫 Processed 가공식품",
+  "supp":     "💊 Supplement 건강식품",
+  "hardware": "🍳 Hardware 주방용품",
 };
+
+const JAYONE_ITEMS = (typeof window !== 'undefined' && window.JAYONE_PRODUCTS) ? window.JAYONE_PRODUCTS : [];
 
 const SECTIONS = [
   { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
@@ -527,7 +563,7 @@ const SECTIONS = [
   { id: "ottogi",       label: "Ottogi 오뚜기",          items: [], enabled: false },
   { id: "pulmuone",     label: "Pulmuone 풀무원",        items: [], enabled: false },
   { id: "chungjungone", label: "Chungjungone 청정원",    items: [], enabled: false },
-  { id: "jayeon",       label: "Nature's Country 자연나라", items: [], enabled: false },
+  { id: "jayeon",       label: "Jayone 자연나라",        items: JAYONE_ITEMS, enabled: JAYONE_ITEMS.length > 0 },
 ];
 
 // ============ BRANCHES ============

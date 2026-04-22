@@ -348,31 +348,31 @@
 
 <div class="summary-bar">
   <div class="summary-info">
-    <div class="summary-label">주문 수량</div>
+    <div class="summary-label">Order / 주문 수량</div>
     <div>
-      <span class="summary-total" id="totalCount">0종</span>
+      <span class="summary-total" id="totalCount">0 items</span>
       <span class="summary-count" id="totalUnits"></span>
     </div>
   </div>
-  <button class="btn-primary" id="openOrderBtn" disabled>주문서 보기</button>
+  <button class="btn-primary" id="openOrderBtn" disabled>View / 주문서 보기</button>
 </div>
 
 <div class="modal-backdrop" id="modal">
   <div class="modal">
     <div class="modal-header">
-      <h2>주문 내역</h2>
+      <h2>Order / 주문 내역</h2>
       <button class="close-btn" id="closeModal">×</button>
     </div>
     <div class="modal-body" id="orderList"></div>
     <div class="modal-footer">
       <div class="total-row">
-        <span class="label" id="modalBranch">지점 미선택</span>
-        <span class="total" id="modalTotal">0종 · 총 0개</span>
+        <span class="label" id="modalBranch">No branch / 지점 미선택</span>
+        <span class="total" id="modalTotal">0 items · 0 units</span>
       </div>
-      <button class="btn danger" id="clearBtn"><span class="icon">🗑️</span>비우기</button>
-      <button class="btn" id="excelBtn"><span class="icon">📊</span>엑셀</button>
-      <button class="btn" id="emailBtn"><span class="icon">✉️</span>이메일</button>
-      <button class="btn primary" id="copyBtn"><span class="icon">📋</span>복사</button>
+      <button class="btn danger" id="clearBtn"><span class="icon">🗑️</span>Clear 비우기</button>
+      <button class="btn" id="excelBtn"><span class="icon">📊</span>Excel 엑셀</button>
+      <button class="btn" id="emailBtn"><span class="icon">✉️</span>Email 이메일</button>
+      <button class="btn primary" id="copyBtn"><span class="icon">📋</span>Copy 복사</button>
     </div>
   </div>
 </div>
@@ -380,11 +380,14 @@
 <div class="modal-backdrop" id="branchModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>지점 선택 / Select Branch</h2>
+      <h2>Select Branch / 지점 선택</h2>
       <button class="close-btn" id="closeBranchModal">×</button>
     </div>
     <div class="modal-body">
-      <div style="font-size:13px;color:#6b7280;margin-bottom:12px">주문은 지점별로 따로 저장됩니다. 지점을 바꾸면 해당 지점의 주문으로 전환됩니다.</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:12px">
+        Orders are saved per branch. Switching branches loads that branch's order.<br>
+        주문은 지점별로 따로 저장됩니다. 지점을 바꾸면 해당 지점의 주문으로 전환됩니다.
+      </div>
       <div class="branch-grid" id="branchGrid"></div>
     </div>
   </div>
@@ -509,22 +512,22 @@ const VEGETABLES = [
 
 const SUBCAT_ORDER = ["잎", "뿌리", "열매", "버섯", "허브", "과일", "기타"];
 const SUBCAT_LABEL = {
-  "잎": "🥬 잎채소",
-  "뿌리": "🥕 뿌리·구근",
-  "열매": "🍅 열매채소",
-  "버섯": "🍄 버섯",
-  "허브": "🌶️ 허브·향신",
-  "과일": "🍋 과일",
-  "기타": "📦 기타"
+  "잎":   "🥬 Leafy 잎채소",
+  "뿌리": "🥕 Root 뿌리",
+  "열매": "🍅 Fruiting 열매",
+  "버섯": "🍄 Mushroom 버섯",
+  "허브": "🌶️ Herb 허브",
+  "과일": "🍋 Fruit 과일",
+  "기타": "📦 Other 기타",
 };
 
 const SECTIONS = [
-  { id: "veg", label: "야채", items: VEGETABLES, enabled: true },
-  { id: "meat", label: "고기/생선", items: [], enabled: false },
-  { id: "ottogi", label: "오뚜기", items: [], enabled: false },
-  { id: "pulmuone", label: "풀무원", items: [], enabled: false },
-  { id: "chungjungone", label: "청정원", items: [], enabled: false },
-  { id: "jayeon", label: "자연나라", items: [], enabled: false },
+  { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
+  { id: "meat",         label: "Meat/Fish 고기·생선",    items: [], enabled: false },
+  { id: "ottogi",       label: "Ottogi 오뚜기",          items: [], enabled: false },
+  { id: "pulmuone",     label: "Pulmuone 풀무원",        items: [], enabled: false },
+  { id: "chungjungone", label: "Chungjungone 청정원",    items: [], enabled: false },
+  { id: "jayeon",       label: "Nature's Country 자연나라", items: [], enabled: false },
 ];
 
 // ============ BRANCHES ============
@@ -600,17 +603,17 @@ function updateBranchUI() {
   const lbl = document.getElementById("branchLabel");
   if (state.branchId && BRANCH_BY_ID[state.branchId]) {
     const b = BRANCH_BY_ID[state.branchId];
-    lbl.textContent = `📍 ${b.ko}`;
+    lbl.textContent = `📍 ${b.en} / ${b.ko}`;
     btn.classList.remove("unset");
   } else {
-    lbl.textContent = "⚠️ 지점 선택";
+    lbl.textContent = "⚠️ Select branch / 지점 선택";
     btn.classList.add("unset");
   }
   const modalBranch = document.getElementById("modalBranch");
   if (modalBranch) {
     modalBranch.textContent = state.branchId
-      ? `📍 ${BRANCH_BY_ID[state.branchId].ko}`
-      : "지점 미선택";
+      ? `📍 ${BRANCH_BY_ID[state.branchId].en} / ${BRANCH_BY_ID[state.branchId].ko}`
+      : "No branch / 지점 미선택";
   }
 }
 
@@ -624,7 +627,7 @@ function openBranchModal() {
       <div class="branch-card ${current?'current':''}" data-id="${b.id}">
         <div class="bko">${b.ko}</div>
         <div class="ben">${b.en}</div>
-        ${count > 0 ? `<div class="badge">· ${count}종 주문중</div>` : (current ? `<div class="badge">· 현재 지점</div>` : '')}
+        ${count > 0 ? `<div class="badge">· ${count} in cart · ${count}종</div>` : (current ? `<div class="badge">· Current 현재 지점</div>` : '')}
       </div>
     `;
   }).join("");
@@ -667,7 +670,7 @@ function updatePriceHeader() {
   if (dateEl) dateEl.textContent = state.priceDate;
   const edited = Object.keys(state.prices).length;
   const editedEl = document.getElementById("priceEditedCount");
-  if (editedEl) editedEl.textContent = edited > 0 ? `· ${edited}개 수정됨` : "";
+  if (editedEl) editedEl.textContent = edited > 0 ? `· ${edited} edited / ${edited}개 수정됨` : "";
 }
 
 // ============ RENDER ============
@@ -676,7 +679,7 @@ function renderTabs() {
   el.innerHTML = SECTIONS.map(s => `
     <button class="tab ${state.activeSection===s.id?'active':''}"
             data-id="${s.id}" ${s.enabled ? '' : 'disabled'}>
-      ${s.label}${s.enabled ? '' : ' <small>(준비중)</small>'}
+      ${s.label}${s.enabled ? '' : ' <small>(soon)</small>'}
     </button>
   `).join("");
   el.querySelectorAll(".tab").forEach(b => {
@@ -700,7 +703,7 @@ function renderSubcats() {
   if (!sec.enabled || sec.items.length === 0) { el.innerHTML = ""; return; }
   const counts = { all: sec.items.length };
   for (const it of sec.items) counts[it.cat] = (counts[it.cat] || 0) + 1;
-  const chips = [`<button class="chip ${state.activeSub==='all'?'active':''}" data-sub="all">전체<span class="count">${counts.all}</span></button>`];
+  const chips = [`<button class="chip ${state.activeSub==='all'?'active':''}" data-sub="all">All 전체<span class="count">${counts.all}</span></button>`];
   for (const c of SUBCAT_ORDER) {
     if (!counts[c]) continue;
     chips.push(`<button class="chip ${state.activeSub===c?'active':''}" data-sub="${c}">${SUBCAT_LABEL[c]}<span class="count">${counts[c]}</span></button>`);
@@ -735,14 +738,14 @@ function renderContent() {
     main.innerHTML = `
       <div class="placeholder">
         <div class="emoji">🚧</div>
-        <div><strong>${sec.label}</strong> 섹션 준비 중</div>
-        <div class="hint">해당 카테고리의 품목 리스트를 추가하면 바로 주문 가능해집니다.</div>
+        <div><strong>${sec.label}</strong></div>
+        <div class="hint">Section coming soon · 섹션 준비 중<br>Add the item list to enable ordering · 품목 추가 후 바로 주문 가능</div>
       </div>`;
     return;
   }
   const items = filterItems(sec.items);
   if (items.length === 0) {
-    main.innerHTML = `<div class="empty-state">검색 결과가 없습니다.</div>`;
+    main.innerHTML = `<div class="empty-state">No results / 검색 결과가 없습니다</div>`;
     return;
   }
   let html = "";
@@ -875,8 +878,8 @@ function getOrderLines() {
 function updateSummary() {
   const lines = getOrderLines();
   const units = lines.reduce((a, l) => a + l.qty, 0);
-  document.getElementById("totalCount").textContent = `${lines.length}종`;
-  document.getElementById("totalUnits").textContent = units > 0 ? `· ${units}개` : "";
+  document.getElementById("totalCount").textContent = `${lines.length} items / ${lines.length}종`;
+  document.getElementById("totalUnits").textContent = units > 0 ? `· ${units} units / ${units}개` : "";
   document.getElementById("openOrderBtn").disabled = lines.length === 0;
 }
 
@@ -895,7 +898,8 @@ function openOrderModal() {
       </div>
     </div>
   `).join("");
-  document.getElementById("modalTotal").textContent = `${lines.length}종 / ${lines.reduce((a,l)=>a+l.qty,0)}개`;
+  const units = lines.reduce((a,l)=>a+l.qty,0);
+  document.getElementById("modalTotal").textContent = `${lines.length} items · ${units} units`;
   document.getElementById("modal").classList.add("show");
 }
 
@@ -990,9 +994,10 @@ document.getElementById("modal").addEventListener("click", e => {
   if (e.target.id === "modal") closeOrderModal();
 });
 document.getElementById("copyBtn").addEventListener("click", async () => {
+  const msg = "Order copied / 주문서 복사됨";
   try {
     await navigator.clipboard.writeText(orderAsText());
-    showToast("주문서를 복사했습니다");
+    showToast(msg);
   } catch {
     const ta = document.createElement("textarea");
     ta.value = orderAsText();
@@ -1000,23 +1005,24 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
     ta.select();
     document.execCommand("copy");
     document.body.removeChild(ta);
-    showToast("주문서를 복사했습니다");
+    showToast(msg);
   }
 });
 document.getElementById("excelBtn").addEventListener("click", () => {
   downloadCSV();
-  showToast("CSV 파일을 다운로드했습니다");
+  showToast("CSV downloaded / CSV 다운로드 완료");
 });
 document.getElementById("emailBtn").addEventListener("click", sendEmail);
 document.getElementById("clearBtn").addEventListener("click", () => {
-  const b = state.branchId ? BRANCH_BY_ID[state.branchId].ko : "현재 지점";
-  if (!confirm(`${b}의 주문 내역을 모두 삭제할까요?`)) return;
+  const b = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
+  const label = b ? `${b.en} / ${b.ko}` : "this branch / 현재 지점";
+  if (!confirm(`Clear ${label} order? / ${label}의 주문을 모두 삭제할까요?`)) return;
   state.qty = {};
   saveState();
   closeOrderModal();
   renderContent();
   updateSummary();
-  showToast("주문 내역을 초기화했습니다");
+  showToast("Order cleared / 주문 초기화됨");
 });
 
 document.getElementById("branchBtn").addEventListener("click", openBranchModal);

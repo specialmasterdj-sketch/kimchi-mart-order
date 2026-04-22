@@ -342,6 +342,21 @@ if ((state.page === 'browse' || state.page === 'order') && (!state.vendor || !VE
   state.page = 'home'; state.vendor = null;
 }
 
+// Deep-link support: ?vendor=<id> jumps straight into that vendor's browse view
+// (used by vendor-order-center.html cards so a Seoul Trading click skips the home page).
+(() => {
+  try {
+    const params = new URLSearchParams(location.search);
+    const deep = params.get('vendor');
+    if (deep && VENDORS[deep]) {
+      state.vendor = deep;
+      state.page = 'browse';
+      state.category = 'all';
+      state.search = '';
+    }
+  } catch (e) {}
+})();
+
 function saveNavState(){
   try {
     localStorage.setItem('km_nav', JSON.stringify({

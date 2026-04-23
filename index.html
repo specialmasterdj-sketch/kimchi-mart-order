@@ -353,6 +353,7 @@ if ((state.page === 'browse' || state.page === 'order') && (!state.vendor || !VE
       state.page = 'browse';
       state.category = 'all';
       state.search = '';
+      state.fromVendorCenter = true;
     }
   } catch (e) {}
 })();
@@ -592,7 +593,25 @@ function branchButton(){
 }
 
 function homeIconHtml() {
-  return '<a class="home-icon" href="https://specialmasterdj-sketch.github.io/kfood-guide/apps.html" title="Apps Hub">&#127968;</a>';
+  // When the user arrived here via a ?vendor=<id> deep-link from
+  // vendor-order-center.html, the home icon should take them back to that hub
+  // (not all the way out to apps.html).
+  const href = state.fromVendorCenter
+    ? 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html'
+    : 'https://specialmasterdj-sketch.github.io/kfood-guide/apps.html';
+  return '<a class="home-icon" href="' + href + '" title="Apps Hub">&#127968;</a>';
+}
+
+// Back arrow from a vendor's browse view: return to the vendor-order-center
+// hub if we came from there via deep-link, otherwise show the local home
+// (vendor-picker) page as before.
+function goBackFromVendor() {
+  if (state.fromVendorCenter) {
+    location.href = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
+    return;
+  }
+  state.page = 'home';
+  render();
 }
 
 // ===== STORE INFO =====
@@ -1004,7 +1023,7 @@ function renderBrowse(app) {
   const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
 
   app.innerHTML = '<div class="header">' +
-      '<button class="back-btn" onclick="state.page=\'home\';render()">&larr;</button>' +
+      '<button class="back-btn" onclick="goBackFromVendor()">&larr;</button>' +
       '<h1 style="color:' + v.color + '">' + v.name + '<small>' + v.nameKr + '</small></h1>' +
       '<div class="header-right">' + branchButton() + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
     '</div>' +

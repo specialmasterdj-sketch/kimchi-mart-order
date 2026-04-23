@@ -870,8 +870,12 @@ function renderHome(app) {
   // Standalone pages — some vendors open a dedicated HTML file instead of the
   // built-in browse page (richer UX for that specific vendor's catalog).
   const STANDALONE = { wismettac: 'wismettac.html' };
+  // Vendors with dedicated apps in vendor-order-center — hide from home grid
+  // but keep reachable via ?vendor=<id> deep-link.
+  const HIDDEN_ON_HOME = new Set(['rhee_full','rhee_frequent','seoul_trading','wang','namdaemun','wismettac']);
 
   for (let vid in VENDORS) {
+    if (HIDDEN_ON_HOME.has(vid)) continue;
     const v = VENDORS[vid];
     const cnt = getOrderCount(vid);
     const badge = cnt > 0 ? '<span class="cart-badge">' + cnt + ' ' + t('items_in_cart') + '</span>' : '<span class="cart-badge empty">' + t('empty_cart') + '</span>';

@@ -62,7 +62,7 @@ input { font-family:inherit; }
 .search-bar input:focus { border-color:var(--blue); }
 
 .product-grid { flex:1; overflow-y:auto; padding:10px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; align-content:start; }
-.product-tile { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; flex-direction:column; position:relative; transition:all .15s; cursor:pointer; min-height:240px; }
+.product-tile { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; flex-direction:column; position:relative; transition:all .15s; cursor:pointer; min-height:290px; }
 .product-tile:active { transform:scale(0.98); }
 .product-tile.has-qty { box-shadow:0 0 0 2px var(--red), 0 1px 3px rgba(0,0,0,0.08); }
 .product-tile .new-badge { position:absolute; top:6px; left:6px; background:#ff9800; color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:10px; z-index:2; letter-spacing:.3px; }
@@ -73,6 +73,8 @@ input { font-family:inherit; }
 .product-tile .info .name { font-size:11.5px; font-weight:700; line-height:1.3; color:#222; margin-bottom:3px; min-height:30px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .product-tile .info .name-kr { font-size:10.5px; color:#888; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
 .product-tile .info .meta { font-size:10px; color:#888; margin-bottom:3px; line-height:1.3; }
+.product-tile .info .barcode-line { font-family:monospace; font-size:9.5px; letter-spacing:.3px; color:#666; min-height:13px; }
+.product-tile .info .name-kr { min-height:14px; }
 .product-tile .info .meta .code { color:var(--red); font-weight:700; }
 .product-tile .info .brand { font-size:9.5px; color:#aaa; margin-bottom:6px; text-transform:uppercase; }
 .product-tile .info .price { font-size:13px; font-weight:800; color:var(--red); margin-top:2px; }
@@ -966,14 +968,25 @@ function buildTilesHtml(v, products){
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+eaStep})">+</button>
         </div>
         <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ${eaStep}개 (1 CS)</div>` : '';
+    // Optional rows are ALWAYS rendered (even as blank placeholders) so that
+    // every tile has the same height and the quantity row sits at the same
+    // y-position across a grid row. Without this, a tile without a Korean
+    // name or barcode shrinks by 12-16px and the qty-row on that tile
+    // mis-aligns with its neighbours.
+    const krHtml = (p.nameKr && p.name)
+      ? `<div class="name-kr">${p.nameKr}</div>`
+      : `<div class="name-kr">&nbsp;</div>`;
+    const barcodeHtml = p.barcode
+      ? `<div class="meta barcode-line">📶 ${p.barcode}</div>`
+      : `<div class="meta barcode-line">&nbsp;</div>`;
     tiles += `<div class="product-tile ${anyQty?'has-qty':''}">
       ${newBadge}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">
         <div class="name">${p.name || p.nameKr}</div>
-        ${p.nameKr && p.name ? `<div class="name-kr">${p.nameKr}</div>` : ''}
+        ${krHtml}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
-        ${p.barcode ? `<div class="meta" style="font-family:monospace;font-size:9.5px;letter-spacing:.3px;color:#666">📶 ${p.barcode}</div>` : ''}
+        ${barcodeHtml}
         ${brandHtml}
         ${priceHtml}
         <div class="qty-row">

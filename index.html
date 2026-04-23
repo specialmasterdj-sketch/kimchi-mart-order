@@ -973,6 +973,7 @@ function buildTilesHtml(v, products){
         <div class="name">${p.name || p.nameKr}</div>
         ${p.nameKr && p.name ? `<div class="name-kr">${p.nameKr}</div>` : ''}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
+        ${p.barcode ? `<div class="meta" style="font-family:monospace;font-size:9.5px;letter-spacing:.3px;color:#666">📶 ${p.barcode}</div>` : ''}
         ${brandHtml}
         ${priceHtml}
         <div class="qty-row">

@@ -77,6 +77,9 @@ input { font-family:inherit; }
 .product-tile .info .name-kr { min-height:14px; }
 .product-tile .info .meta .code { color:var(--red); font-weight:700; }
 .product-tile .info .brand { font-size:9.5px; color:#aaa; margin-bottom:6px; text-transform:uppercase; }
+.product-tile.catalog .img-wrap { aspect-ratio:318/290; padding:0; background:#fff; min-height:0; }
+.product-tile.catalog .img-wrap img { width:100%; height:100%; object-fit:contain; max-height:none; display:block; }
+.product-tile.catalog .info { padding:6px 8px 8px; }
 .product-tile .info .price { font-size:13px; font-weight:800; color:var(--red); margin-top:2px; }
 .product-tile .qty-row { display:flex; align-items:center; justify-content:space-between; margin-top:auto; background:#f5f5f5; border-radius:7px; padding:2px; gap:0; border-top:none; }
 .qty-btn { flex-shrink:0; width:30px; height:28px; font-size:15px; font-weight:700; border:none; border-radius:5px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit; }
@@ -979,6 +982,23 @@ function buildTilesHtml(v, products){
     const barcodeHtml = p.barcode
       ? `<div class="meta barcode-line">📶 ${p.barcode}</div>`
       : `<div class="meta barcode-line">&nbsp;</div>`;
+    // Catalog-style tile: image already contains name + code + size, so skip
+    // the text rows and show only the cell image plus the qty controls.
+    if (p.catalog || p.category === 'wal-lkk') {
+      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}">
+        ${newBadge}
+        <div class="img-wrap">${riskCorner}${imgHtml}</div>
+        <div class="info">
+          <div class="qty-row">
+            <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
+            <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
+            <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
+          </div>
+          ${eaRow}
+        </div>
+      </div>`;
+      continue;
+    }
     tiles += `<div class="product-tile ${anyQty?'has-qty':''}">
       ${newBadge}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>

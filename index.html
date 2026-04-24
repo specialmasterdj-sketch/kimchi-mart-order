@@ -13,6 +13,19 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
+<script>
+// Bare visit (no vendor deep-link, no in-app navigation flag) → bounce out to
+// the vendor-order-center hub so manager flows always go through that hub.
+(function(){
+  try {
+    var p = new URLSearchParams(location.search);
+    if (p.get('vendor')) return;
+    if (p.get('hub') === 'skip') return;
+    if (sessionStorage.getItem('km_skipHubRedirect') === '1') return;
+    location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html');
+  } catch(e){}
+})();
+</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {

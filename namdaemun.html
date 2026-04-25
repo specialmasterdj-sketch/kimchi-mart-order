@@ -632,7 +632,10 @@ function loadState() {
     search: "",
     qty,
     prices: shared.prices || {},
-    priceDate: shared.priceDate || DEFAULT_PRICE_DATE,
+    // Newer DEFAULT (deploy-time constant) wins over a stale localStorage
+    // priceDate so a fresh price upload doesn't leave the date frozen on
+    // every browser that ever opened the page.
+    priceDate: (shared.priceDate && shared.priceDate > DEFAULT_PRICE_DATE) ? shared.priceDate : DEFAULT_PRICE_DATE,
     branchId,
   };
 }

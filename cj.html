@@ -401,8 +401,8 @@ function setLang(l){
 function onBack(){
   if ($('pd-modal').classList.contains('show')) { closePd(); return; }
   if ($('cart-modal').classList.contains('show')) { closeCart(); return; }
-  if (history.length > 1) history.back();
-  else location.reload();
+  if (document.referrer && history.length > 1) { history.back(); return; }
+  location.href = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
 }
 
 /* -------- GROUPS (top click-bar: catalog TOC sections) -------- */

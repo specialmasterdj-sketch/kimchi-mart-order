@@ -655,6 +655,10 @@ function homeIconHtml() {
 // hub if we came from there via deep-link, otherwise show the local home
 // (vendor-picker) page as before.
 function goBackFromVendor() {
+  // Always honour the actual previous page when one exists (browser back).
+  // Falls back to the vendor-order-center hub if there's no real history
+  // (direct URL, brand-new tab, PWA cold start).
+  if (document.referrer && history.length > 1) { history.back(); return; }
   if (state.fromVendorCenter) {
     location.href = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
     return;

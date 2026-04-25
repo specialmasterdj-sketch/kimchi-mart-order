@@ -63,7 +63,9 @@
   .qbtn.plus{color:var(--green)}
   .qbtn:disabled{opacity:.3;cursor:not-allowed}
   .qbtn:active{background:#ddd}
-  .qnum{flex:1;text-align:center;font-size:13px;font-weight:800;color:#222;min-width:30px}
+  .qnum{flex:1;text-align:center;font-size:13px;font-weight:800;color:#222;min-width:30px;background:#fff;border:none;border-radius:5px;cursor:pointer;padding:4px 0;font-family:inherit;transition:background .12s}
+  .qnum:hover{background:#fffde7;box-shadow:0 0 0 1.5px #C8352A inset}
+  .qnum:active{background:#ffe0e0}
 
   /* CART BAR */
   .cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--red);color:#fff;padding:11px 16px;display:none;justify-content:space-between;align-items:center;box-shadow:0 -2px 12px rgba(0,0,0,.2);cursor:pointer;z-index:95}
@@ -95,8 +97,8 @@
   .modal-foot{padding:12px 14px;border-top:1px solid #eee;background:#fafafa}
   .summary{display:flex;justify-content:space-between;font-size:12px;margin-bottom:9px;color:#444}
   .summary b{color:var(--red);font-size:14px}
-  .btns{display:flex;gap:6px;flex-wrap:wrap}
-  .btns button{flex:1 1 calc(50% - 3px);min-width:0;border:none;border-radius:8px;padding:10px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btns{display:flex;gap:6px}
+  .btns button{flex:1;border:none;border-radius:8px;padding:10px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
   .btns .primary{background:var(--red);color:#fff}
   .btns .outline{background:#fff;color:var(--red);border:1.5px solid var(--red)}
   .btns .gray{background:#eee;color:#555}
@@ -204,7 +206,6 @@
       <div class="btns">
         <button class="gray" onclick="clearCart()">🗑 비우기</button>
         <button class="outline" onclick="exportOrder()">📥 엑셀</button>
-        <button class="outline" onclick="emailOrder()">📧 이메일</button>
         <button class="primary" onclick="copyOrderText()">📋 복사</button>
       </div>
     </div>
@@ -496,7 +497,7 @@ function render(){
     const eaRow = pack ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:4px;background:#fff4e0;border-radius:8px;padding:2px">' +
         '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-' + eaStep + ')"' + (eaQty<=0?' disabled':'') + '>−</button>' +
-        '<span class="qnum">' + eaQty + '</span>' +
+        '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+eaIdOf(p.detailId)+'\','+eaQty+')">' + eaQty + '</button>' +
         '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',' + eaStep + ')">+</button>' +
       '</div>' +
       '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ' + eaStep + '개 (1 CS)</div>'
@@ -511,7 +512,7 @@ function render(){
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
-            '<span class="qnum">' + qty + '</span>' +
+            '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
           eaRow +
@@ -528,6 +529,12 @@ function clearFilters(){
   buildGroups(); buildCategorySelect(); render();
 }
 
+function openQtyInput(id, current){
+  const v = prompt('수량 입력 (숫자):', current);
+  if (v === null) return;
+  const n = parseInt(v, 10);
+  if (!isNaN(n) && n >= 0) setQty(id, n);
+}
 function bumpQty(id, delta){
   const cur = CART[id] || 0;
   const next = Math.max(0, Math.min(999, cur + delta));
@@ -765,22 +772,6 @@ function exportOrder(){
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, 'Wismettac_Order_' + today + '.xlsx');
   toast('✓ 엑셀 저장 완료');
-}
-
-// Download the xlsx and open the mail client with the order pre-filled so the
-// user just has to attach the file that was just saved. mailto: has no
-// attachment mechanism — this gives the next-best one-click flow.
-function emailOrder(){
-  const txt = buildOrderText();
-  if (!txt){ toast(t('noCart')); return; }
-  exportOrder();
-  const branch = (localStorage.getItem('km_branch') || '').toUpperCase();
-  const today = new Date().toISOString().slice(0,10);
-  const subject = 'Wismettac Order' + (branch ? ' - ' + branch : '') + ' - ' + today;
-  const body = txt + '\n\n(엑셀 파일이 다운로드 폴더에 저장되었습니다. 첨부해 주세요.)';
-  const href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  window.location.href = href;
-  toast('✉ 메일 앱 열림');
 }
 
 /* -------- INIT -------- */

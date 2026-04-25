@@ -63,7 +63,9 @@
   .qbtn.plus{color:var(--green)}
   .qbtn:disabled{opacity:.3;cursor:not-allowed}
   .qbtn:active{background:#ddd}
-  .qnum{flex:1;text-align:center;font-size:13px;font-weight:800;color:#222;min-width:30px}
+  .qnum{flex:1;text-align:center;font-size:13px;font-weight:800;color:#222;min-width:30px;background:#fff;border:none;border-radius:5px;cursor:pointer;padding:4px 0;font-family:inherit;transition:background .12s}
+  .qnum:hover{background:#fffde7;box-shadow:0 0 0 1.5px #C8352A inset}
+  .qnum:active{background:#ffe0e0}
 
   /* CART BAR */
   .cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--red);color:#fff;padding:11px 16px;display:none;justify-content:space-between;align-items:center;box-shadow:0 -2px 12px rgba(0,0,0,.2);cursor:pointer;z-index:95}
@@ -547,7 +549,7 @@ function render(){
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
-            '<span class="qnum">' + qty + '</span>' +
+            '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
           eaRow +
@@ -564,6 +566,12 @@ function clearFilters(){
   buildGroups(); buildCategorySelect(); render();
 }
 
+function openQtyInput(id, current){
+  const v = prompt('수량 입력 (숫자):', current);
+  if (v === null) return;
+  const n = parseInt(v, 10);
+  if (!isNaN(n) && n >= 0) setQty(id, n);
+}
 function bumpQty(id, delta){
   const cur = CART[id] || 0;
   const next = Math.max(0, Math.min(999, cur + delta));

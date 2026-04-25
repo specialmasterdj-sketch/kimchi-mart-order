@@ -13,6 +13,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
+<script src="vela_stock.js"></script>
 <script>
 // One-shot service-worker + cache reset for the v66 styling rollout.
 // Some users' PWAs were stuck on v65 (numpad styles missing). On the
@@ -1030,6 +1031,9 @@ function buildTilesHtml(v, products){
     const barcodeHtml = p.barcode
       ? `<div class="meta barcode-line">📶 ${p.barcode}</div>`
       : `<div class="meta barcode-line">&nbsp;</div>`;
+    // Live POS stock pulled from the Vela snapshot lookup.html caches.
+    // Returns empty when the vendor product can't be matched.
+    const stockBadge = (typeof VelaStock !== 'undefined') ? VelaStock.badgeHtml(p) : '';
     // Catalog-style tile: image already contains name + code + size, so skip
     // the text rows and show only the cell image plus the qty controls.
     if (p.catalog || p.category === 'wal-lkk') {
@@ -1037,6 +1041,7 @@ function buildTilesHtml(v, products){
         ${newBadge}
         <div class="img-wrap">${riskCorner}${imgHtml}</div>
         <div class="info">
+          ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
           <div class="qty-row">
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
             <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
@@ -1057,6 +1062,7 @@ function buildTilesHtml(v, products){
         ${barcodeHtml}
         ${brandHtml}
         ${priceHtml}
+        ${stockBadge ? `<div style="margin:2px 0 4px">${stockBadge}</div>` : ''}
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">

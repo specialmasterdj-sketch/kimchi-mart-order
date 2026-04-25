@@ -14,6 +14,34 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script>
+// One-shot service-worker + cache reset for the v66 styling rollout.
+// Some users' PWAs were stuck on v65 (numpad styles missing). On the
+// first load after this deploys, every visitor unregisters their old
+// SW and wipes its caches, then reloads once into the fresh build.
+// Guarded by a localStorage flag so it never runs twice.
+(function(){
+  try {
+    if (localStorage.getItem('km_sw_reset_v66') === '1') return;
+    if (!('serviceWorker' in navigator)) {
+      localStorage.setItem('km_sw_reset_v66', '1');
+      return;
+    }
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      var work = [];
+      for (var i = 0; i < regs.length; i++) work.push(regs[i].unregister());
+      if ('caches' in window) {
+        work.push(caches.keys().then(function(keys){
+          return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+        }));
+      }
+      Promise.all(work).then(function(){
+        localStorage.setItem('km_sw_reset_v66', '1');
+        location.reload();
+      });
+    });
+  } catch(e){}
+})();
+
 // Bare visit (no vendor deep-link, no in-app navigation flag) → bounce out to
 // the vendor-order-center hub so manager flows always go through that hub.
 (function(){

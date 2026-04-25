@@ -334,7 +334,7 @@
   <div class="title-row">
     <div>
       <h1>Namdaemun Vendor Order</h1>
-      <div class="meta">남대문 벤더 주문서 · Prices as of <span id="priceDate">2026-04-21</span> <span id="priceEditedCount" style="color:#fbbf24"></span></div>
+      <div class="meta">남대문 벤더 주문서 · Prices as of <span id="priceDate">2026-04-25</span> <span id="priceEditedCount" style="color:#fbbf24"></span></div>
     </div>
     <button class="branch-btn unset" id="branchBtn" type="button">
       <span id="branchLabel">지점 선택</span>
@@ -614,7 +614,7 @@ const cartKey = (branchId) => `ndm_cart_v1__${branchId || ''}`;
 // Shared (not per-branch): prices, priceDate, activeSection/sub (UI navigation)
 // Per-branch (isolated): qty
 const SHARED_KEY = "ndm_app_v1";
-const DEFAULT_PRICE_DATE = "2026-04-21";
+const DEFAULT_PRICE_DATE = "2026-04-25";
 let state = loadState();
 
 function loadState() {

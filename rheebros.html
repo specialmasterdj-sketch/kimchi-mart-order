@@ -244,7 +244,7 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     minOrder: '',
     image: p.image || '',
     group,
-    isNew: 0
+    isNew: p.isNew ? 1 : 0
   };
 });
 const BY_ID = {};

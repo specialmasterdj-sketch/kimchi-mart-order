@@ -469,15 +469,14 @@
 
   <section class="preview-wrap">
     <div class="toolbar">
-      <button class="print" onclick="downloadPdf()">📥 PDF 다운로드 (정확한 크기 보장)</button>
-      <button onclick="printWithGuide()" title="브라우저 직접 인쇄 (축소될 수 있음)">🖨 직접 인쇄</button>
+      <button class="print" onclick="downloadPdf()" style="background:#1a5c3a;color:#fff;font-weight:700;padding:8px 14px">📥 PDF 다운로드 후 인쇄</button>
       <button onclick="addPage()">+ 페이지</button>
       <button class="danger" onclick="if(confirm('빈 슬롯 정리하고 페이지 압축할까요?'))compactPages()">🧹 압축</button>
       <span class="count" id="count">0개 / 1 페이지</span>
     </div>
-    <div style="font-size:11px;color:#6b7280;background:#dcfce7;border:1px solid #16a34a;border-radius:6px;padding:6px 10px;margin-bottom:10px">
-      <b style="color:#166534">✅ 권장: 📥 PDF 다운로드</b> 후 PDF를 열어서 인쇄하세요 — 캔바와 100% 동일 크기로 나옵니다.
-      직접 인쇄는 브라우저가 임의로 축소할 수 있어 권장하지 않습니다.
+    <div style="font-size:11px;color:#374151;background:#dcfce7;border:1px solid #16a34a;border-radius:6px;padding:6px 10px;margin-bottom:10px;line-height:1.45">
+      <b style="color:#166534">📥 PDF 다운로드 → PDF 열기 → 인쇄</b><br>
+      PDF 인쇄 대화상자에서 <b>"실제 크기" / "100%"</b> 선택하면 캔바와 동일 크기로 나옵니다.
     </div>
     <div id="pages"></div>
   </section>

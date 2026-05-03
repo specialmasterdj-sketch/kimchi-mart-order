@@ -545,6 +545,14 @@ function onBranchChange(v){
   branch = v;
   try { localStorage.setItem('km_branch', branch); } catch(e){}
   loadPos();
+  // 자동 동기화: 지점 선택 시 동일 날짜로 세션 키 자동 생성/적용 (지점+날짜 같으면 폰↔PC 자동 페어링)
+  if (branch){
+    const auto = autoSessionKey();
+    if (!session || session !== auto){
+      onSessionChange(auto);
+      toast(`자동 동기화 ON — 세션 ${auto} (지점·날짜 같으면 폰·PC 자동 연결)`, 'ok', 3000);
+    }
+  }
 }
 
 // ============ 세션 동기화 (폰↔PC) ============

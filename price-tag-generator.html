@@ -89,10 +89,10 @@
     width:210mm;
     min-height:297mm;
     margin:0 auto 12px;
-    padding:10mm;
+    padding:8mm;
     box-shadow:0 4px 12px rgba(0,0,0,.15);
     display:grid;
-    gap:4mm;
+    gap:2.5mm;
   }
   .page.size-xs{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(7,1fr)} /* 21-up 3x7 */
   .page.size-s{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4, 1fr)}      /* 8-up */
@@ -991,13 +991,13 @@ function getDraftTag(){
   };
 }
 
-// 사이즈별 실제 인쇄 셀 mm (A4 210x297, 10mm 패딩, 4mm gap 고려)
+// 사이즈별 실제 인쇄 셀 mm (A4 210x297, 8mm 패딩, 2.5mm gap 고려)
 const CELL_MM = {
-  xs: { w: 60, h: 36 },    // 21-up 3x7
-  s:  { w: 92, h: 67 },    // 8-up 2x4
-  m:  { w: 92, h: 137 },   // 4-up 2x2
-  l:  { w: 190, h: 137 },  // 2-up 1x2
-  xl: { w: 190, h: 277 }   // 1-up
+  xs: { w: 63, h: 38 },    // 21-up 3x7
+  s:  { w: 96, h: 68 },    // 8-up 2x4
+  m:  { w: 96, h: 139 },   // 4-up 2x2
+  l:  { w: 194, h: 139 },  // 2-up 1x2
+  xl: { w: 194, h: 281 }   // 1-up
 };
 
 function updateLivePreview(){

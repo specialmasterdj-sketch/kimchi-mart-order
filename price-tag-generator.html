@@ -111,48 +111,45 @@
     background:#fff;
     box-sizing:border-box;
   }
-  /* 좌측 컬럼: 상품 이미지 (전체) + KIMCHI 로고 (좌상단 고정 오버레이) */
-  .tag .img-box{
-    grid-column:1;grid-row:1 / span 4;
-    display:flex;align-items:center;justify-content:center;
-    background:#f3f4f6;border-radius:4px;overflow:hidden;
-    cursor:pointer;
-    border:1px dashed #d1d5db;
-    color:#9ca3af;text-align:center;padding:1mm;
-    align-self:stretch;
-    position:relative;
-  }
+  /* 좌측 컬럼: KIMCHI 로고 (위) + 상품 이미지 (아래, 별도 영역) */
   .tag .store-mark{
-    position:absolute;
-    top:1mm;left:1mm;
-    z-index:2;
-    display:flex;align-items:center;justify-content:center;
-    background:#fff;
-    border-radius:2px;
-    padding:0.5mm 1.5mm;
-    box-shadow:0 1px 3px rgba(0,0,0,.12);
-    border:1px solid rgba(0,0,0,.04);
-    min-width:6mm;
+    grid-column:1;grid-row:1;
+    display:flex;align-items:center;justify-content:flex-start;
+    width:100%;
+    position:relative;
   }
   .tag .store-mark img{height:100%;width:auto;display:block;max-width:100%}
   .tag .store-mark .fallback{
     font-weight:900;color:#1a5c3a;letter-spacing:0.5px;text-transform:uppercase;
     line-height:1;
   }
+  .tag .img-box{
+    grid-column:1;
+    display:flex;align-items:center;justify-content:center;
+    background:#f3f4f6;border-radius:4px;overflow:hidden;
+    cursor:pointer;
+    border:1px dashed #d1d5db;
+    color:#9ca3af;text-align:center;padding:1mm;
+    align-self:stretch;
+  }
   .tag .img-box.has{border:0;cursor:default;background:#fff}
   .tag .img-box img{width:100%;height:100%;object-fit:contain}
   /* 우측 컬럼: 브랜드(상단) / 이름(중간 flex) / 가격(하단) */
   .tag .brand,.tag .name,.tag .meta,.tag .name-ko{grid-column:2}
 
-  /* 사이즈별 행 배치 — 좌:이미지(전체) + 로고 오버레이, 우:브랜드+이름+가격 */
+  /* 사이즈별 행 배치 — 좌: 로고(위)+이미지(아래), 우: 브랜드+이름+가격 */
   .size-xs .tag,
   .size-s .tag,
   .size-m .tag,
-  .size-l .tag{grid-template-rows:auto 1fr auto}
+  .size-l .tag{grid-template-rows:auto auto 1fr auto}
+  .size-xs .tag .store-mark,
+  .size-s .tag .store-mark,
+  .size-m .tag .store-mark,
+  .size-l .tag .store-mark{grid-row:1;width:100%}
   .size-xs .tag .img-box,
   .size-s .tag .img-box,
   .size-m .tag .img-box,
-  .size-l .tag .img-box{grid-row:1 / span 3;width:100%;align-self:stretch}
+  .size-l .tag .img-box{grid-row:2 / span 3;width:100%;align-self:stretch}
   .size-xs .tag .brand,
   .size-s .tag .brand,
   .size-m .tag .brand,
@@ -164,33 +161,33 @@
   .size-xs .tag .meta,
   .size-s .tag .meta,
   .size-m .tag .meta,
-  .size-l .tag .meta{grid-row:3;align-self:end}
+  .size-l .tag .meta{grid-row:3 / span 2;align-self:end}
 
-  /* 사이즈별 KIMCHI 로고 오버레이 크기 — 항상 잘 보이게 */
+  /* 사이즈별 KIMCHI 로고 — 이미지 위쪽 별도 영역 */
   .size-xs .tag{padding:1.5mm;gap:0.5mm 1.5mm}
-  .size-xs .tag .store-mark{height:4mm;top:0.5mm;left:0.5mm;padding:0.3mm 1mm;min-width:8mm}
+  .size-xs .tag .store-mark{height:3mm}
   .size-xs .tag .store-mark .fallback{font-size:5pt}
   .size-xs .tag .img-box{min-height:14mm;border-radius:2px}
 
-  .size-s .tag .store-mark{height:7mm;top:1mm;left:1mm;padding:0.5mm 1.5mm;min-width:14mm}
+  .size-s .tag .store-mark{height:6mm}
   .size-s .tag .store-mark .fallback{font-size:9pt}
-  .size-s .tag .img-box{min-height:30mm}
+  .size-s .tag .img-box{min-height:25mm}
 
-  .size-m .tag .store-mark{height:11mm;top:1.5mm;left:1.5mm;padding:0.8mm 2mm;min-width:22mm}
+  .size-m .tag .store-mark{height:10mm}
   .size-m .tag .store-mark .fallback{font-size:14pt}
-  .size-m .tag .img-box{min-height:60mm}
+  .size-m .tag .img-box{min-height:55mm}
 
-  .size-l .tag .store-mark{height:15mm;top:2mm;left:2mm;padding:1mm 2.5mm;min-width:30mm}
+  .size-l .tag .store-mark{height:14mm}
   .size-l .tag .store-mark .fallback{font-size:20pt}
-  .size-l .tag .img-box{min-height:60mm}
+  .size-l .tag .img-box{min-height:55mm}
 
-  .size-xl .tag{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;gap:3mm;padding:10mm}
-  .size-xl .tag .img-box{grid-row:1;grid-column:1;width:130mm;height:130mm;margin:0 auto;justify-self:center;min-height:auto;position:relative}
-  .size-xl .tag .store-mark{height:24mm;top:3mm;left:3mm;padding:1.5mm 3mm;min-width:50mm}
+  .size-xl .tag{grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr auto;gap:3mm;padding:10mm}
+  .size-xl .tag .store-mark{grid-row:1;grid-column:1;height:22mm;width:auto;justify-self:center}
   .size-xl .tag .store-mark .fallback{font-size:32pt}
-  .size-xl .tag .brand{grid-row:2;grid-column:1;text-align:center;justify-self:center}
-  .size-xl .tag .name{grid-row:3;grid-column:1;text-align:center;justify-self:center}
-  .size-xl .tag .meta{grid-row:4;grid-column:1;justify-content:center;width:100%}
+  .size-xl .tag .img-box{grid-row:2;grid-column:1;width:130mm;height:130mm;margin:0 auto;justify-self:center;min-height:auto}
+  .size-xl .tag .brand{grid-row:3;grid-column:1;text-align:center;justify-self:center}
+  .size-xl .tag .name{grid-row:4;grid-column:1;text-align:center;justify-self:center}
+  .size-xl .tag .meta{grid-row:5;grid-column:1;justify-content:center;width:100%}
   .tag .brand{
     font-weight:800;letter-spacing:0.5px;text-transform:uppercase;
     color:#1a5c3a;
@@ -1102,10 +1099,8 @@ function renderTag(t){
   return `
     <div class="${tagCls}">
       ${removeBtn}
-      <div class="${imgClass}" ${imgClick}>
-        <div class="store-mark"><img src="images/_brand/kimchi_logo.png" alt="KIMCHI" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="fallback" style="display:none">KIMCHI</span></div>
-        ${imgInner}
-      </div>
+      <div class="store-mark"><img src="images/_brand/kimchi_logo.png" alt="KIMCHI" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="fallback" style="display:none">KIMCHI</span></div>
+      <div class="${imgClass}" ${imgClick}>${imgInner}</div>
       ${t.brand ? `<div class="brand">${escapeHtml(t.brand)}</div>` : '<div class="brand" style="visibility:hidden">-</div>'}
       <div class="name">${escapeHtml(t.name || '')}${t.nameKo ? `<div class="name-ko">${escapeHtml(t.nameKo)}</div>` : ''}</div>
       <div class="meta">

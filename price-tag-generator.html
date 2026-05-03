@@ -214,18 +214,18 @@
   .size-l .tag .store-mark .fallback{font-size:20pt}
   .size-l .tag .img-box{min-height:55mm}
 
-  /* 특대 가로 — A4 landscape: 좌측 이미지 + 우측 텍스트 (가격 이름 바로 아래 붙임) */
+  /* 특대 가로 — A4 landscape: 좌측 이미지 + 우측 텍스트 (가격 이름 바로 아래) */
   .size-xl .tag{grid-template-columns:40% 1fr;grid-template-rows:auto auto auto 1fr;gap:4mm;padding:10mm}
   .size-xl .tag .img-box{grid-column:1;grid-row:1 / span 4;width:100%;align-self:stretch;min-height:180mm}
   .size-xl .tag .brand{grid-column:2;grid-row:1;align-self:start;text-align:left;justify-self:start;margin-top:2mm}
-  .size-xl .tag .name{grid-column:2;grid-row:2;align-self:start;text-align:left;justify-self:start;margin-top:4mm}
+  .size-xl .tag .name{grid-column:2;grid-row:2;align-self:start;text-align:left;justify-self:start;margin-top:4mm;-webkit-line-clamp:unset;display:block;max-height:none;overflow:visible;word-break:keep-all}
   .size-xl .tag .meta{grid-column:2;grid-row:3;align-self:start;justify-self:start;justify-content:flex-start;width:100%;margin-top:6mm}
 
   /* 특대 세로 — A4 portrait: 위 이미지(중앙 정사각형) + 아래 브랜드/이름/가격 (가운데 정렬) */
   .size-xlv .tag{grid-template-columns:1fr;grid-template-rows:auto auto auto auto;gap:6mm;padding:12mm}
   .size-xlv .tag .img-box{grid-column:1;grid-row:1;width:160mm;height:160mm;margin:0 auto;justify-self:center;min-height:auto}
   .size-xlv .tag .brand{grid-column:1;grid-row:2;text-align:center;justify-self:center}
-  .size-xlv .tag .name{grid-column:1;grid-row:3;text-align:center;justify-self:center}
+  .size-xlv .tag .name{grid-column:1;grid-row:3;text-align:center;justify-self:center;-webkit-line-clamp:unset;display:block;max-height:none;overflow:visible;word-break:keep-all}
   .size-xlv .tag .meta{grid-column:1;grid-row:4;justify-content:center;width:100%}
   .tag .brand{
     font-weight:800;letter-spacing:0.5px;text-transform:uppercase;

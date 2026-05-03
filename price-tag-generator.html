@@ -98,7 +98,11 @@
   .page.size-s{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4, 1fr)}      /* 8-up */
   .page.size-m{grid-template-columns:1fr 1fr;grid-template-rows:repeat(2, 1fr)}      /* 4-up */
   .page.size-l{grid-template-columns:1fr;grid-template-rows:repeat(2, 1fr)}          /* 2-up */
-  .page.size-xl{grid-template-columns:1fr;grid-template-rows:1fr}                    /* 1-up */
+  .page.size-xl{
+    /* 특대는 가로 방향 A4 — 297×210mm */
+    width:297mm;height:210mm;min-height:210mm;
+    grid-template-columns:1fr;grid-template-rows:1fr;
+  }
 
   .empty-slot{
     border:2px dashed #d1d5db;border-radius:6px;
@@ -187,11 +191,12 @@
   .size-l .tag .store-mark .fallback{font-size:20pt}
   .size-l .tag .img-box{min-height:55mm}
 
-  .size-xl .tag{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;gap:3mm;padding:10mm}
-  .size-xl .tag .img-box{grid-row:1;grid-column:1;width:130mm;height:130mm;margin:0 auto;justify-self:center;min-height:auto}
-  .size-xl .tag .brand{grid-row:2;grid-column:1;text-align:center;justify-self:center}
-  .size-xl .tag .name{grid-row:3;grid-column:1;text-align:center;justify-self:center}
-  .size-xl .tag .meta{grid-row:4;grid-column:1;justify-content:center;width:100%}
+  /* 특대 — 가로 A4: 좌측 이미지 + 우측 텍스트 (큰 사이즈와 동일 패턴) */
+  .size-xl .tag{grid-template-columns:40% 1fr;grid-template-rows:auto 1fr auto;gap:6mm;padding:12mm}
+  .size-xl .tag .img-box{grid-column:1;grid-row:1 / span 3;width:100%;align-self:stretch;min-height:160mm}
+  .size-xl .tag .brand{grid-column:2;grid-row:1;align-self:start;text-align:left;justify-self:start}
+  .size-xl .tag .name{grid-column:2;grid-row:2;align-self:start;text-align:left;justify-self:start}
+  .size-xl .tag .meta{grid-column:2;grid-row:3;align-self:end;justify-self:start;justify-content:flex-start;width:100%}
   .tag .brand{
     font-weight:800;letter-spacing:0.5px;text-transform:uppercase;
     color:#1a5c3a;
@@ -990,14 +995,16 @@ function getDraftTag(){
   };
 }
 
-// 사이즈별 실제 인쇄 셀 mm (A4 210x297, 8mm 패딩, 2.5mm gap 고려)
+// 사이즈별 실제 인쇄 셀 mm (A4 8mm 패딩, 2.5mm gap 고려; 특대는 가로 A4 297×210)
 const CELL_MM = {
-  xs: { w: 63, h: 38 },    // 21-up 3x7
-  s:  { w: 96, h: 68 },    // 8-up 2x4
-  m:  { w: 96, h: 139 },   // 4-up 2x2
-  l:  { w: 194, h: 139 },  // 2-up 1x2
-  xl: { w: 194, h: 281 }   // 1-up
+  xs: { w: 63, h: 38 },    // 21-up 3x7 (세로 A4)
+  s:  { w: 96, h: 68 },    // 8-up 2x4 (세로 A4)
+  m:  { w: 96, h: 139 },   // 4-up 2x2 (세로 A4)
+  l:  { w: 194, h: 139 },  // 2-up 1x2 (세로 A4)
+  xl: { w: 273, h: 186 }   // 1-up (가로 A4 297×210, 12mm 패딩)
 };
+// 사이즈별 인쇄 방향
+const PRINT_ORIENT = { xs:'portrait', s:'portrait', m:'portrait', l:'portrait', xl:'landscape' };
 
 function updateLivePreview(){
   const t = getDraftTag();
@@ -1345,18 +1352,26 @@ async function downloadPdf(){
   if (!pages.length){ hideBgModal(); toast('페이지 없음', 'err'); return; }
 
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-  const A4_W = 210, A4_H = 297;
+  // 첫 페이지의 방향에 맞춰 PDF 초기화 (이후 페이지는 addPage 시 방향 지정)
+  const firstOrient = PRINT_ORIENT[currentSize] || 'portrait';
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: firstOrient, compress: true });
 
   try {
     for (let i = 0; i < pages.length; i++){
       setBgStatus(`페이지 ${i+1}/${pages.length} 캡처 중…`, 10 + (i / pages.length) * 80);
       const page = pages[i];
+      // 페이지 사이즈 클래스 확인 (size-xl 등)
+      const sizeClass = [...page.classList].find(c => c.startsWith('size-'));
+      const sz = sizeClass ? sizeClass.replace('size-','') : currentSize;
+      const orient = PRINT_ORIENT[sz] || 'portrait';
+      const W = orient === 'landscape' ? 297 : 210;
+      const H = orient === 'landscape' ? 210 : 297;
+
       // 인쇄 모드 흉내내서 캡처 — empty-slot 숨김
       const slots = page.querySelectorAll('.empty-slot');
       slots.forEach(s => { s.dataset.prevDisp = s.style.display; s.style.visibility = 'hidden'; });
       const canvas = await html2canvas(page, {
-        scale: 2,            // 고해상도
+        scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
         logging: false,
@@ -1365,8 +1380,8 @@ async function downloadPdf(){
       });
       slots.forEach(s => { s.style.visibility = ''; });
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, 0, A4_W, A4_H, undefined, 'FAST');
+      if (i > 0) pdf.addPage('a4', orient);
+      pdf.addImage(imgData, 'JPEG', 0, 0, W, H, undefined, 'FAST');
     }
     setBgStatus('PDF 저장 중…', 95);
     const today = new Date().toISOString().slice(0,10);

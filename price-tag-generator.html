@@ -84,6 +84,7 @@
     display:grid;
     gap:4mm;
   }
+  .page.size-xs{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(7,1fr)} /* 21-up 3x7 */
   .page.size-s{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4, 1fr)}      /* 8-up */
   .page.size-m{grid-template-columns:1fr 1fr;grid-template-rows:repeat(2, 1fr)}      /* 4-up */
   .page.size-l{grid-template-columns:1fr;grid-template-rows:repeat(2, 1fr)}          /* 2-up */
@@ -132,25 +133,34 @@
   .tag .brand,.tag .name,.tag .meta,.tag .name-ko{grid-column:2}
 
   /* 사이즈별 행 배치 — 좌:로고+이미지, 우:브랜드+이름+가격 */
+  .size-xs .tag,
   .size-s .tag,
   .size-m .tag,
   .size-l .tag{grid-template-rows:auto auto 1fr auto}
+  .size-xs .tag .store-mark,
   .size-s .tag .store-mark,
   .size-m .tag .store-mark,
   .size-l .tag .store-mark{grid-row:1;width:100%}
+  .size-xs .tag .img-box,
   .size-s .tag .img-box,
   .size-m .tag .img-box,
   .size-l .tag .img-box{grid-row:2 / span 3;width:100%;align-self:stretch}
+  .size-xs .tag .brand,
   .size-s .tag .brand,
   .size-m .tag .brand,
   .size-l .tag .brand{grid-row:1;align-self:start}
+  .size-xs .tag .name,
   .size-s .tag .name,
   .size-m .tag .name,
   .size-l .tag .name{grid-row:2;align-self:start}
+  .size-xs .tag .meta,
   .size-s .tag .meta,
   .size-m .tag .meta,
   .size-l .tag .meta{grid-row:3 / span 2;align-self:end}
 
+  .size-xs .tag{padding:1.5mm;gap:0.5mm 1.5mm}
+  .size-xs .tag .store-mark{height:4mm}
+  .size-xs .tag .img-box{min-height:14mm;border-radius:2px}
   .size-s .tag .store-mark{height:7mm}
   .size-s .tag .img-box{min-height:30mm}
   .size-m .tag .store-mark{height:11mm}
@@ -187,6 +197,17 @@
   }
 
   /* 사이즈별 폰트 — 가격 > 상품명 > 브랜드 (꽉차게) */
+  .size-xs .tag .img-box{font-size:5pt}
+  .size-xs .tag .brand{font-size:5pt;letter-spacing:0.2px}
+  .size-xs .tag .name{font-size:8pt;-webkit-line-clamp:2;font-weight:800;line-height:1.05}
+  .size-xs .tag .name-ko{font-size:5.5pt}
+  .size-xs .tag .meta{gap:1mm}
+  .size-xs .tag .meta .size-txt{font-size:5pt}
+  .size-xs .tag .meta .price{font-size:20pt;letter-spacing:-0.5px}
+  .size-xs .tag .meta .each{font-size:5pt;margin-top:0}
+  .size-xs .tag .meta .price-old{font-size:7pt}
+  .size-xs .tag .code{font-size:4pt;bottom:0.5mm;right:1mm}
+
   .size-s .tag .img-box{font-size:7pt}
   .size-s .tag .brand{font-size:8pt}
   .size-s .tag .name{font-size:14pt;-webkit-line-clamp:3;font-weight:800}
@@ -357,7 +378,8 @@
       </div>
       <div class="picker">
         <div class="lbl">사이즈</div>
-        <div class="opts" id="sizes">
+        <div class="opts" id="sizes" style="grid-template-columns:repeat(3,1fr)">
+          <label class="s-xs"><input type="radio" name="size" value="xs">특소 21↑</label>
           <label class="s-s" data-active="1"><input type="radio" name="size" value="s" checked>소 8↑</label>
           <label class="s-m"><input type="radio" name="size" value="m">중 4↑</label>
           <label class="s-l"><input type="radio" name="size" value="l">대 2↑</label>
@@ -412,7 +434,7 @@ let branch = '';
 let tags = [];
 let pageCount = 1;
 let currentSize = 's';
-const PER_PAGE = { s: 8, m: 4, l: 2, xl: 1 };
+const PER_PAGE = { xs: 21, s: 8, m: 4, l: 2, xl: 1 };
 
 // 세션 동기화 상태
 let session = '';
@@ -892,6 +914,7 @@ function getDraftTag(){
 
 // 사이즈별 실제 인쇄 셀 mm (A4 210x297, 10mm 패딩, 4mm gap 고려)
 const CELL_MM = {
+  xs: { w: 60, h: 36 },    // 21-up 3x7
   s:  { w: 92, h: 67 },    // 8-up 2x4
   m:  { w: 92, h: 137 },   // 4-up 2x2
   l:  { w: 190, h: 137 },  // 2-up 1x2

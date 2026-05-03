@@ -1080,7 +1080,7 @@ let _bgRemoveLib = null;
 async function loadBgRemoveLib(){
   if (_bgRemoveLib) return _bgRemoveLib;
   setBgStatus('AI 라이브러리 로드 중…', 5);
-  const mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm');
+  const mod = await import('https://esm.sh/@imgly/background-removal@1.4.5');
   _bgRemoveLib = mod;
   return mod;
 }

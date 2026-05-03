@@ -129,18 +129,6 @@
     background:#fff;
     box-sizing:border-box;
   }
-  /* 좌측 컬럼: KIMCHI 로고 (위) + 상품 이미지 (아래, 별도 영역) */
-  .tag .store-mark{
-    grid-column:1;grid-row:1;
-    display:flex;align-items:center;justify-content:flex-start;
-    width:100%;
-    position:relative;
-  }
-  .tag .store-mark img{height:100%;width:auto;display:block;max-width:100%}
-  .tag .store-mark .fallback{
-    font-weight:900;color:#1a5c3a;letter-spacing:0.5px;text-transform:uppercase;
-    line-height:1;
-  }
   .tag .img-box{
     grid-column:1;
     display:flex;align-items:center;justify-content:center;
@@ -168,10 +156,11 @@
   }
   .tag .store-mark img{height:100%;width:auto;display:block;max-width:none}
   .size-xs .tag .store-mark{height:3mm;top:0.5mm;left:0.5mm;padding:0.2mm 0.8mm}
-  .size-s .tag .store-mark{height:5mm}
-  .size-m .tag .store-mark{height:8mm;top:2mm;left:2mm;padding:0.8mm 2mm}
-  .size-l .tag .store-mark{height:10mm;top:2.5mm;left:2.5mm;padding:1mm 2.5mm}
+  .size-s .tag .store-mark{height:6mm}
+  .size-m .tag .store-mark{height:10mm;top:2mm;left:2mm;padding:0.8mm 2mm}
+  .size-l .tag .store-mark{height:14mm;top:2.5mm;left:2.5mm;padding:1mm 2.5mm}
   .size-xl .tag .store-mark{height:18mm;top:3mm;left:3mm;padding:2mm 4mm}
+  .size-xlv .tag .store-mark{height:16mm;top:3mm;left:3mm;padding:1.5mm 3mm}
   /* 우측 컬럼: 브랜드(상단) / 이름(중간 flex) / 가격(하단) */
   .tag .brand,.tag .name,.tag .meta,.tag .name-ko{grid-column:2}
 
@@ -197,22 +186,11 @@
   .size-m .tag .meta,
   .size-l .tag .meta{grid-row:3;align-self:end}
 
-  /* 사이즈별 KIMCHI 로고 — 이미지 위쪽 별도 영역 */
+  /* 사이즈별 패딩 + 이미지 박스 최소 높이 */
   .size-xs .tag{padding:1.5mm;gap:0.5mm 1.5mm}
-  .size-xs .tag .store-mark{height:3mm}
-  .size-xs .tag .store-mark .fallback{font-size:5pt}
   .size-xs .tag .img-box{min-height:14mm;border-radius:2px}
-
-  .size-s .tag .store-mark{height:6mm}
-  .size-s .tag .store-mark .fallback{font-size:9pt}
   .size-s .tag .img-box{min-height:25mm}
-
-  .size-m .tag .store-mark{height:10mm}
-  .size-m .tag .store-mark .fallback{font-size:14pt}
   .size-m .tag .img-box{min-height:55mm}
-
-  .size-l .tag .store-mark{height:14mm}
-  .size-l .tag .store-mark .fallback{font-size:20pt}
   .size-l .tag .img-box{min-height:55mm}
 
   /* 특대 가로 — A4 landscape: 좌측 이미지 + 우측 텍스트 (가격 이름 바로 아래) */
@@ -305,7 +283,6 @@
 
   /* 특대 세로 폰트 */
   .size-xlv .tag .img-box{font-size:18pt}
-  .size-xlv .tag .store-mark{height:16mm;top:3mm;left:3mm;padding:1.5mm 3mm}
   .size-xlv .tag .brand{font-size:32pt}
   .size-xlv .tag .name{font-size:50pt;-webkit-line-clamp:3;font-weight:800}
   .size-xlv .tag .name-ko{font-size:28pt}
@@ -1497,7 +1474,7 @@ function renderTag(t){
     <div class="${tagCls}">
       ${removeBtn}
       <div class="${imgClass}" ${imgClick}>
-        <div class="store-mark"><img src="images/_brand/kimchi_logo.png" alt="KIMCHI" onerror="this.parentElement.style.display='none'"></div>
+        <div class="store-mark"><img src="images/brand/kimchi_logo.png" alt="KIMCHI" onerror="this.parentElement.style.display='none'"></div>
         ${imgInner}
       </div>
       ${t.brand ? `<div class="brand">${escapeHtml(t.brand)}</div>` : '<div class="brand" style="visibility:hidden">-</div>'}

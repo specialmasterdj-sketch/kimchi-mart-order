@@ -1,0 +1,15 @@
+{
+  "name": "가격표 생성기 — 김치마트",
+  "short_name": "가격표",
+  "description": "Kimchi Mart 가격표 생성기 — 바코드 스캔, 폰↔PC 동기화, 4가지 사이즈 인쇄",
+  "start_url": "./price-tag-generator.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

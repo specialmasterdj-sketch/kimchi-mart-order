@@ -1167,7 +1167,7 @@ async function handleImageFile(e){
   }
 }
 
-function compressImage(file, maxDim = 600, quality = 0.78){
+function compressImage(file, maxDim = 600, quality = 0.78, format = 'image/jpeg'){
   return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => {
@@ -1181,8 +1181,15 @@ function compressImage(file, maxDim = 600, quality = 0.78){
         }
         const c = document.createElement('canvas');
         c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(c.toDataURL('image/jpeg', quality));
+        // PNG 면 투명 배경 유지 (canvas 는 기본 투명)
+        // JPEG 면 흰 배경 깔아서 검정 안 나오게
+        const ctx = c.getContext('2d');
+        if (format !== 'image/png'){
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL(format, quality));
       };
       img.onerror = reject;
       img.src = r.result;
@@ -1253,7 +1260,8 @@ async function removeBackgroundAuto(){
       }
     });
     setBgStatus('완료. 압축 중…', 96);
-    DRAFT_IMG = await compressImage(blob, 600, 0.85);
+    // 배경 제거 결과는 PNG 로 저장해야 투명도 유지 (JPEG 는 흰 배경)
+    DRAFT_IMG = await compressImage(blob, 600, 1.0, 'image/png');
     document.getElementById('f-img-clear').style.display = 'inline-block';
     updateLivePreview();
     setBgStatus('✓ 완료', 100);

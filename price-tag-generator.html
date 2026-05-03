@@ -1191,6 +1191,14 @@ restoreAuto();
 if (branch){
   document.getElementById('branch').value = branch;
 }
+// 지점 있으면 무조건 오늘 날짜 세션으로 자동 갱신 (어제 키 들어있으면 자동 정정)
+if (branch){
+  const todayKey = autoSessionKey();
+  if (session !== todayKey){
+    session = todayKey;
+    try { localStorage.setItem('km-tag-session', session); } catch(e){}
+  }
+}
 if (session){
   document.getElementById('session').value = session;
 }
@@ -1205,11 +1213,30 @@ loadMasterFallback().then(() => {
   else document.getElementById('stat').textContent = '⚠ 지점을 선택하면 POS 자료 자동 로드';
 });
 if (session){
-  // 약간 지연 후 동기화 시작 (POS 로드와 경합 방지)
   setTimeout(() => onSessionChange(session), 500);
 } else {
   setSyncDot('off');
 }
+
+// 페이지 보이게 될 때마다 Firebase 에서 최신 끌어옴 (폰 백그라운드 갔다 와도 즉시 동기화)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && session){
+    pullSession();
+  }
+});
+
+// 페이지 떠나기 직전 마지막 푸시 보장 (debounce 안 끝나도 흘리지 않게)
+window.addEventListener('pagehide', () => {
+  saveLocal();
+  if (session && tags.length){
+    const ts = Date.now();
+    const payload = JSON.stringify({ ts, deviceId: DEVICE_ID, tags, pageCount, currentSize, branch });
+    try {
+      navigator.sendBeacon?.(SESSION_URL(session), new Blob([payload], { type: 'application/json' }));
+    } catch(e){}
+  }
+});
+window.addEventListener('beforeunload', () => saveLocal());
 
 // 페이지 떠날 때 스캐너 정리
 window.addEventListener('beforeunload', () => stopScan());

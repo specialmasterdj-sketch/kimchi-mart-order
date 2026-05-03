@@ -9,7 +9,7 @@ const FILES = [
   'jayone_products.js',
   'pulmuone_products.js',
   'rheebros_products.js',
-  // 더 있으면 여기 추가
+  'products.js',  // VENDORS = { rhee_full, seoul_trading, ... } 24+ 벤더 통합
 ];
 
 const index = {};   // key → { image, vendor, name }
@@ -17,31 +17,42 @@ let total = 0;
 
 for (const f of FILES){
   if (!fs.existsSync(f)){ console.log('스킵 (없음):', f); continue; }
-  const code = fs.readFileSync(f, 'utf8');
+  let code = fs.readFileSync(f, 'utf8');
+  // 최상위 const/let 을 var 로 (vm context 에서 노출되도록)
+  code = code.replace(/^(const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm, 'var $2 =');
   const ctx = { window: {}, console };
   vm.createContext(ctx);
   try { vm.runInContext(code, ctx); }
   catch(e){ console.log('파싱 실패:', f, e.message); continue; }
 
-  // 가능한 위치 모두 탐색
-  let prods = null;
+  // 가능한 위치 모두 탐색 — Array (직접 상품 목록) OR Object (VENDORS={vendor:{products:[...]}})
+  const allProds = [];  // [{product, vendorHint}]
   const candidates = [...Object.keys(ctx.window), ...Object.keys(ctx)];
   for (const k of candidates){
     const v = ctx.window[k] || ctx[k];
     if (Array.isArray(v) && v[0] && (v[0].image || v[0].barcode || v[0].plu)){
-      prods = v;
-      break;
+      v.forEach(p => allProds.push({ p, vh: '' }));
+    } else if (v && typeof v === 'object' && !Array.isArray(v)){
+      // VENDORS 같은 구조: { vendor_id: { products: [...], ... } }
+      for (const vKey of Object.keys(v)){
+        const vObj = v[vKey];
+        if (vObj && Array.isArray(vObj.products)){
+          vObj.products.forEach(p => allProds.push({ p, vh: vKey }));
+        }
+      }
     }
   }
-  if (!prods){ console.log('상품 배열 못 찾음:', f); continue; }
+  if (!allProds.length){ console.log('상품 배열 못 찾음:', f); continue; }
 
   const vendor = f.replace('_products.js','');
   let added = 0;
-  for (const p of prods){
+  for (const item of allProds){
+    const p = item.p;
+    const vh = item.vh;
     const img = p.image || '';
     if (!img || typeof img !== 'string') continue;
     const name = p.name || p.en || p.nameKr || p.ko || '';
-    const entry = { image: img, vendor, name };
+    const entry = { image: img, vendor: vh || vendor, name };
     const keys = [
       String(p.barcode || '').trim(),
       String(p.plu || '').trim(),

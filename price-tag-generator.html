@@ -145,9 +145,28 @@
     border:1px dashed #d1d5db;
     color:#9ca3af;text-align:center;padding:1mm;
     align-self:stretch;
+    position:relative;
   }
   .tag .img-box.has{border:0;cursor:default;background:#fff}
   .tag .img-box img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}
+  /* KIMCHI 마트 로고 — 이미지 박스 좌상단 작은 오버레이 */
+  .tag .store-mark{
+    position:absolute;
+    top:1.5mm;left:1.5mm;
+    z-index:3;
+    background:rgba(255,255,255,0.95);
+    border-radius:3px;
+    padding:0.5mm 1.5mm;
+    box-shadow:0 1px 2px rgba(0,0,0,.08);
+    display:flex;align-items:center;
+    pointer-events:none;
+  }
+  .tag .store-mark img{height:100%;width:auto;display:block}
+  .size-xs .tag .store-mark{height:3mm;top:0.5mm;left:0.5mm;padding:0.2mm 0.8mm}
+  .size-s .tag .store-mark{height:5mm}
+  .size-m .tag .store-mark{height:8mm;top:2mm;left:2mm;padding:0.8mm 2mm}
+  .size-l .tag .store-mark{height:10mm;top:2.5mm;left:2.5mm;padding:1mm 2.5mm}
+  .size-xl .tag .store-mark{height:14mm;top:3mm;left:3mm;padding:1.5mm 3mm}
   /* 우측 컬럼: 브랜드(상단) / 이름(중간 flex) / 가격(하단) */
   .tag .brand,.tag .name,.tag .meta,.tag .name-ko{grid-column:2}
 
@@ -1433,7 +1452,10 @@ function renderTag(t){
   return `
     <div class="${tagCls}">
       ${removeBtn}
-      <div class="${imgClass}" ${imgClick}>${imgInner}</div>
+      <div class="${imgClass}" ${imgClick}>
+        <div class="store-mark"><img src="images/_brand/kimchi_logo.png" alt="KIMCHI" onerror="this.parentElement.style.display='none'"></div>
+        ${imgInner}
+      </div>
       ${t.brand ? `<div class="brand">${escapeHtml(t.brand)}</div>` : '<div class="brand" style="visibility:hidden">-</div>'}
       <div class="name">${escapeHtml(t.name || '')}${t.nameKo ? `<div class="name-ko">${escapeHtml(t.nameKo)}</div>` : ''}</div>
       <div class="meta">

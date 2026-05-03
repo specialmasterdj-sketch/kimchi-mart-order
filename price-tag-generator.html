@@ -294,12 +294,27 @@
   .toast.err{background:#dc2626}
 
   @media print{
-    body{background:#fff}
-    header,main > .panel,.toolbar,.tag .remove,#scan-area{display:none !important}
-    main{display:block;padding:0;max-width:none}
-    .preview-wrap{overflow:visible}
-    .page{box-shadow:none;margin:0;page-break-after:always}
+    @page{
+      size:A4 portrait;
+      margin:0;
+    }
+    html,body{margin:0;padding:0;background:#fff}
+    body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    header,main > .panel,.toolbar,.tag .remove,#scan-area,#bg-modal,#crop-modal,#qr-modal,#toast{display:none !important}
+    main{display:block;padding:0;max-width:none;margin:0}
+    .preview-wrap{overflow:visible;margin:0;padding:0}
+    .page{
+      box-shadow:none;
+      margin:0;
+      width:210mm;height:297mm;
+      page-break-after:always;
+      page-break-inside:avoid;
+    }
+    .page:last-child{page-break-after:auto}
     .empty-slot{visibility:hidden;border:0}
+    /* 가격 등 색상 강제 인쇄 */
+    .tag .price{color:#dc2626 !important}
+    .tag.sale .price-old{color:#9ca3af !important}
   }
 
   @media (max-width:900px){
@@ -452,10 +467,14 @@
 
   <section class="preview-wrap">
     <div class="toolbar">
-      <button class="print" onclick="window.print()">🖨 인쇄</button>
+      <button class="print" onclick="printWithGuide()">🖨 인쇄</button>
       <button onclick="addPage()">+ 페이지</button>
       <button class="danger" onclick="if(confirm('빈 슬롯 정리하고 페이지 압축할까요?'))compactPages()">🧹 압축</button>
       <span class="count" id="count">0개 / 1 페이지</span>
+    </div>
+    <div style="font-size:11px;color:#6b7280;background:#fef3c7;border:1px solid #fbbf24;border-radius:6px;padding:6px 10px;margin-bottom:10px">
+      <b style="color:#92400e">📄 인쇄 가이드:</b> 인쇄 대화상자에서
+      <b>배율 100%</b> · <b>여백 없음(None)</b> · <b>크기 A4</b> 로 설정해야 캔바와 동일 크기로 나옵니다.
     </div>
     <div id="pages"></div>
   </section>
@@ -1304,6 +1323,10 @@ function clearAll(){
   render(); saveAuto();
 }
 function addPage(){ pageCount++; render(); }
+function printWithGuide(){
+  toast('인쇄 대화상자: 배율 100% · 여백 없음 · A4 확인 후 인쇄', 'ok', 4500);
+  setTimeout(() => window.print(), 300);
+}
 function compactPages(){
   pageCount = Math.max(1, Math.ceil(tags.length / PER_PAGE[currentSize]));
   render();

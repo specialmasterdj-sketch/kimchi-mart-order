@@ -182,13 +182,14 @@
     color:#1a5c3a;
     align-self:start;justify-self:start;
     line-height:1.1;
+    margin-top:1.5mm;
   }
   .tag .name{font-weight:700;color:#111;line-height:1.15;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;align-self:start}
   .tag .name-ko{color:#6b7280;font-weight:500;line-height:1.2;margin-top:0.5mm}
   .tag .meta{display:flex;align-items:flex-end;gap:2mm;margin-top:auto;flex-wrap:nowrap;align-self:end;justify-self:start}
-  .tag .meta .price-block{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
-  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.95;white-space:nowrap;letter-spacing:-1px}
-  .tag .meta .each{font-weight:800;color:#111;letter-spacing:0.5px;margin-top:0.5mm}
+  .tag .meta .price-block{display:flex;flex-direction:row;align-items:flex-end;gap:1.5mm;line-height:1}
+  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.9;white-space:nowrap;letter-spacing:-1.5px}
+  .tag .meta .each{font-weight:800;color:#111;letter-spacing:0.3px;align-self:flex-end;padding-bottom:1mm}
   .tag .meta .price-old{color:#9ca3af;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}
   .tag .meta .size-txt{font-weight:600;color:#6b7280;align-self:flex-end;margin-bottom:1mm}
   .tag .code{position:absolute;bottom:1.5mm;right:3mm;font-family:monospace;color:#9ca3af}
@@ -199,56 +200,56 @@
     display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;
   }
 
-  /* 사이즈별 폰트 — 가격 > 상품명 > 브랜드 (꽉차게) */
+  /* 사이즈별 폰트 — 가격 ≫ 상품명 > 브랜드 (꽉차게) */
   .size-xs .tag .img-box{font-size:5pt}
-  .size-xs .tag .brand{font-size:5pt;letter-spacing:0.2px}
-  .size-xs .tag .name{font-size:8pt;-webkit-line-clamp:2;font-weight:800;line-height:1.05}
+  .size-xs .tag .brand{font-size:5pt;letter-spacing:0.2px;margin-top:0.5mm}
+  .size-xs .tag .name{font-size:9pt;-webkit-line-clamp:2;font-weight:800;line-height:1.05}
   .size-xs .tag .name-ko{font-size:5.5pt}
   .size-xs .tag .meta{gap:1mm}
   .size-xs .tag .meta .size-txt{font-size:5pt}
-  .size-xs .tag .meta .price{font-size:20pt;letter-spacing:-0.5px}
-  .size-xs .tag .meta .each{font-size:5pt;margin-top:0}
+  .size-xs .tag .meta .price{font-size:24pt;letter-spacing:-0.5px}
+  .size-xs .tag .meta .each{font-size:5pt;padding-bottom:0.3mm}
   .size-xs .tag .meta .price-old{font-size:7pt}
   .size-xs .tag .code{font-size:4pt;bottom:0.5mm;right:1mm}
 
   .size-s .tag .img-box{font-size:7pt}
-  .size-s .tag .brand{font-size:8pt}
-  .size-s .tag .name{font-size:14pt;-webkit-line-clamp:3;font-weight:800}
+  .size-s .tag .brand{font-size:9pt}
+  .size-s .tag .name{font-size:17pt;-webkit-line-clamp:3;font-weight:800}
   .size-s .tag .name-ko{font-size:8pt}
   .size-s .tag .meta .size-txt{font-size:8pt}
-  .size-s .tag .meta .price{font-size:42pt}
-  .size-s .tag .meta .each{font-size:9pt}
-  .size-s .tag .meta .price-old{font-size:11pt}
+  .size-s .tag .meta .price{font-size:54pt}
+  .size-s .tag .meta .each{font-size:11pt;padding-bottom:1.5mm}
+  .size-s .tag .meta .price-old{font-size:13pt}
   .size-s .tag .code{font-size:6pt}
 
   .size-m .tag .img-box{font-size:10pt}
-  .size-m .tag .brand{font-size:14pt}
-  .size-m .tag .name{font-size:24pt;-webkit-line-clamp:3;font-weight:800}
-  .size-m .tag .name-ko{font-size:14pt}
-  .size-m .tag .meta .size-txt{font-size:13pt}
-  .size-m .tag .meta .price{font-size:72pt}
-  .size-m .tag .meta .each{font-size:16pt}
-  .size-m .tag .meta .price-old{font-size:18pt}
+  .size-m .tag .brand{font-size:16pt}
+  .size-m .tag .name{font-size:28pt;-webkit-line-clamp:3;font-weight:800}
+  .size-m .tag .name-ko{font-size:16pt}
+  .size-m .tag .meta .size-txt{font-size:14pt}
+  .size-m .tag .meta .price{font-size:90pt}
+  .size-m .tag .meta .each{font-size:20pt;padding-bottom:2.5mm}
+  .size-m .tag .meta .price-old{font-size:22pt}
   .size-m .tag .code{font-size:8pt}
 
   .size-l .tag .img-box{font-size:14pt}
-  .size-l .tag .brand{font-size:20pt}
-  .size-l .tag .name{font-size:34pt;-webkit-line-clamp:3;font-weight:800}
-  .size-l .tag .name-ko{font-size:20pt}
-  .size-l .tag .meta .size-txt{font-size:20pt}
-  .size-l .tag .meta .price{font-size:110pt}
-  .size-l .tag .meta .each{font-size:26pt}
-  .size-l .tag .meta .price-old{font-size:30pt}
+  .size-l .tag .brand{font-size:24pt}
+  .size-l .tag .name{font-size:40pt;-webkit-line-clamp:3;font-weight:800}
+  .size-l .tag .name-ko{font-size:24pt}
+  .size-l .tag .meta .size-txt{font-size:22pt}
+  .size-l .tag .meta .price{font-size:140pt}
+  .size-l .tag .meta .each{font-size:32pt;padding-bottom:4mm}
+  .size-l .tag .meta .price-old{font-size:36pt}
   .size-l .tag .code{font-size:10pt}
 
   .size-xl .tag .img-box{font-size:18pt}
-  .size-xl .tag .brand{font-size:32pt}
-  .size-xl .tag .name{font-size:60pt;-webkit-line-clamp:3;font-weight:800}
-  .size-xl .tag .name-ko{font-size:32pt}
-  .size-xl .tag .meta .size-txt{font-size:26pt}
-  .size-xl .tag .meta .price{font-size:170pt}
-  .size-xl .tag .meta .each{font-size:36pt}
-  .size-xl .tag .meta .price-old{font-size:44pt}
+  .size-xl .tag .brand{font-size:38pt}
+  .size-xl .tag .name{font-size:72pt;-webkit-line-clamp:3;font-weight:800}
+  .size-xl .tag .name-ko{font-size:38pt}
+  .size-xl .tag .meta .size-txt{font-size:30pt}
+  .size-xl .tag .meta .price{font-size:210pt}
+  .size-xl .tag .meta .each{font-size:46pt;padding-bottom:6mm}
+  .size-xl .tag .meta .price-old{font-size:54pt}
   .size-xl .tag .code{font-size:12pt}
 
   .tag.sale{border:2px solid #dc2626;background:#fff5f5}

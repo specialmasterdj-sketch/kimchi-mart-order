@@ -24,8 +24,8 @@
     --border:rgba(0,0,0,.10);     /* +25% strong */
     --border-strong:rgba(0,0,0,.18);
     --text-1:#0f0e0c;      /* deeper near-black — 가독성 ↑ */
-    --text-2:#3f3e3a;      /* stronger body text */
-    --text-3:#7a7975;      /* muted but visible */
+    --text-2:#2d2c29;      /* even stronger body */
+    --text-3:#5a5955;      /* muted but readable (was 7a7975 → too faint) */
     --accent:#cc785c;      /* Claude orange */
     --accent-hover:#b86b50;
     --kimchi:#dc2626;      /* 김치 빨강 (가격표용) */
@@ -40,7 +40,10 @@
     font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI','Noto Sans KR',sans-serif;
     background:var(--bg);color:var(--text-1);
     -webkit-font-smoothing:antialiased;letter-spacing:-.005em;
+    font-weight:500;
   }
+  /* 모든 input / textarea / select placeholder 더 또렷하게 */
+  input::placeholder,textarea::placeholder{color:var(--text-3);opacity:1;font-weight:500}
   header{
     background:rgba(255,255,255,.85);
     backdrop-filter:saturate(140%) blur(10px);
@@ -64,6 +67,12 @@
   header button.danger{background:#fff;color:var(--kimchi);border-color:rgba(220,38,38,.30)}
   header button.danger:hover{background:#fef2f2;border-color:var(--kimchi)}
   header select{cursor:pointer}
+  /* 언어 토글 — 흰 헤더 톤에 맞게 */
+  header [data-lang-btn]{color:var(--text-2) !important;background:transparent !important;border:0 !important;font-weight:800 !important;transition:.15s}
+  header [data-lang-btn]:hover{color:var(--text-1) !important}
+  header [data-lang-btn].active,header [data-lang-btn][data-active="1"]{color:#fff !important;background:var(--kimchi-green) !important;box-shadow:0 1px 3px rgba(22,163,74,.30) !important}
+  /* 토글 wrapper */
+  header > span:has([data-lang-btn]){background:var(--bg-alt) !important;border:1px solid var(--border) !important;border-radius:9px !important;padding:3px !important}
 
   main{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px;max-width:1500px;margin:0 auto;align-items:start}
 

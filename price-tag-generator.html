@@ -370,6 +370,7 @@
   <button onclick="showQR()" data-t-title="qr_btn_ttl" title="폰으로 접속할 QR/링크">📱</button>
   <button onclick="exportTags()" data-t-title="export_ttl" title="저장">💾</button>
   <button onclick="loadTags()" data-t-title="import_ttl" title="불러오기">📂</button>
+  <button onclick="showMatchMissStats()" data-t-title="miss_stats_ttl" title="📊 매칭 누락 통계 — 어떤 상품이 자주 검색되는데 사진 없는지">📊</button>
   <button class="danger" onclick="if(confirm(t('clear_confirm')))clearAll()" data-t-title="clear_ttl" title="모두 비우기">🗑</button>
   <span style="display:inline-flex;gap:2px;background:rgba(0,0,0,.15);border-radius:6px;padding:2px;margin-left:4px">
     <button onclick="setLang('ko')" data-lang-btn="ko" style="background:transparent;border:0;color:#fff;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit">KO</button>
@@ -377,6 +378,25 @@
     <button onclick="setLang('es')" data-lang-btn="es" style="background:transparent;border:0;color:#fff;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit">ES</button>
   </span>
 </header>
+
+<!-- 매칭 누락 통계 모달 — 매니저용 -->
+<style>
+#matchMissOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:62;align-items:flex-start;justify-content:center;padding:32px 14px;overflow-y:auto}
+#matchMissOverlay.show{display:flex}
+#matchMissOverlay .sheet{background:#fff;border-radius:14px;width:100%;max-width:540px;padding:18px 18px 14px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+#matchMissOverlay .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+#matchMissOverlay .sheet-head h3{font-size:16px;font-weight:800;color:#1f2937}
+#matchMissOverlay .sheet-head button{background:#f3f4f6;border:0;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#374151;font-weight:700}
+</style>
+<div id="matchMissOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3 data-t="miss_stats_title">📊 매칭 누락 TOP 100</h3>
+      <button onclick="closeOv('matchMissOverlay')" data-t="miss_close">닫기</button>
+    </div>
+    <div id="matchMissList"></div>
+  </div>
+</div>
 
 <!-- 배경 제거 진행 모달 -->
 <div id="bg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:60;align-items:center;justify-content:center">
@@ -588,6 +608,9 @@ const TR = {
   bg_remove:        { ko:'✨ 배경 제거 (AI)', en:'✨ Remove BG (AI)', es:'✨ Quitar fondo (IA)' },
   crop:             { ko:'✂️ 자르기', en:'✂️ Crop', es:'✂️ Recortar' },
   canva_btn:        { ko:'🎨 캔바에서', en:'🎨 From Canva', es:'🎨 Desde Canva' },
+  miss_stats_ttl:   { ko:'📊 매칭 누락 통계 — 자주 검색되는데 사진 없는 상품', en:'📊 Match-miss stats — frequent searches with no photo', es:'📊 Estadísticas de fallos — búsquedas sin foto' },
+  miss_stats_title: { ko:'📊 매칭 누락 TOP 100', en:'📊 Match-miss TOP 100', es:'📊 TOP 100 sin foto' },
+  miss_close:       { ko:'닫기', en:'Close', es:'Cerrar' },
   canva_btn_ttl:    { ko:'캔바 디자인에서 더 좋은 사진 찾기', en:'Find better photo from Canva designs', es:'Buscar foto en Canva' },
   // 템플릿/사이즈
   tpl_label:        { ko:'템플릿', en:'Template', es:'Plantilla' },
@@ -703,6 +726,8 @@ const STORAGE_KEY = 'kimchi-price-tags-v2';
 const POS_CACHE_KEY = (b) => 'kimchi-products-override-' + b;
 const FB_URL = (b) => `https://kimchi-mart-order-default-rtdb.firebaseio.com/products/${b}.json`;
 const SESSION_URL = (s) => `https://kimchi-mart-order-default-rtdb.firebaseio.com/price-tag-sessions/${s}.json`;
+const MATCH_MISS_URL = (k) => `https://kimchi-mart-order-default-rtdb.firebaseio.com/match-misses/${encodeURIComponent(k)}.json`;
+const MATCH_MISS_LIST_URL = `https://kimchi-mart-order-default-rtdb.firebaseio.com/match-misses.json`;
 const DEVICE_ID = (() => {
   try {
     let id = localStorage.getItem('km-device-id');
@@ -852,7 +877,16 @@ function findVendorImage(...keys){
 }
 async function autoFillVendorImage(...keys){
   const hit = findVendorImage(...keys);
-  if (!hit) return false;
+  if (!hit) {
+    // 매칭 실패 기록 — 어떤 상품이 자주 검색되는데 사진 없는지 통계.
+    // 매니저가 보고 어느 벤더 카탈로그 추가할지 우선순위 결정.
+    const firstKey = keys.find(k => k && String(k).trim());
+    if (firstKey) {
+      const productName = (document.getElementById('f-name')?.value || '').trim();
+      recordMatchMiss(firstKey, productName);
+    }
+    return false;
+  }
   try {
     const res = await fetch(hit.image, { cache: 'force-cache' });
     if (!res.ok) return false;
@@ -865,6 +899,89 @@ async function autoFillVendorImage(...keys){
     return false;
   }
 }
+
+// ============ 매칭 누락 통계 ============
+// 가격표 생성기에서 검색된 바코드 중 vendor_images 매칭 실패한 케이스를 자동 기록.
+// 매니저가 통계 모달에서 자주 누락되는 상품 확인 → 어느 벤더 추가할지 우선순위 결정.
+async function recordMatchMiss(key, name){
+  if (!key) return;
+  const k = String(key).trim();
+  if (!k) return;
+  try {
+    // 현재 카운터 가져와서 +1 (race condition 무시 — 통계용이라 정확도 덜 중요)
+    const r = await fetch(MATCH_MISS_URL(k));
+    const cur = r.ok ? (await r.json() || {}) : {};
+    const entry = {
+      count: (cur.count || 0) + 1,
+      name: name || cur.name || '',
+      lastQueried: Date.now(),
+      lastBranch: branch || cur.lastBranch || '',
+    };
+    await fetch(MATCH_MISS_URL(k), {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(entry)
+    });
+  } catch(e){ console.warn('[match-miss] record fail', e); }
+}
+
+// 누락 통계 로드 + 정렬
+async function loadMatchMisses(){
+  try {
+    const r = await fetch(MATCH_MISS_LIST_URL);
+    if (!r.ok) return [];
+    const v = await r.json();
+    if (!v) return [];
+    return Object.entries(v).map(([key, meta]) => Object.assign({ key }, meta || {}))
+      .sort((a, b) => (b.count || 0) - (a.count || 0));
+  } catch(e){ return []; }
+}
+
+// 누락 통계 모달
+async function showMatchMissStats(){
+  const ov = document.getElementById('matchMissOverlay');
+  const list = document.getElementById('matchMissList');
+  if (!ov || !list) return;
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af">⏳ 로딩 중…</div>';
+  ov.classList.add('show');
+  const rows = await loadMatchMisses();
+  if (rows.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af">✨ 누락 기록 없음</div>';
+    return;
+  }
+  const top = rows.slice(0, 100);
+  const total = rows.reduce((s, r) => s + (r.count || 0), 0);
+  list.innerHTML = `
+    <div style="background:#fef9f3;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.86em">
+      📊 누락 누적 <b style="color:#b45309">${total}건</b> / 고유 상품 <b style="color:#b45309">${rows.length}개</b><br>
+      <span style="color:#92400e;font-size:.92em">자주 검색되는데 사진 매칭 실패 — 그 벤더 카탈로그 추가하면 매칭률 ↑</span>
+    </div>
+    ${top.map((r, i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="copyToSearch('${r.key}')">
+        <div style="width:28px;text-align:center;font-weight:800;color:${i<3?'#dc2626':'#9ca3af'}">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.92em;font-weight:700;color:#1f2937">${escapeHtml(r.name || '(이름 없음)')}</div>
+          <div style="font-size:.74em;color:#9ca3af;margin-top:2px">${escapeHtml(r.key)} · ${r.lastBranch||'-'} · ${r.lastQueried ? new Date(r.lastQueried).toLocaleDateString() : '-'}</div>
+        </div>
+        <div style="background:#fef2f2;color:#b91c1c;font-weight:800;font-size:.82em;padding:4px 10px;border-radius:8px">×${r.count||0}</div>
+      </div>
+    `).join('')}
+    ${rows.length > 100 ? `<div style="text-align:center;padding:14px;color:#9ca3af;font-size:.82em">+ ${rows.length-100}개 더…</div>` : ''}
+  `;
+}
+function copyToSearch(key){
+  const el = document.getElementById('search');
+  if (el) { el.value = key; el.focus(); }
+  closeOv('matchMissOverlay');
+}
+async function clearMatchMiss(key){
+  if (!confirm('이 항목 누락 기록을 삭제하시겠습니까?\n(보통 벤더 추가 후 정리용)')) return;
+  try {
+    await fetch(MATCH_MISS_URL(key), { method:'DELETE' });
+    showMatchMissStats();
+  } catch(e){ alert('삭제 실패: ' + e.message); }
+}
+window.showMatchMissStats = showMatchMissStats;
+window.copyToSearch = copyToSearch;
+window.clearMatchMiss = clearMatchMiss;
 
 function onBranchChange(v){
   branch = v;

@@ -16,23 +16,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  /* === Claude × Kimchi Mart 디자인 토큰 === */
+  /* === Claude × Kimchi Mart 디자인 토큰 (v2 — contrast 강화) === */
   :root{
-    --bg:#faf9f5;          /* warm cream */
-    --bg-alt:#f0eee6;      /* slightly darker */
+    --bg:#fdfbf7;          /* lighter warm cream — 더 밝게 */
+    --bg-alt:#f3f1ea;      /* secondary surface */
     --surface:#ffffff;
-    --border:rgba(0,0,0,.08);
-    --border-strong:rgba(0,0,0,.14);
-    --text-1:#1d1c1a;      /* warm near-black */
-    --text-2:#6b6a66;
-    --text-3:#92918c;
+    --border:rgba(0,0,0,.10);     /* +25% strong */
+    --border-strong:rgba(0,0,0,.18);
+    --text-1:#0f0e0c;      /* deeper near-black — 가독성 ↑ */
+    --text-2:#3f3e3a;      /* stronger body text */
+    --text-3:#7a7975;      /* muted but visible */
     --accent:#cc785c;      /* Claude orange */
     --accent-hover:#b86b50;
     --kimchi:#dc2626;      /* 김치 빨강 (가격표용) */
     --kimchi-green:#1a5c3a;
-    --shadow-sm:0 1px 2px rgba(29,28,26,.04);
-    --shadow-md:0 4px 14px rgba(29,28,26,.06);
-    --shadow-lg:0 18px 40px rgba(29,28,26,.10);
+    --kimchi-green-2:#15803d;
+    --shadow-sm:0 1px 3px rgba(15,14,12,.06);
+    --shadow-md:0 4px 14px rgba(15,14,12,.10);
+    --shadow-lg:0 18px 40px rgba(15,14,12,.14);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -75,7 +76,7 @@
   }
   .panel:hover{box-shadow:var(--shadow-md)}
   .panel h2{
-    font-size:11px;color:var(--text-3);margin-bottom:10px;
+    font-size:11px;color:var(--kimchi-green);margin-bottom:10px;
     font-weight:800;letter-spacing:.08em;text-transform:uppercase;
     display:flex;justify-content:space-between;align-items:center;
   }
@@ -90,11 +91,12 @@
   }
   .search-row input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(204,120,92,.10)}
   .scan-btn{
-    background:var(--text-1);color:#fff;border:0;border-radius:10px;
+    background:linear-gradient(135deg,var(--kimchi-green),var(--kimchi-green-2));
+    color:#fff;border:0;border-radius:10px;
     padding:0 14px;font-size:18px;font-weight:700;cursor:pointer;flex-shrink:0;
-    transition:.15s;
+    transition:.15s;box-shadow:0 2px 6px rgba(22,163,74,.22);
   }
-  .scan-btn:hover{background:#000;transform:translateY(-1px)}
+  .scan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(22,163,74,.32)}
   .scan-btn.scanning{background:var(--kimchi);animation:pulse 1.2s ease-in-out infinite}
   .scan-btn.scanning{background:#dc2626;animation:pulse 1.2s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -117,7 +119,7 @@
   .result-empty{padding:22px;text-align:center;color:var(--text-3);font-size:12px;font-weight:500}
 
   .form-row{display:grid;grid-template-columns:80px 1fr;gap:8px 10px;margin-top:11px;align-items:center}
-  .form-row label{font-size:11px;color:var(--text-2);font-weight:700;letter-spacing:-.005em}
+  .form-row label{font-size:11px;color:var(--text-1);font-weight:800;letter-spacing:-.005em}
   .form-row label .opt{color:var(--text-3);font-weight:500;font-size:10px}
   .form-row input,.form-row select{
     padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;
@@ -145,13 +147,16 @@
   .picker .opts label[data-active="1"]{border-color:currentColor;background:rgba(0,0,0,.04);box-shadow:inset 0 0 0 1px currentColor}
 
   .add-btn{
-    width:100%;background:var(--text-1);color:#fff;
-    border:0;border-radius:11px;padding:12px;
-    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
-    margin-top:12px;transition:.15s;letter-spacing:-.005em;
+    width:100%;
+    background:linear-gradient(135deg,var(--kimchi-green),var(--kimchi-green-2));
+    color:#fff;
+    border:0;border-radius:11px;padding:13px;
+    font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+    margin-top:12px;transition:.18s;letter-spacing:-.005em;
+    box-shadow:0 2px 6px rgba(22,163,74,.22);
   }
-  .add-btn:hover:not(:disabled){background:#000;transform:translateY(-1px);box-shadow:var(--shadow-md)}
-  .add-btn:disabled{background:var(--text-3);cursor:not-allowed}
+  .add-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 22px rgba(22,163,74,.35)}
+  .add-btn:disabled{background:var(--text-3);cursor:not-allowed;box-shadow:none}
 
   .preview-wrap{overflow-x:auto}
   .toolbar{display:flex;gap:7px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
@@ -163,8 +168,12 @@
     font-family:inherit;transition:.15s;letter-spacing:-.005em;
   }
   .toolbar button:hover{border-color:var(--text-3);transform:translateY(-1px)}
-  .toolbar button.print{background:var(--text-1);color:#fff;border-color:transparent}
-  .toolbar button.print:hover{background:#000;box-shadow:var(--shadow-md)}
+  .toolbar button.print{
+    background:linear-gradient(135deg,var(--kimchi-green),var(--kimchi-green-2));
+    color:#fff;border-color:transparent;
+    box-shadow:0 2px 6px rgba(22,163,74,.22);
+  }
+  .toolbar button.print:hover{box-shadow:0 8px 22px rgba(22,163,74,.35);transform:translateY(-2px)}
   .toolbar button.danger{color:var(--kimchi);border-color:rgba(220,38,38,.30)}
   .toolbar button.danger:hover{background:#fef2f2;border-color:var(--kimchi)}
 

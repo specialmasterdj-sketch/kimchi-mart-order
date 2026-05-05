@@ -43,15 +43,15 @@
   } catch(e){}
 })();
 
-// Bare visit (no vendor deep-link, no in-app navigation flag) → bounce out to
-// the vendor-order-center hub so manager flows always go through that hub.
+// Bare visit (no vendor deep-link) → flag for post-auth redirect to hub.
+// Actual redirect happens inside onAuthStateChanged after login succeeds.
 (function(){
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('vendor')) return;
     if (p.get('hub') === 'skip') return;
     if (sessionStorage.getItem('km_skipHubRedirect') === '1') return;
-    location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html');
+    window._km_needsHubRedirect = true;
   } catch(e){}
 })();
 </script>
@@ -1926,6 +1926,10 @@ onAuthStateChanged(auth, (user) => {
     gate.classList.add('hidden');
     appEl.style.display = '';
     console.info('[Auth] logged in:', user.email);
+    if (window._km_needsHubRedirect) {
+      location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html');
+      return;
+    }
   } else {
     gate.classList.remove('hidden');
     appEl.style.display = 'none';

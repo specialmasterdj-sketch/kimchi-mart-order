@@ -841,6 +841,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -853,6 +854,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+onAuthStateChanged(auth, (user) => { if (!user) location.replace('index.html'); });
 
 let applyingRemote = false;
 let unsub = null;

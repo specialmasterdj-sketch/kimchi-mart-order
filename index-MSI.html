@@ -13,48 +13,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
-<script src="vela_stock.js"></script>
-<script>
-// One-shot service-worker + cache reset for the v66 styling rollout.
-// Some users' PWAs were stuck on v65 (numpad styles missing). On the
-// first load after this deploys, every visitor unregisters their old
-// SW and wipes its caches, then reloads once into the fresh build.
-// Guarded by a localStorage flag so it never runs twice.
-(function(){
-  try {
-    if (localStorage.getItem('km_sw_reset_v66') === '1') return;
-    if (!('serviceWorker' in navigator)) {
-      localStorage.setItem('km_sw_reset_v66', '1');
-      return;
-    }
-    navigator.serviceWorker.getRegistrations().then(function(regs){
-      var work = [];
-      for (var i = 0; i < regs.length; i++) work.push(regs[i].unregister());
-      if ('caches' in window) {
-        work.push(caches.keys().then(function(keys){
-          return Promise.all(keys.map(function(k){ return caches.delete(k); }));
-        }));
-      }
-      Promise.all(work).then(function(){
-        localStorage.setItem('km_sw_reset_v66', '1');
-        location.reload();
-      });
-    });
-  } catch(e){}
-})();
-
-// Bare visit (no vendor deep-link, no in-app navigation flag) → bounce out to
-// the vendor-order-center hub so manager flows always go through that hub.
-(function(){
-  try {
-    var p = new URLSearchParams(location.search);
-    if (p.get('vendor')) return;
-    if (p.get('hub') === 'skip') return;
-    if (sessionStorage.getItem('km_skipHubRedirect') === '1') return;
-    location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html');
-  } catch(e){}
-})();
-</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
@@ -103,25 +61,20 @@ input { font-family:inherit; }
 .search-bar input { width:100%; padding:12px 16px; border:2px solid var(--gray); border-radius:8px; font-size:16px; outline:none; }
 .search-bar input:focus { border-color:var(--blue); }
 
-.product-grid { flex:1; overflow-y:auto; padding:10px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; align-content:start; }
-.product-tile { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; flex-direction:column; position:relative; transition:all .15s; cursor:pointer; min-height:290px; }
+.product-grid { flex:1; overflow-y:auto; padding:8px; display:grid; grid-template-columns:repeat(auto-fill, minmax(115px, 1fr)); gap:6px; align-content:start; }
+.product-tile { background:var(--white); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08); display:flex; flex-direction:column; position:relative; transition:all .15s; cursor:pointer; min-height:210px; }
 .product-tile:active { transform:scale(0.98); }
 .product-tile.has-qty { box-shadow:0 0 0 2px var(--red), 0 1px 3px rgba(0,0,0,0.08); }
 .product-tile .new-badge { position:absolute; top:6px; left:6px; background:#ff9800; color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:10px; z-index:2; letter-spacing:.3px; }
-.product-tile .img-wrap { position:relative; width:100%; aspect-ratio:1; min-height:120px; background:#fafafa; padding:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.product-tile .img-wrap { position:relative; width:100%; aspect-ratio:1; min-height:90px; background:#fafafa; padding:4px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .product-tile .img-wrap img { max-width:100%; max-height:100%; object-fit:contain; }
 .product-tile .img-wrap .no-img { color:#CCC; font-size:34px; }
 .product-tile .info { padding:7px 9px 8px; flex:1; display:flex; flex-direction:column; }
 .product-tile .info .name { font-size:11.5px; font-weight:700; line-height:1.3; color:#222; margin-bottom:3px; min-height:30px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .product-tile .info .name-kr { font-size:10.5px; color:#888; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
 .product-tile .info .meta { font-size:10px; color:#888; margin-bottom:3px; line-height:1.3; }
-.product-tile .info .barcode-line { font-family:monospace; font-size:9.5px; letter-spacing:.3px; color:#666; min-height:13px; }
-.product-tile .info .name-kr { min-height:14px; }
 .product-tile .info .meta .code { color:var(--red); font-weight:700; }
 .product-tile .info .brand { font-size:9.5px; color:#aaa; margin-bottom:6px; text-transform:uppercase; }
-.product-tile.catalog .img-wrap { aspect-ratio:318/290; padding:0; background:#fff; min-height:0; }
-.product-tile.catalog .img-wrap img { width:100%; height:100%; object-fit:contain; max-height:none; display:block; }
-.product-tile.catalog .info { padding:6px 8px 8px; }
 .product-tile .info .price { font-size:13px; font-weight:800; color:var(--red); margin-top:2px; }
 .product-tile .qty-row { display:flex; align-items:center; justify-content:space-between; margin-top:auto; background:#f5f5f5; border-radius:7px; padding:2px; gap:0; border-top:none; }
 .qty-btn { flex-shrink:0; width:30px; height:28px; font-size:15px; font-weight:700; border:none; border-radius:5px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit; }
@@ -129,11 +82,8 @@ input { font-family:inherit; }
 .qty-btn.plus  { color:var(--green); background:#fff; }
 .qty-btn:disabled { opacity:.3; cursor:not-allowed; }
 .qty-btn:active { background:#ddd; }
-.qty-input { flex:1; height:28px; text-align:center; font-size:13px; font-weight:800; border:none; background:#fff; color:#222; min-width:30px; padding:0 2px; font-family:inherit; cursor:pointer; border-radius:5px; transition:background .12s; }
-.qty-input:hover { background:#fffde7; box-shadow:0 0 0 1.5px var(--red) inset; }
-.qty-input:active { background:#ffe0e0; }
-.qty-input.has-qty { color:var(--red); background:#fff5f5; }
-.qty-input.has-qty:hover { background:#ffeaea; }
+.qty-input { flex:1; height:28px; text-align:center; font-size:13px; font-weight:800; border:none; background:transparent; color:#222; min-width:30px; padding:0 2px; font-family:inherit; }
+.qty-input.has-qty { color:var(--red); }
 
 /* FLOATING ORDER BTN */
 .float-order { position:fixed; bottom:20px; right:20px; background:var(--red); color:#FFF; padding:14px 24px; border-radius:30px; font-size:16px; font-weight:700; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:99; display:flex; align-items:center; gap:8px; }
@@ -268,36 +218,9 @@ input { font-family:inherit; }
 #save-indicator.show { opacity:1; transform:translateY(0); }
 .btn-undo { background:#FF6F00; color:#FFF; border:none; padding:12px 18px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:8px; }
 .btn-undo:active { transform:scale(0.97); }
-
-/* AUTH LOGIN SCREEN */
-#auth-gate{position:fixed;inset:0;background:linear-gradient(135deg,#C8352A 0%,#8B0000 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
-#auth-gate.hidden{display:none;}
-.auth-card{background:#fff;border-radius:16px;padding:40px 32px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;}
-.auth-card h1{font-size:28px;color:#C8352A;margin-bottom:4px;}
-.auth-card .subtitle{color:#888;font-size:14px;margin-bottom:28px;}
-.auth-card input{width:100%;padding:14px 16px;border:2px solid #E0E0E0;border-radius:10px;font-size:16px;margin-bottom:12px;outline:none;transition:border 0.2s;}
-.auth-card input:focus{border-color:#C8352A;}
-.auth-card .auth-btn{width:100%;padding:14px;background:#C8352A;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;margin-top:8px;transition:background 0.2s;}
-.auth-card .auth-btn:hover{background:#A02820;}
-.auth-card .auth-btn:disabled{background:#ccc;cursor:not-allowed;}
-.auth-error{color:#D32F2F;font-size:13px;margin-top:8px;min-height:20px;}
-.auth-loading{display:inline-block;width:20px;height:20px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
-
-<!-- AUTH LOGIN GATE -->
-<div id="auth-gate">
-  <div class="auth-card">
-    <h1>KIMCHI MART</h1>
-    <div class="subtitle">Manager Login</div>
-    <input type="email" id="auth-email" placeholder="Email" autocomplete="email">
-    <input type="password" id="auth-pw" placeholder="Password" autocomplete="current-password">
-    <button class="auth-btn" id="auth-login-btn" onclick="window._authLogin()">Login</button>
-    <div class="auth-error" id="auth-error"></div>
-  </div>
-</div>
 
 <div id="app"></div>
 
@@ -418,22 +341,6 @@ let state = {
 if ((state.page === 'browse' || state.page === 'order') && (!state.vendor || !VENDORS[state.vendor])){
   state.page = 'home'; state.vendor = null;
 }
-
-// Deep-link support: ?vendor=<id> jumps straight into that vendor's browse view
-// (used by vendor-order-center.html cards so a Seoul Trading click skips the home page).
-(() => {
-  try {
-    const params = new URLSearchParams(location.search);
-    const deep = params.get('vendor');
-    if (deep && VENDORS[deep]) {
-      state.vendor = deep;
-      state.page = 'browse';
-      state.category = 'all';
-      state.search = '';
-      state.fromVendorCenter = true;
-    }
-  } catch (e) {}
-})();
 
 function saveNavState(){
   try {
@@ -612,7 +519,7 @@ const TRANSLATIONS = {
   'no_items_msg': { ko:'주문할 제품을 추가하세요.', en:'No items in order. Go back and add products.', es:'No hay articulos. Regrese y agregue productos.' },
   'email_order': { ko:'이메일 발주', en:'Email Order', es:'Enviar Pedido' },
   'print_pdf': { ko:'인쇄 / PDF', en:'Print / PDF', es:'Imprimir / PDF' },
-  'csv_download': { ko:'엑셀', en:'Excel', es:'Excel' },
+  'csv_download': { ko:'CSV 다운로드', en:'CSV Download', es:'Descargar CSV' },
   'clear_all': { ko:'전체 삭제', en:'Clear All', es:'Borrar Todo' },
   'clear_confirm': { ko:'모두 삭제하시겠습니까?', en:'Clear all items?', es:'Borrar todos los articulos?' },
   'set_store_info': { ko:'지점 정보 설정', en:'Set store info', es:'Configurar tienda' },
@@ -638,7 +545,7 @@ const TRANSLATIONS = {
   'install_btn': { ko:'설치', en:'INSTALL', es:'INSTALAR' },
   // Toasts
   'order_copied': { ko:'이메일에 붙여넣기 하세요!', en:'Order copied! Paste into email.', es:'Pedido copiado! Pegue en el correo.' },
-  'csv_done': { ko:'엑셀 다운로드 완료!', en:'Excel downloaded!', es:'Excel descargado!' },
+  'csv_done': { ko:'CSV 다운로드 완료!', en:'CSV downloaded!', es:'CSV descargado!' },
   'prev_order_loaded': { ko:'이전 주문을 불러왔습니다!', en:'Previous order loaded!', es:'Pedido anterior cargado!' },
   'date_label': { ko:'날짜', en:'Date', es:'Fecha' },
   'order_num': { ko:'주문번호', en:'Order #', es:'Pedido #' }
@@ -661,8 +568,7 @@ function langButtons() {
     '<button class="lang-btn ' + (currentLang==='ko'?'active':'') + '" onclick="setLang(\'ko\')">KO</button>' +
     '<button class="lang-btn ' + (currentLang==='en'?'active':'') + '" onclick="setLang(\'en\')">EN</button>' +
     '<button class="lang-btn ' + (currentLang==='es'?'active':'') + '" onclick="setLang(\'es\')">ES</button>' +
-    '</div>' +
-    '<button onclick="window._authLogout()" style="background:none;border:1px solid #ccc;border-radius:8px;padding:4px 10px;font-size:12px;color:#888;cursor:pointer" title="Logout">&#x1F512;</button>';
+    '</div>';
 }
 
 function branchButton(){
@@ -671,29 +577,7 @@ function branchButton(){
 }
 
 function homeIconHtml() {
-  // When the user arrived here via a ?vendor=<id> deep-link from
-  // vendor-order-center.html, the home icon should take them back to that hub
-  // (not all the way out to apps.html).
-  const href = state.fromVendorCenter
-    ? 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html'
-    : 'https://specialmasterdj-sketch.github.io/kfood-guide/apps.html';
-  return '<a class="home-icon" href="' + href + '" title="Apps Hub">&#127968;</a>';
-}
-
-// Back arrow from a vendor's browse view: return to the vendor-order-center
-// hub if we came from there via deep-link, otherwise show the local home
-// (vendor-picker) page as before.
-function goBackFromVendor() {
-  // Always honour the actual previous page when one exists (browser back).
-  // Falls back to the vendor-order-center hub if there's no real history
-  // (direct URL, brand-new tab, PWA cold start).
-  if (document.referrer && history.length > 1) { history.back(); return; }
-  if (state.fromVendorCenter) {
-    location.href = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
-    return;
-  }
-  state.page = 'home';
-  render();
+  return '<a class="home-icon" href="https://specialmasterdj-sketch.github.io/kfood-guide/apps.html" title="Apps Hub">&#127968;</a>';
 }
 
 // ===== STORE INFO =====
@@ -971,12 +855,8 @@ function renderHome(app) {
   // Standalone pages — some vendors open a dedicated HTML file instead of the
   // built-in browse page (richer UX for that specific vendor's catalog).
   const STANDALONE = { wismettac: 'wismettac.html' };
-  // Vendors with dedicated apps in vendor-order-center — hide from home grid
-  // but keep reachable via ?vendor=<id> deep-link.
-  const HIDDEN_ON_HOME = new Set(['rhee_full','rhee_frequent','seoul_trading','wang','namdaemun','wismettac']);
 
   for (let vid in VENDORS) {
-    if (HIDDEN_ON_HOME.has(vid)) continue;
     const v = VENDORS[vid];
     const cnt = getOrderCount(vid);
     const badge = cnt > 0 ? '<span class="cart-badge">' + cnt + ' ' + t('items_in_cart') + '</span>' : '<span class="cart-badge empty">' + t('empty_cart') + '</span>';
@@ -1011,7 +891,10 @@ function renderHome(app) {
 function filterBrowseProducts(v){
   let products = v.products;
   if (state.category !== 'all') {
-    products = (state.category === 'wis-new' || state.category === 'new')
+    // Treat any category id that ends in "-new" (or is bare "new") as the
+    // New Releases filter — isNew is a flag that overlays the main-catalog
+    // category so a product appears both in its real section and here.
+    products = (state.category === 'new' || /-new$/.test(state.category))
       ? products.filter(p => p.isNew)
       : products.filter(p => p.category === state.category);
   }
@@ -1048,49 +931,15 @@ function buildTilesHtml(v, products){
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+eaStep})">+</button>
         </div>
         <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ${eaStep}개 (1 CS)</div>` : '';
-    // Optional rows are ALWAYS rendered (even as blank placeholders) so that
-    // every tile has the same height and the quantity row sits at the same
-    // y-position across a grid row. Without this, a tile without a Korean
-    // name or barcode shrinks by 12-16px and the qty-row on that tile
-    // mis-aligns with its neighbours.
-    const krHtml = (p.nameKr && p.name)
-      ? `<div class="name-kr">${p.nameKr}</div>`
-      : `<div class="name-kr">&nbsp;</div>`;
-    const barcodeHtml = p.barcode
-      ? `<div class="meta barcode-line">📶 ${p.barcode}</div>`
-      : `<div class="meta barcode-line">&nbsp;</div>`;
-    // Live POS stock pulled from the Vela snapshot lookup.html caches.
-    // Returns empty when the vendor product can't be matched.
-    const stockBadge = (typeof VelaStock !== 'undefined') ? VelaStock.badgeHtml(p) : '';
-    // Catalog-style tile: image already contains name + code + size, so skip
-    // the text rows and show only the cell image plus the qty controls.
-    if (p.catalog || p.category === 'wal-lkk') {
-      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}">
-        ${newBadge}
-        <div class="img-wrap">${riskCorner}${imgHtml}</div>
-        <div class="info">
-          ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
-          <div class="qty-row">
-            <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
-            <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
-            <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
-          </div>
-          ${eaRow}
-        </div>
-      </div>`;
-      continue;
-    }
     tiles += `<div class="product-tile ${anyQty?'has-qty':''}">
       ${newBadge}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">
         <div class="name">${p.name || p.nameKr}</div>
-        ${krHtml}
+        ${p.nameKr && p.name ? `<div class="name-kr">${p.nameKr}</div>` : ''}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
-        ${barcodeHtml}
         ${brandHtml}
         ${priceHtml}
-        ${stockBadge ? `<div style="margin:2px 0 4px">${stockBadge}</div>` : ''}
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
@@ -1139,7 +988,7 @@ function renderBrowse(app) {
   const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
 
   app.innerHTML = '<div class="header">' +
-      '<button class="back-btn" onclick="goBackFromVendor()">&larr;</button>' +
+      '<button class="back-btn" onclick="goHomeOrHub()">&larr;</button>' +
       '<h1 style="color:' + v.color + '">' + v.name + '<small>' + v.nameKr + '</small></h1>' +
       '<div class="header-right">' + branchButton() + langButtons() + '<button class="back-btn" onclick="state.page=\'order\';render()">&#128722;</button></div>' +
     '</div>' +
@@ -1265,7 +1114,7 @@ function renderOrder(app) {
       '<div class="action-bar">' +
         '<button class="btn-email" style="min-width:220px;font-size:17px;padding:18px 28px" onclick="emailWithPDF()">&#128233; <span data-t="email_order">' + t('email_order') + '</span></button>' +
         '<button class="btn-purple" onclick="printOrder()">&#128424; <span data-t="print_pdf">' + t('print_pdf') + '</span></button>' +
-        '<button class="btn-excel" onclick="downloadCSV()">&#128202; <span data-t="csv_download">' + t('csv_download') + '</span></button>' +
+        '<button class="btn-excel" onclick="downloadCSV()">&#128196; <span data-t="csv_download">' + t('csv_download') + '</span></button>' +
         '<button class="btn-clear" onclick="if(confirm(\'' + t('clear_confirm') + '\')){state.orders[state.vendor]={};saveState();render();}" data-t="clear_all">' + t('clear_all') + '</button>' +
       '</div>' +
     '</div>';
@@ -1885,6 +1734,30 @@ window.KM = {
 };
 
 // ===== INIT =====
+// Deep-link via ?vendor=<id> so external hubs (e.g. 벤더 오더 센타) can
+// jump straight into a vendor's browse page instead of landing on the
+// vendor picker. When entered this way, the back button on browse/order
+// returns to the referring hub instead of showing the in-app vendor list.
+window.__deepLinkReturn = null;
+try {
+  const params = new URLSearchParams(window.location.search);
+  const vid = params.get('vendor');
+  if (vid && VENDORS[vid]){
+    state.vendor = vid;
+    state.category = 'all';
+    state.search = '';
+    state.page = 'browse';
+    window.__deepLinkReturn = 'https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html';
+  }
+} catch(e){}
+window.goHomeOrHub = function(){
+  if (window.__deepLinkReturn){
+    window.location.href = window.__deepLinkReturn;
+    return;
+  }
+  state.page = 'home';
+  render();
+};
 render();
 // First-time load: force branch selection so each device is scoped to a branch.
 if (!currentBranch || !BRANCH_BY_ID[currentBranch]) openBranchModal();
@@ -1900,7 +1773,7 @@ viewing Miami sees qty=3 instantly, and either can continue the cart.
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -1915,50 +1788,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-
-// --- AUTH GATE ---
-setPersistence(auth, browserLocalPersistence);
-const gate = document.getElementById('auth-gate');
-const appEl = document.getElementById('app');
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    gate.classList.add('hidden');
-    appEl.style.display = '';
-    console.info('[Auth] logged in:', user.email);
-  } else {
-    gate.classList.remove('hidden');
-    appEl.style.display = 'none';
-  }
-});
-
-window._authLogin = async function(){
-  const email = document.getElementById('auth-email').value.trim();
-  const pw = document.getElementById('auth-pw').value;
-  const errEl = document.getElementById('auth-error');
-  const btn = document.getElementById('auth-login-btn');
-  if (!email || !pw){ errEl.textContent = 'Email과 Password를 입력하세요'; return; }
-  btn.disabled = true;
-  btn.innerHTML = '<span class="auth-loading"></span>';
-  errEl.textContent = '';
-  try {
-    await signInWithEmailAndPassword(auth, email, pw);
-  } catch(e){
-    const msg = e.code === 'auth/invalid-credential' ? '이메일 또는 비밀번호가 틀렸습니다'
-              : e.code === 'auth/too-many-requests' ? '너무 많은 시도. 잠시 후 다시 시도하세요'
-              : '로그인 실패: ' + e.message;
-    errEl.textContent = msg;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Login';
-  }
-};
-
-document.getElementById('auth-pw').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') window._authLogin();
-});
-
-window._authLogout = function(){ signOut(auth); };
+onAuthStateChanged(auth, (user) => { if (!user) location.replace('index.html'); });
 
 // Guard so remote updates don't bounce back as local pushes.
 let applyingRemote = false;

@@ -1,12 +1,8 @@
 {
   "stats": {
-    "total_designs": 10,
-    "total_unique_products": 2007,
+    "total_designs": 11,
+    "total_unique_products": 2240,
     "most_common": [
-      {
-        "name": "PER LB",
-        "in_designs": 6
-      },
       {
         "name": "Milk Fish",
         "in_designs": 5
@@ -82,6 +78,10 @@
       {
         "name": "Haitai IceNougat Bar8PC 560mL",
         "in_designs": 2
+      },
+      {
+        "name": "Imuraya Coconut Mochi Chocolate 6P",
+        "in_designs": 2
       }
     ]
   },
@@ -93,64 +93,56 @@
     },
     "DAG1BrdHySg": {
       "rawLines": 2025,
-      "productLines": 672,
-      "uniqueProducts": 353
+      "productLines": 380,
+      "uniqueProducts": 349
     },
     "DAG1NWACnSI": {
       "rawLines": 407,
-      "productLines": 198,
-      "uniqueProducts": 97
+      "productLines": 148,
+      "uniqueProducts": 95
     },
     "DAG1PVJJmbA": {
       "rawLines": 114,
-      "productLines": 63,
-      "uniqueProducts": 33
+      "productLines": 62,
+      "uniqueProducts": 32
     },
     "DAG1x-2SElM": {
       "rawLines": 574,
-      "productLines": 300,
-      "uniqueProducts": 152
+      "productLines": 285,
+      "uniqueProducts": 151
     },
     "DAG1xayOS2I": {
       "rawLines": 1323,
-      "productLines": 639,
-      "uniqueProducts": 616
+      "productLines": 635,
+      "uniqueProducts": 612
     },
     "DAG1y717Ohg": {
       "rawLines": 1558,
-      "productLines": 932,
-      "uniqueProducts": 175
+      "productLines": 622,
+      "uniqueProducts": 174
     },
     "DAG1Z8b4plE": {
       "rawLines": 429,
-      "productLines": 256,
-      "uniqueProducts": 99
+      "productLines": 195,
+      "uniqueProducts": 94
     },
     "DAG5Kj4d0-E": {
       "rawLines": 376,
-      "productLines": 83,
-      "uniqueProducts": 71
+      "productLines": 76,
+      "uniqueProducts": 70
     },
     "DAGbEAYxq5o": {
       "rawLines": 422,
       "productLines": 398,
       "uniqueProducts": 363
+    },
+    "DAHFnF5Mm6M": {
+      "rawLines": 764,
+      "productLines": 380,
+      "uniqueProducts": 246
     }
   },
   "products": [
-    {
-      "name": "PER LB",
-      "norm": "per lb",
-      "appears_in": 6,
-      "sources": {
-        "DAG1NWACnSI": 49,
-        "DAG1PVJJmbA": 1,
-        "DAG1x-2SElM": 15,
-        "DAG1xayOS2I": 1,
-        "DAG1y717Ohg": 310,
-        "DAG1Z8b4plE": 55
-      }
-    },
     {
       "name": "Milk Fish",
       "norm": "milk fish",
@@ -3589,15 +3581,6 @@
       }
     },
     {
-      "name": "LAS OLAS",
-      "norm": "las olas",
-      "appears_in": 2,
-      "sources": {
-        "DAG1BrdHySg": 7,
-        "DAG5Kj4d0-E": 7
-      }
-    },
-    {
       "name": "WAS $14.99",
       "norm": "was $14.99",
       "appears_in": 2,
@@ -5144,14 +5127,6 @@
       }
     },
     {
-      "name": "CORAL SPRINGS",
-      "norm": "coral springs",
-      "appears_in": 1,
-      "sources": {
-        "DAG1BrdHySg": 283
-      }
-    },
-    {
       "name": "JAY ONE PUFFED CORN SNACK FRUIT FLAVOR 600G",
       "norm": "jay one puffed corn snack fruit flavor 600g",
       "appears_in": 1,
@@ -6178,14 +6153,6 @@
     {
       "name": "BULDAK CHEESE SMALL CUP BOX",
       "norm": "buldak cheese small cup box",
-      "appears_in": 1,
-      "sources": {
-        "DAG1BrdHySg": 1
-      }
-    },
-    {
-      "name": "PAPAYA",
-      "norm": "papaya",
       "appears_in": 1,
       "sources": {
         "DAG1BrdHySg": 1
@@ -7712,14 +7679,6 @@
       }
     },
     {
-      "name": "BOTTLE",
-      "norm": "bottle",
-      "appears_in": 1,
-      "sources": {
-        "DAG1BrdHySg": 1
-      }
-    },
-    {
       "name": "JIN JIN ASSORTED FRUIT PUDDING 1500G",
       "norm": "jin jin assorted fruit pudding 1500g",
       "appears_in": 1,
@@ -8050,14 +8009,6 @@
     {
       "name": "Pork FrontFeet Sliced",
       "norm": "pork frontfeet sliced",
-      "appears_in": 1,
-      "sources": {
-        "DAG1NWACnSI": 1
-      }
-    },
-    {
-      "name": "PorkEar",
-      "norm": "porkear",
       "appears_in": 1,
       "sources": {
         "DAG1NWACnSI": 1
@@ -9752,14 +9703,6 @@
       }
     },
     {
-      "name": "ON SALE !!",
-      "norm": "on sale !!",
-      "appears_in": 1,
-      "sources": {
-        "DAG1xayOS2I": 1
-      }
-    },
-    {
       "name": "Sweety Mochi Ice Cream Mango 213g",
       "norm": "sweety mochi ice cream mango 213g",
       "appears_in": 1,
@@ -10568,14 +10511,6 @@
       }
     },
     {
-      "name": "GYUDON",
-      "norm": "gyudon",
-      "appears_in": 1,
-      "sources": {
-        "DAG1xayOS2I": 1
-      }
-    },
-    {
       "name": "COLD NOODLE (DONGCHIMI)3.3LB",
       "norm": "cold noodle (dongchimi)3.3lb",
       "appears_in": 1,
@@ -10762,14 +10697,6 @@
     {
       "name": "SHIRAKIKU CHICKEN GYOZA DUMPLING 21OZ",
       "norm": "shirakiku chicken gyoza dumpling 21oz",
-      "appears_in": 1,
-      "sources": {
-        "DAG1xayOS2I": 1
-      }
-    },
-    {
-      "name": "CROAKER",
-      "norm": "croaker",
       "appears_in": 1,
       "sources": {
         "DAG1xayOS2I": 1
@@ -12712,14 +12639,6 @@
       }
     },
     {
-      "name": "MASAGO",
-      "norm": "masago",
-      "appears_in": 1,
-      "sources": {
-        "DAG1Z8b4plE": 1
-      }
-    },
-    {
       "name": "IMATATION CRABFOR SUSHI",
       "norm": "imatation crabfor sushi",
       "appears_in": 1,
@@ -12888,14 +12807,6 @@
       }
     },
     {
-      "name": "TILAPIA",
-      "norm": "tilapia",
-      "appears_in": 1,
-      "sources": {
-        "DAG1Z8b4plE": 3
-      }
-    },
-    {
       "name": "BUTTER FISH",
       "norm": "butter fish",
       "appears_in": 1,
@@ -13024,14 +12935,6 @@
       }
     },
     {
-      "name": "CORVINA",
-      "norm": "corvina",
-      "appears_in": 1,
-      "sources": {
-        "DAG1Z8b4plE": 1
-      }
-    },
-    {
       "name": "STEAK6808PRODUCT OF VENEZUELA",
       "norm": "steak6808product of venezuela",
       "appears_in": 1,
@@ -13082,14 +12985,6 @@
     {
       "name": "HEAD ON6802",
       "norm": "head on6802",
-      "appears_in": 1,
-      "sources": {
-        "DAG1Z8b4plE": 1
-      }
-    },
-    {
-      "name": "TIALPIA",
-      "norm": "tialpia",
       "appears_in": 1,
       "sources": {
         "DAG1Z8b4plE": 1
@@ -16645,6 +16540,1974 @@
       "appears_in": 1,
       "sources": {
         "DAGbEAYxq5o": 1
+      }
+    },
+    {
+      "name": "PALDO GOMTANG RAMEN (102G)",
+      "norm": "paldo gomtang ramen (102g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIGOMTANG MYON (110G)",
+      "norm": "ottogigomtang myon (110g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $1.99",
+      "norm": "regular price: $1.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 10
+      }
+    },
+    {
+      "name": "DEC/07/2025",
+      "norm": "dec/07/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/04/2025",
+      "norm": "dec/04/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SURASANGSEASONED KELP CHIPS(51G)",
+      "norm": "surasangseasoned kelp chips(51g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/15/2026",
+      "norm": "feb/15/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $5.49",
+      "norm": "regular price: $5.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "SURASANGSEASONED K-BBQ CHIPS(60G)",
+      "norm": "surasangseasoned k-bbq chips(60g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KNORRBEEF FLAVOR BROTH MIX(227G)",
+      "norm": "knorrbeef flavor broth mix(227g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/12/2026",
+      "norm": "feb/12/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/14/2026",
+      "norm": "feb/14/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $4.99",
+      "norm": "regular price: $4.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 9
+      }
+    },
+    {
+      "name": "RICE UPORGANIC RICE CHIPSW/SUPER SEEDS (25G)",
+      "norm": "rice uporganic rice chipsw/super seeds (25g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HNSTYGROUND WHITE PEPPER (100G)",
+      "norm": "hnstyground white pepper (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREABLACK PEPPER SEA SALT(200G)",
+      "norm": "wang koreablack pepper sea salt(200g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/30/2026",
+      "norm": "mar/30/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "MAR/15/2026",
+      "norm": "mar/15/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 4
+      }
+    },
+    {
+      "name": "TTEOKBOKKI WITH SAUCE (400G)",
+      "norm": "tteokbokki with sauce (400g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "PULMUONESPICY JJOLMYEON (460G)",
+      "norm": "pulmuonespicy jjolmyeon (460g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/16/2026",
+      "norm": "jan/16/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "jan/19/2026",
+      "norm": "jan/19/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $8.99",
+      "norm": "regular price: $8.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 6
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $3.99",
+      "norm": "regular price: $3.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 18
+      }
+    },
+    {
+      "name": "YOPOKKIBLACK BEAN SOY SAUCEW/RICE CAKE (120G)",
+      "norm": "yopokkiblack bean soy saucew/rice cake (120g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/24/2025",
+      "norm": "dec/24/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $2.49",
+      "norm": "regular price: $2.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "DONGWONHOT SPICYTOPOKKI (120G)",
+      "norm": "dongwonhot spicytopokki (120g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/06/2026",
+      "norm": "jan/06/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "DONG WONCANNED YELLOW PEACH (400G)",
+      "norm": "dong woncanned yellow peach (400g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/12/2025",
+      "norm": "apr/12/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "NONGSHIMSQUID CHAMPONG RAMYUN (101G)",
+      "norm": "nongshimsquid champong ramyun (101g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/26/2026",
+      "norm": "apr/26/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREABLACK ROASTED SESAME SEED (227G)",
+      "norm": "wang koreablack roasted sesame seed (227g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "NISSHIN OILLIOBLENDED SESAME OIL (652ML)",
+      "norm": "nisshin oillioblended sesame oil (652ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $9.99",
+      "norm": "regular price: $9.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 6
+      }
+    },
+    {
+      "name": "APR /10/2025",
+      "norm": "apr /10/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/23/2026",
+      "norm": "apr/23/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SURASANGROASTED SESAME SEED (2LB)",
+      "norm": "surasangroasted sesame seed (2lb)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $5.99",
+      "norm": "regular price: $5.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 15
+      }
+    },
+    {
+      "name": "APR/10/2026",
+      "norm": "apr/10/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $13.99",
+      "norm": "regular price: $13.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTOKIRICE BOWL: TERIYAKI&TUNA MAYO (246.5G)",
+      "norm": "otokirice bowl: teriyaki&tuna mayo (246.5g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/19/2026",
+      "norm": "apr/19/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $11.99",
+      "norm": "regular price: $11.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CJKOREAN PANCAKE MIX (1KG)",
+      "norm": "cjkorean pancake mix (1kg)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/22/2026",
+      "norm": "jan/22/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $6.99",
+      "norm": "regular price: $6.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 5
+      }
+    },
+    {
+      "name": "HAE TONGRYEONSOUP STOCK SPI(100G)",
+      "norm": "hae tongryeonsoup stock spi(100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/31/2026",
+      "norm": "jan/31/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "COCO OI COCONUT WATER ( 1 L )",
+      "norm": "coco oi coconut water ( 1 l )",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/10/2026",
+      "norm": "jan/10/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "JAN/15/2026",
+      "norm": "jan/15/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "EXCELLENT FLOUR STICK PANCIT CANTON NOODLES ( 227 G )",
+      "norm": "excellent flour stick pancit canton noodles ( 227 g )",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAESRIFRIED SHALLOT (200G)",
+      "norm": "maesrifried shallot (200g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HAE TONGRYEONMIXED HERBS FOR BOILED PORK (60G)",
+      "norm": "hae tongryeonmixed herbs for boiled pork (60g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREAK-BBQ GALBI (480G)",
+      "norm": "wang koreak-bbq galbi (480g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KEWPIEONION DRESSING W/GARLIC (236ML)",
+      "norm": "kewpieonion dressing w/garlic (236ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/25/2026",
+      "norm": "jan/25/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "JAN/21/2026",
+      "norm": "jan/21/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTOKIJIN SPICY RAMEN (120G)",
+      "norm": "otokijin spicy ramen (120g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ASSIROASTED & SEASONED LAVER (10PKx5G)",
+      "norm": "assiroasted & seasoned laver (10pkx5g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/25/2026",
+      "norm": "feb/25/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "feb/28/2026",
+      "norm": "feb/28/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CJ BEKSULORG VIENNA SAUSAGE W/JUICY PORK (340G)",
+      "norm": "cj beksulorg vienna sausage w/juicy pork (340g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/19/2026",
+      "norm": "feb/19/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CJ BEKSULORG VIENNA SAUSAGE BULGOGI FLVR W/JUICY PORK (340G)",
+      "norm": "cj beksulorg vienna sausage bulgogi flvr w/juicy pork (340g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KINUGOSHI GOMASESAME SEED PASTE (500G)",
+      "norm": "kinugoshi gomasesame seed paste (500g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "S&BLA-YU CHILI OIL (33ML)",
+      "norm": "s&bla-yu chili oil (33ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $2.99",
+      "norm": "regular price: $2.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 12
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $29.99",
+      "norm": "regular price: $29.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/11/2026",
+      "norm": "jan/11/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "BABY STARRAMEN SNACK-YAKISOBA (70G)",
+      "norm": "baby starramen snack-yakisoba (70g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIPPUSHU PPUSHU (90G)",
+      "norm": "ottogippushu ppushu (90g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $1.79",
+      "norm": "regular price: $1.79",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/03/2026",
+      "norm": "jan/03/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/08/2026",
+      "norm": "jan/08/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "ASSIBLACK BEAN (850G)",
+      "norm": "assiblack bean (850g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CALBEE HOT GARLIC CHIPS (94G)",
+      "norm": "calbee hot garlic chips (94g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/17/2026",
+      "norm": "jan/17/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $3.49",
+      "norm": "regular price: $3.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CJ ANHOVY FISH SAUCE (2QT)",
+      "norm": "cj anhovy fish sauce (2qt)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/30/2026",
+      "norm": "apr/30/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 4
+      }
+    },
+    {
+      "name": "NONGSHIM K-UGUA RICE CRUNCH SNACK (290G)",
+      "norm": "nongshim k-ugua rice crunch snack (290g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/20/2026",
+      "norm": "apr/20/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $16.99",
+      "norm": "regular price: $16.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "NONGSHIM SWEET POTATO SNACK (55G)",
+      "norm": "nongshim sweet potato snack (55g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/09/2026",
+      "norm": "apr/09/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $0.99",
+      "norm": "regular price: $0.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 4
+      }
+    },
+    {
+      "name": "apr/18/2026",
+      "norm": "apr/18/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CW CHEWY HOTTEOK COOKIES (215G)",
+      "norm": "cw chewy hotteok cookies (215g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/08/2026",
+      "norm": "apr/08/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CHISPI ROLL 12 GRAIN & FLAVOR (180G)",
+      "norm": "chispi roll 12 grain & flavor (180g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FRIED RED ONION (100G)",
+      "norm": "fried red onion (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAY/07/2026",
+      "norm": "may/07/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CHA CHA ROASTED SUNFLOWER CHIPS (250G)",
+      "norm": "cha cha roasted sunflower chips (250g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FURUTASANRIO CHOCO CHIP COOKIE (140G)",
+      "norm": "furutasanrio choco chip cookie (140g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "POPTIMEPOPCORN W/AVOCADO OIL (128G)",
+      "norm": "poptimepopcorn w/avocado oil (128g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $7.99",
+      "norm": "regular price: $7.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 5
+      }
+    },
+    {
+      "name": "NONGSHIMTAKO CHIPS (60G)",
+      "norm": "nongshimtako chips (60g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "LOTTEGHANA CHOCOLATE (58G)",
+      "norm": "lotteghana chocolate (58g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "NONGSHIMBANANA KICK (454G)",
+      "norm": "nongshimbanana kick (454g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HANAMIPRAWN HOT CRACKERS (52G)",
+      "norm": "hanamiprawn hot crackers (52g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KWANGDONGVITA 500 (100MLx10)",
+      "norm": "kwangdongvita 500 (100mlx10)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/15/2026",
+      "norm": "apr/15/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAPR/07/2026",
+      "norm": "japr/07/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JMLART.BEEF&SOUR PICKLED CABBAGE (120G)",
+      "norm": "jmlart.beef&sour pickled cabbage (120g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAMARAMEN DUCK FLAVOR NOODLES (60G)",
+      "norm": "mamaramen duck flavor noodles (60g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/16/2026",
+      "norm": "feb/16/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OREO WHITE CREAMY COOKIE (100G)",
+      "norm": "oreo white creamy cookie (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/10/2026",
+      "norm": "feb/10/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OREO CHOCOLATE CREAMY COOKIE (100G)",
+      "norm": "oreo chocolate creamy cookie (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $21.99",
+      "norm": "regular price: $21.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/09/2026",
+      "norm": "feb/09/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "RED PEPPER POWDER (500G)",
+      "norm": "red pepper powder (500g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HAETAEMATCHA & STAWBERRY SNACK (49G)",
+      "norm": "haetaematcha & stawberry snack (49g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HAITAIRED BEAN PASTE BISCUIT (49G)",
+      "norm": "haitaired bean paste biscuit (49g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DONGWONCANNED MACKEREL PIKE (49G)",
+      "norm": "dongwoncanned mackerel pike (49g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/01/2026",
+      "norm": "feb/01/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/04/2026",
+      "norm": "feb/04/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SAMYANGBULDAK HOT SAUCE (200G)",
+      "norm": "samyangbuldak hot sauce (200g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "FRENCH CAFEROASTERY-RESERVE COFFEE (320ML)",
+      "norm": "french caferoastery-reserve coffee (320ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $3.79",
+      "norm": "regular price: $3.79",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/23/2026",
+      "norm": "jan/23/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CARBONARA",
+      "norm": "carbonara",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "2x SPICY",
+      "norm": "2x spicy",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ORIGINAL",
+      "norm": "original",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "GOKU-UMARAMEN NOODLES (475G)",
+      "norm": "goku-umaramen noodles (475g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $6.49",
+      "norm": "regular price: $6.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "FEB/17/2026",
+      "norm": "feb/17/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FRENCH CAFEROASTERY COFFEE (200ML)",
+      "norm": "french caferoastery coffee (200ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $2.79",
+      "norm": "regular price: $2.79",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CARAMELMACHIATO",
+      "norm": "caramelmachiato",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CAPUCCINO",
+      "norm": "capuccino",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CAFE AU LAIT",
+      "norm": "cafe au lait",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FRENCH CAFEROASTERY COFFEE (250ML)",
+      "norm": "french caferoastery coffee (250ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "EXPRESSO LATTE",
+      "norm": "expresso latte",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DULCE DE LECHE",
+      "norm": "dulce de leche",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ORIONCHOCOLATE DESSERT CAKE (150G)",
+      "norm": "orionchocolate dessert cake (150g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $6.79",
+      "norm": "regular price: $6.79",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "FEB/02/2026",
+      "norm": "feb/02/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "ORIONCHEESE DESSERT CAKE (144G)",
+      "norm": "orioncheese dessert cake (144g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREALAVER CRACKER(280G)",
+      "norm": "wang korealaver cracker(280g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $4.49",
+      "norm": "regular price: $4.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/02/2026",
+      "norm": "jan/02/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/30/2026",
+      "norm": "jan/30/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HAITAIKOREAN CRACKER(341G)",
+      "norm": "haitaikorean cracker(341g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "LOTTE CEREAL COOKIES(89G)",
+      "norm": "lotte cereal cookies(89g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "YUKI&LOVEEGG YOLK COOKIES(200G)",
+      "norm": "yuki&loveegg yolk cookies(200g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "FEB/05/2026",
+      "norm": "feb/05/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HATA RAMUNE (200ML)",
+      "norm": "hata ramune (200ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/19/2025",
+      "norm": "dec/19/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "DEC/18/2025",
+      "norm": "dec/18/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIEXTRA CRISPY  K-PANCAKE MIX (1KG)",
+      "norm": "ottogiextra crispy k-pancake mix (1kg)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "JAN/02/2025",
+      "norm": "jan/02/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $5.59",
+      "norm": "regular price: $5.59",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "PALDOKOKOMEN NOODLE  SOUP (120G)",
+      "norm": "paldokokomen noodle soup (120g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGISWEET PUMPKINPORRIDGE (285G)",
+      "norm": "ottogisweet pumpkinporridge (285g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREAKOREAN BBQBULGOGI (480G)",
+      "norm": "wang koreakorean bbqbulgogi (480g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SURASANGSEASONED SEAWEED LAVER (4x21G)",
+      "norm": "surasangseasoned seaweed laver (4x21g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/20/2025",
+      "norm": "dec/20/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/12/2025",
+      "norm": "dec/12/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $8.49",
+      "norm": "regular price: $8.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CJPANCAKE MIX (1KG)",
+      "norm": "cjpancake mix (1kg)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "NATURE&HEALTHKONJAC RICE (500G)",
+      "norm": "nature&healthkonjac rice (500g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/12/2026",
+      "norm": "mar/12/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $10.99",
+      "norm": "regular price: $10.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "MAR/20/2026",
+      "norm": "mar/20/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "KNORRCHILI LIQUID SEASONING (250ML)",
+      "norm": "knorrchili liquid seasoning (250ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "PALDOBIBIM JANG SAUCE (380G)",
+      "norm": "paldobibim jang sauce (380g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/11/2026",
+      "norm": "mar/11/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/13/2026",
+      "norm": "mar/13/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIVERMONT GOLD CURRY SAUCE MIX (100G)",
+      "norm": "ottogivermont gold curry sauce mix (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/19/2026",
+      "norm": "mar/19/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $7.79",
+      "norm": "regular price: $7.79",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/28/2026",
+      "norm": "mar/28/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIVERMONT GOLD CURRY SAUCE MIX-HOT (230G)",
+      "norm": "ottogivermont gold curry sauce mix-hot (230g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIVERMONT CURRY MILD  (100G)",
+      "norm": "ottogivermont curry mild (100g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KAFAE TRA MUE BRANDCOFFE MIXED (400G)",
+      "norm": "kafae tra mue brandcoffe mixed (400g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "APR/01/2026",
+      "norm": "apr/01/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "IMITATION STYLE CANTON NOODLE (440G)",
+      "norm": "imitation style canton noodle (440g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HANAMIPRAWN CRACKERS (110G)",
+      "norm": "hanamiprawn crackers (110g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/14/2026",
+      "norm": "mar/14/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CWPOTATO BISCUIT (215G)",
+      "norm": "cwpotato biscuit (215g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "YISSINETOFU BROTH SEASONING (45G)",
+      "norm": "yissinetofu broth seasoning (45g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/13/2026",
+      "norm": "apr/13/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/22/2026",
+      "norm": "apr/22/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "FUIJYAPOP CANDY (114G)",
+      "norm": "fuijyapop candy (114g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/31/2026",
+      "norm": "apr/31/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "LOTTEBUTTER COCONUT (170G)",
+      "norm": "lottebutter coconut (170g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/26/2026",
+      "norm": "mar/26/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "HBAFBOSEONG GREENTEA ALMOND CRUNCH  (170G)",
+      "norm": "hbafboseong greentea almond crunch (170g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "EXCELLENTFLOUR STICK (227G)",
+      "norm": "excellentflour stick (227g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CELEBRITYBONELESS COOKED HAM (340G)",
+      "norm": "celebrityboneless cooked ham (340g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "apr/12/2026",
+      "norm": "apr/12/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "KODA FARMSSWEET RICE FLOUR (454G)",
+      "norm": "koda farmssweet rice flour (454g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CWPINEAPPLE DESSERT COOKIES (195G)",
+      "norm": "cwpineapple dessert cookies (195g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/04/2026",
+      "norm": "apr/04/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SHIRAKIKUHONEY PANKO JAPANESE BREAD CRUMBS (300G)",
+      "norm": "shirakikuhoney panko japanese bread crumbs (300g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "HAPPY TURNJAPANESE RICE CRACKERS (96G)",
+      "norm": "happy turnjapanese rice crackers (96g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "apr/29/2026",
+      "norm": "apr/29/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ACECOOKHAO HAO: ALL FLAVORS (2.7OZ)",
+      "norm": "acecookhao hao: all flavors (2.7oz)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "CALPICOORIGINAL FLAVOR (335ML)",
+      "norm": "calpicooriginal flavor (335ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SIAMTHAI STYLE TEA (310ML)",
+      "norm": "siamthai style tea (310ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/23/2026",
+      "norm": "mar/23/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DYNASTYGLUTEN-FREE TEMPURABATTER MIX (10 OZ)",
+      "norm": "dynastygluten-free tempurabatter mix (10 oz)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ORIONGOSOMI 2P (70G)",
+      "norm": "oriongosomi 2p (70g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/16/2026",
+      "norm": "mar/16/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KOON CHUNDILUTED RED VINEGAR (500ML)",
+      "norm": "koon chundiluted red vinegar (500ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "ART LOBSTER FLAVOR CRACKERS (140G)",
+      "norm": "art lobster flavor crackers (140g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/27/2026",
+      "norm": "mar/27/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/10/2026",
+      "norm": "mar/10/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "GUGEN WALNUTS, ALMOND & ADLAY DRINK MIX (800G)",
+      "norm": "gugen walnuts, almond & adlay drink mix (800g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $18.99",
+      "norm": "regular price: $18.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "MAR/24/2026",
+      "norm": "mar/24/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 2
+      }
+    },
+    {
+      "name": "GUGEN 20 MULTI-GRAINS WITH OATMEL (800G)",
+      "norm": "gugen 20 multi-grains with oatmel (800g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "LOTTEBUTTER FLVR COOKIES (127G)",
+      "norm": "lottebutter flvr cookies (127g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CHACHAROAST SUNFLOWER SEEDS SI CHUAN PEPEPR FLVR (160G)",
+      "norm": "chacharoast sunflower seeds si chuan pepepr flvr (160g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/22/2026",
+      "norm": "mar/22/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAMACHU CHEE CURRY PASTE (114G)",
+      "norm": "mamachu chee curry paste (114g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CHAOKOHCOCONUT MILK (2900ML)",
+      "norm": "chaokohcoconut milk (2900ml)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $15.99",
+      "norm": "regular price: $15.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "APR/05/2026",
+      "norm": "apr/05/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WHAL MYUNG SUCARBONATED HERBS DRINKS (75MLx10BTLS)",
+      "norm": "whal myung sucarbonated herbs drinks (75mlx10btls)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "WANG KOREAMILD SOYBEAN PASTE (450G)",
+      "norm": "wang koreamild soybean paste (450g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/09/2026",
+      "norm": "mar/09/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "LOTTEPEPERO: CHOCO COOKIE (128G)",
+      "norm": "lottepepero: choco cookie (128g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "BUTCHER BOY100% PURE CORN OIL (1GAL)",
+      "norm": "butcher boy100% pure corn oil (1gal)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $19.99",
+      "norm": "regular price: $19.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAR/31/2026",
+      "norm": "mar/31/2026",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "WANG KOREASTARCH NOODLE (2LB)",
+      "norm": "wang koreastarch noodle (2lb)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "SURASANGHONEY GINGER TEA (2.2LB)",
+      "norm": "surasanghoney ginger tea (2.2lb)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "KABUTOROASTED GREEN PEAS (140G)",
+      "norm": "kabutoroasted green peas (140g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "RED BRANDLIME JUICE W/SOUR PLUM (550G)",
+      "norm": "red brandlime juice w/sour plum (550g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "OTTOGIODONG TONG MYON (120Gx4PK)",
+      "norm": "ottogiodong tong myon (120gx4pk)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MAMAARTIFICIAL PORK NOODLES (60G)",
+      "norm": "mamaartificial pork noodles (60g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "DEC/29/2025",
+      "norm": "dec/29/2025",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "jin jin JELLIES",
+      "norm": "jin jin jellies",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE: $0.00",
+      "norm": "regular price: $0.00",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 3
+      }
+    },
+    {
+      "name": "jin jin JELLy",
+      "norm": "jin jin jelly",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "white muscat grape jelly",
+      "norm": "white muscat grape jelly",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CROWN SANDO COOKIE 161 G",
+      "norm": "crown sando cookie 161 g",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE : $3.49",
+      "norm": "regular price : $3.49",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "MEP SAMYANG BLACK PEPPER FLAVOR 440 G",
+      "norm": "mep samyang black pepper flavor 440 g",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "REGULAR PRICE : $8.99",
+      "norm": "regular price : $8.99",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
+      }
+    },
+    {
+      "name": "CALBEEShrimp Chips (28g)",
+      "norm": "calbeeshrimp chips (28g)",
+      "appears_in": 1,
+      "sources": {
+        "DAHFnF5Mm6M": 1
       }
     }
   ]

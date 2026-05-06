@@ -1,0 +1,17 @@
+# Source PNGs are kept local only — too large for GitHub.
+# WebP versions (~91% smaller) are committed and used by viewer.html.
+designs/**/*.png
+designs/**/*.jpg
+
+# Local-only auxiliary files
+*.part
+node_modules/
+
+# Local URL files (Canva signed URLs expire — no point committing)
+designs/*-urls.txt
+
+# PDF folder is empty / not used
+pdfs/
+
+# Convenience shortcut (Windows-only)
+*.lnk

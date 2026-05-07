@@ -977,6 +977,76 @@ function findVendorImage(...keys){
   }
   return null;
 }
+// Variant/flavor keywords used to spot mismatched images.
+// If the SEARCHED product name contains one of these tokens but the
+// VENDOR IMAGE's stored name does not (or contains a conflicting one
+// from the same family), we reject the match — better no image than
+// the wrong flavor on the price tag (e.g. GREEN TEA vs BANANA).
+//
+// Each row is a "family": all members are mutually exclusive.
+// Tokens are matched case-insensitively, both English and Korean.
+const VARIANT_FAMILIES = [
+  ['GREEN TEA','MATCHA','녹차','말차'],
+  ['BANANA','바나나'],
+  ['STRAWBERRY','딸기'],
+  ['CHOCOLATE','CHOCO','초코','초콜릿'],
+  ['VANILLA','바닐라'],
+  ['COFFEE','커피','MOCHA','모카'],
+  ['MANGO','망고'],
+  ['LEMON','레몬'],
+  ['HONEY','꿀'],
+  ['MINT','민트'],
+  ['COCONUT','코코넛'],
+  ['BLUEBERRY','블루베리'],
+  ['APPLE','사과'],
+  ['GRAPE','포도'],
+  ['PEACH','복숭아'],
+  ['ORANGE','오렌지'],
+  ['CHEESE','치즈'],
+  ['KIMCHI','김치'],
+  ['SEAFOOD','해물'],
+  ['BEEF','소고기','BULGOGI','불고기'],
+  ['CHICKEN','닭'],
+  ['PORK','돼지'],
+  ['SHRIMP','새우'],
+  ['HOT','SPICY','매운','매워','맵'],
+  ['MILD','순한'],
+  ['ORIGINAL','오리지널','정통'],
+  ['BLACK','블랙'],
+  ['WHITE','화이트','흰'],
+  ['RED','레드','빨간'],
+];
+
+// Returns the index of the family a token belongs to, or -1.
+function variantFamilyOf(text){
+  if (!text) return -1;
+  const T = String(text).toUpperCase();
+  for (let i = 0; i < VARIANT_FAMILIES.length; i++){
+    for (const kw of VARIANT_FAMILIES[i]){
+      // Word-boundary for ASCII tokens; substring for Korean (no boundary concept).
+      const isAscii = /^[A-Z\s]+$/.test(kw);
+      const re = isAscii
+        ? new RegExp('(^|[^A-Z])' + kw.replace(/\s/g,'\\s+') + '($|[^A-Z])')
+        : new RegExp(kw);
+      if (re.test(T)) return i;
+    }
+  }
+  return -1;
+}
+
+// Reject when the searched product clearly has a flavor/variant the
+// vendor image doesn't carry (or carries a different one from the same
+// family). Returns true when the match should be DROPPED.
+function variantConflicts(searchName, imageName){
+  if (!searchName || !imageName) return false;
+  const sFam = variantFamilyOf(searchName);
+  if (sFam < 0) return false;                     // search has no variant token → can't conflict
+  const iFam = variantFamilyOf(imageName);
+  // Image carries a DIFFERENT family member (e.g. search=GREEN TEA, image=BANANA)
+  // or carries NO family member at all when the search demands one.
+  return iFam !== sFam;
+}
+
 async function autoFillVendorImage(...keys){
   const hit = findVendorImage(...keys);
   if (!hit) {
@@ -987,6 +1057,17 @@ async function autoFillVendorImage(...keys){
       const productName = (document.getElementById('f-name')?.value || '').trim();
       recordMatchMiss(firstKey, productName);
     }
+    return false;
+  }
+  // Variant/flavor sanity check: bail out when the catalog image is for
+  // a different flavor variant of the same product (e.g. searched
+  // "GREEN TEA" but image is "BANANA"). Wrong photo on a price tag is
+  // worse than no photo at all.
+  const searchedName = (document.getElementById('f-name')?.value || '').trim();
+  if (variantConflicts(searchedName, hit.name)) {
+    console.warn('[image] variant mismatch — rejecting:', searchedName, '↔', hit.name);
+    const firstKey = keys.find(k => k && String(k).trim());
+    if (firstKey) recordMatchMiss(firstKey, searchedName);
     return false;
   }
   try {

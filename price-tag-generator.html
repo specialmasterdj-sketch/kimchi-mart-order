@@ -1081,6 +1081,7 @@ async function autoFillVendorImage(...keys){
     if (!res.ok) return false;
     const blob = await res.blob();
     DRAFT_IMG = await compressImage(blob, 600, 0.85);
+    DRAFT_IMG_SOURCE = 'auto';
     document.getElementById('f-img-clear').style.display = 'inline-block';
     updateLivePreview();
     return true;
@@ -1404,8 +1405,17 @@ function pickPos(json){
   document.getElementById('f-price').select();
   resultsEl.innerHTML = '<div class="result-empty">가격 입력 후 추가 →</div>';
   searchEl.value = '';
+  // Re-evaluate the auto-loaded photo against the new product. If the
+  // previous DRAFT_IMG came from autoFillVendorImage, drop it before
+  // re-matching — otherwise the old (likely wrong-variant) photo lingers
+  // because the `!DRAFT_IMG` guard skips re-matching.
+  if (DRAFT_IMG && DRAFT_IMG_SOURCE === 'auto'){
+    DRAFT_IMG = null;
+    DRAFT_IMG_SOURCE = null;
+    document.getElementById('f-img-clear').style.display = 'none';
+  }
   updateLivePreview();
-  // 벤더 이미지 자동 매칭 (이미지 없을 때만)
+  // 벤더 이미지 자동 매칭 (수동 업로드한 사진 있으면 보존)
   if (!DRAFT_IMG){
     autoFillVendorImage(r.barcode, r.code, r.item, r.vc).then(ok => {
       if (ok) toast(t('img_matched'), 'ok', 1500);
@@ -1555,6 +1565,7 @@ function addTag(){
   while (Math.ceil(tags.length / PER_PAGE[currentSize]) > pageCount) pageCount++;
   ['f-name','f-name-ko','f-price','f-price-old','f-code'].forEach(id => document.getElementById(id).value = '');
   DRAFT_IMG = null;
+  DRAFT_IMG_SOURCE = null;
   document.getElementById('f-img-clear').style.display = 'none';
   searchEl.value = '';
   searchEl.focus();
@@ -1578,6 +1589,12 @@ document.querySelectorAll('#tpls input[name=tpl]').forEach(r => r.addEventListen
 document.querySelectorAll('#sizes input[name=size]').forEach(r => r.addEventListener('change', updateLivePreview));
 
 let DRAFT_IMG = null;  // 현재 입력 중인 이미지 dataURL
+// Track WHERE the current DRAFT_IMG came from so picking a new POS row
+// can safely replace an auto-loaded photo (likely wrong for a different
+// product) without clobbering one the user manually uploaded/cropped.
+//   'auto'   — set by autoFillVendorImage (vendor catalog match)
+//   'manual' — set by file upload, camera, paste, URL, canva, bg-remove, crop
+let DRAFT_IMG_SOURCE = null;
 
 function getDraftTag(){
   return {
@@ -1645,6 +1662,7 @@ async function handleImageFile(e){
   e.target.value = '';  // reset so same file can be picked again
   try {
     DRAFT_IMG = await compressImage(f);
+    DRAFT_IMG_SOURCE = 'manual';
     document.getElementById('f-img-clear').style.display = 'inline-block';
     updateLivePreview();
     toast('이미지 추가됨', 'ok', 1500);
@@ -1687,6 +1705,7 @@ function compressImage(file, maxDim = 600, quality = 0.78, format = 'image/jpeg'
 
 function clearImage(){
   DRAFT_IMG = null;
+  DRAFT_IMG_SOURCE = null;
   document.getElementById('f-img-clear').style.display = 'none';
   updateLivePreview();
 }
@@ -1697,10 +1716,12 @@ async function pasteImageUrl(){
   try {
     if (url.startsWith('data:image/')){
       DRAFT_IMG = url;
+      DRAFT_IMG_SOURCE = 'manual';
     } else {
       const res = await fetch(url, { mode: 'cors' });
       const blob = await res.blob();
       DRAFT_IMG = await compressImage(blob);
+      DRAFT_IMG_SOURCE = 'manual';
     }
     document.getElementById('f-img-clear').style.display = 'inline-block';
     updateLivePreview();
@@ -1748,6 +1769,7 @@ async function removeBackgroundAuto(){
     setBgStatus('완료. 압축 중…', 96);
     // 배경 제거 결과는 PNG 로 저장해야 투명도 유지 (JPEG 는 흰 배경)
     DRAFT_IMG = await compressImage(blob, 600, 1.0, 'image/png');
+    DRAFT_IMG_SOURCE = 'manual';
     document.getElementById('f-img-clear').style.display = 'inline-block';
     updateLivePreview();
     setBgStatus('✓ 완료', 100);
@@ -1847,6 +1869,7 @@ async function useCanvaPage(path){
     const reader = new FileReader();
     reader.onload = () => {
       DRAFT_IMG = reader.result;  // 우선 통째로 DRAFT 에 (자르기 모달에서 잘림)
+      DRAFT_IMG_SOURCE = 'manual';
       document.getElementById('f-img-clear').style.display = 'inline-block';
       updateLivePreview();
       // 바로 자르기 모달 열기
@@ -2006,6 +2029,7 @@ function applyCrop(){
   canvas2.height = Math.round(sh * ratio2);
   canvas2.getContext('2d').drawImage(out, 0, 0, canvas2.width, canvas2.height);
   DRAFT_IMG = canvas2.toDataURL('image/jpeg', 0.85);
+  DRAFT_IMG_SOURCE = 'manual';
   closeCropModal();
   updateLivePreview();
   toast('잘라내기 적용됨', 'ok', 1500);
@@ -2020,6 +2044,7 @@ document.addEventListener('paste', async (e) => {
       e.preventDefault();
       try {
         DRAFT_IMG = await compressImage(item.getAsFile());
+        DRAFT_IMG_SOURCE = 'manual';
         document.getElementById('f-img-clear').style.display = 'inline-block';
         updateLivePreview();
         toast('클립보드 이미지 붙여넣음', 'ok', 1500);

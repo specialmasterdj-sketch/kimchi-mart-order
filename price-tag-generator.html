@@ -588,7 +588,7 @@
         <button type="button" onclick="document.getElementById('f-img-file').click()" data-t="img_file" style="flex:1;min-width:60px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;padding:7px 6px;font-size:11px;cursor:pointer;font-family:inherit">📁 파일</button>
         <button type="button" onclick="document.getElementById('f-img-cam').click()" data-t="img_cam" style="flex:1;min-width:60px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;padding:7px 6px;font-size:11px;cursor:pointer;font-family:inherit">📷 촬영</button>
         <button type="button" onclick="pasteImageUrl()" data-t="img_url" style="flex:1;min-width:60px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;padding:7px 6px;font-size:11px;cursor:pointer;font-family:inherit">🔗 URL</button>
-        <button type="button" id="f-img-clear" onclick="clearImage()" style="display:none;background:#fee2e2;color:#dc2626;border:0;border-radius:6px;padding:7px 8px;font-size:11px;cursor:pointer;font-family:inherit">×</button>
+        <button type="button" id="f-img-clear" onclick="clearImage()" title="현재 사진 지우기" style="display:none;background:#dc2626;color:#fff;border:0;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">🗑 사진 지우기</button>
       </div>
       <label><span data-t="bg_section">배경 처리</span> <span class="opt" data-t="opt">선택</span></label>
       <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
@@ -1068,6 +1068,12 @@ async function autoFillVendorImage(...keys){
     console.warn('[image] variant mismatch — rejecting:', searchedName, '↔', hit.name);
     const firstKey = keys.find(k => k && String(k).trim());
     if (firstKey) recordMatchMiss(firstKey, searchedName);
+    // Surface this to the user so they know to add their own photo —
+    // without the toast a silent rejection just looks like "no image
+    // matched" when really the catalog had the wrong variant.
+    if (typeof toast === 'function') {
+      toast(`⚠️ 다른 변종 사진(${hit.name}) — 직접 📁 파일 / 📷 촬영 / 🔗 URL 로 추가하세요`, 'err', 4500);
+    }
     return false;
   }
   try {

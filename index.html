@@ -884,8 +884,10 @@ function parsePackSize(s){
   return { outer, pack, unit: m[3].trim() };
 }
 function eaIdOf(id){ return id + '__EA'; }
+function plIdOf(id){ return id + '__PL'; }   // 파레트 단위 — qty 별도 트래킹
 function isEaId(id){ return String(id).endsWith('__EA'); }
-function baseIdOf(id){ return String(id).replace(/__EA$/, ''); }
+function isPlId(id){ return String(id).endsWith('__PL'); }
+function baseIdOf(id){ return String(id).replace(/__(EA|PL)$/, ''); }
 
 // ===== NUMPAD =====
 let numpadTarget = null;
@@ -1038,7 +1040,8 @@ function buildTilesHtml(v, products){
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const pack = parsePackSize(p.size);
     const eaQty = pack ? getQty(state.vendor, eaIdOf(p.id)) : 0;
-    const anyQty = qty > 0 || eaQty > 0;
+    const plQty = getQty(state.vendor, plIdOf(p.id));
+    const anyQty = qty > 0 || eaQty > 0 || plQty > 0;
     const safeName = (p.name||p.nameKr||'').replace(/'/g,'');
     const eaStep = pack ? pack.pack : 1;
     const eaRow = pack ? `
@@ -1048,6 +1051,14 @@ function buildTilesHtml(v, products){
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+eaStep})">+</button>
         </div>
         <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ${eaStep}개 (1 CS)</div>` : '';
+    // 🏗 파레트 (PL) — CS 위에 추가 단위. 대량 주문 시 파레트 단위로 발주.
+    const plRow = `
+        <div class="qty-row" data-pl="1" style="margin-top:4px;background:#e0f2fe;border-color:#0284c7">
+          <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${plIdOf(p.id)}',${Math.max(0, plQty-1)})" ${plQty<=0?'disabled':''}>−</button>
+          <input class="qty-input ${plQty>0?'has-qty':''}" type="text" inputmode="numeric" value="${plQty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${plIdOf(p.id)}',${plQty},'${safeName} (pallet)')" placeholder="PL" style="background:#fff;color:${plQty>0?'#0369a1':'#94a3b8'}">
+          <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${plIdOf(p.id)}',${plQty+1})">+</button>
+        </div>
+        <div style="font-size:9.5px;color:#0369a1;text-align:center;margin-top:2px;font-weight:600">🏗 파레트 / Pallet</div>`;
     // Optional rows are ALWAYS rendered (even as blank placeholders) so that
     // every tile has the same height and the quantity row sits at the same
     // y-position across a grid row. Without this, a tile without a Korean
@@ -1076,6 +1087,7 @@ function buildTilesHtml(v, products){
             <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
           </div>
           ${eaRow}
+          ${plRow}
         </div>
       </div>`;
       continue;
@@ -1160,16 +1172,18 @@ function renderOrder(app) {
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
     const isEa = isEaId(id);
-    const lookupId = isEa ? baseIdOf(id) : id;
+    const isPl = isPlId(id);
+    const lookupId = (isEa || isPl) ? baseIdOf(id) : id;
     const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', price:0, image:'', size:'' };
     const pack = isEa ? parsePackSize(base.size) : null;
     const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    const nameSuf = isEa ? ' (ea)' : isPl ? ' (🏗 PL)' : '';
     return {
       ...base,
       id,
-      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
-      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
-      isEa, price, orderQty: qty, total: (price||0) * qty
+      name: (base.name || base.nameKr || '') + nameSuf,
+      size: isEa && pack ? `1 ea (${pack.unit})` : (isPl ? '1 pallet' : base.size),
+      isEa, isPl, price, orderQty: qty, total: (price||0) * qty
     };
   });
 
@@ -1296,16 +1310,18 @@ function formatOrderText() {
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
     const isEa = isEaId(id);
-    const lookupId = isEa ? baseIdOf(id) : id;
+    const isPl = isPlId(id);
+    const lookupId = (isEa || isPl) ? baseIdOf(id) : id;
     const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', size:'', price:0 };
     const pack = isEa ? parsePackSize(base.size) : null;
     const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    const nameSuf = isEa ? ' (ea)' : isPl ? ' (PL)' : '';
     return {
       ...base,
       id,
-      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
-      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
-      isEa, price, orderQty: qty
+      name: (base.name || base.nameKr || '') + nameSuf,
+      size: isEa && pack ? `1 ea (${pack.unit})` : (isPl ? '1 pallet' : base.size),
+      isEa, isPl, price, orderQty: qty
     };
   });
   const today = new Date();
@@ -1347,16 +1363,18 @@ function generateOrderHTML() {
   const orders = state.orders[state.vendor] || {};
   const items = Object.entries(orders).filter(([_,q]) => q > 0).map(([id,qty]) => {
     const isEa = isEaId(id);
-    const lookupId = isEa ? baseIdOf(id) : id;
+    const isPl = isPlId(id);
+    const lookupId = (isEa || isPl) ? baseIdOf(id) : id;
     const base = v.products.find(p => p.id === lookupId) || { id:lookupId, name:'Unknown', price:0, image:'', size:'' };
     const pack = isEa ? parsePackSize(base.size) : null;
     const price = (isEa && pack && base.price) ? (base.price / pack.pack) : base.price;
+    const nameSuf = isEa ? ' (ea)' : isPl ? ' (🏗 PL)' : '';
     return {
       ...base,
       id,
-      name: (base.name || base.nameKr || '') + (isEa ? ' (ea)' : ''),
-      size: isEa && pack ? `1 ea (${pack.unit})` : base.size,
-      isEa, price, orderQty: qty, total: (price||0) * qty
+      name: (base.name || base.nameKr || '') + nameSuf,
+      size: isEa && pack ? `1 ea (${pack.unit})` : (isPl ? '1 pallet' : base.size),
+      isEa, isPl, price, orderQty: qty, total: (price||0) * qty
     };
   });
   const today = new Date();

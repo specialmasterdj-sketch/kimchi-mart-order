@@ -1051,14 +1051,18 @@ function buildTilesHtml(v, products){
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+eaStep})">+</button>
         </div>
         <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ${eaStep}개 (1 CS)</div>` : '';
-    // 🏗 파레트 (PL) — CS 위에 추가 단위. 대량 주문 시 파레트 단위로 발주.
-    const plRow = `
+    // 🏗 파레트 (PL) — NAPA 만 노출. 대량 발주 빈도 높은 상품에만 한정.
+    // 다른 상품에도 필요해지면 PL_ENABLED_NAMES 에 추가하면 됨.
+    const PL_ENABLED_NAMES = ['NAPA'];
+    const pName = String(p.name || p.nameKr || '').toUpperCase();
+    const showPallet = PL_ENABLED_NAMES.some(k => pName.includes(k));
+    const plRow = showPallet ? `
         <div class="qty-row" data-pl="1" style="margin-top:4px;background:#e0f2fe;border-color:#0284c7">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${plIdOf(p.id)}',${Math.max(0, plQty-1)})" ${plQty<=0?'disabled':''}>−</button>
           <input class="qty-input ${plQty>0?'has-qty':''}" type="text" inputmode="numeric" value="${plQty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${plIdOf(p.id)}',${plQty},'${safeName} (pallet)')" placeholder="PL" style="background:#fff;color:${plQty>0?'#0369a1':'#94a3b8'}">
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${plIdOf(p.id)}',${plQty+1})">+</button>
         </div>
-        <div style="font-size:9.5px;color:#0369a1;text-align:center;margin-top:2px;font-weight:600">🏗 파레트 / Pallet</div>`;
+        <div style="font-size:9.5px;color:#0369a1;text-align:center;margin-top:2px;font-weight:600">🏗 파레트 / Pallet</div>` : '';
     // Optional rows are ALWAYS rendered (even as blank placeholders) so that
     // every tile has the same height and the quantity row sits at the same
     // y-position across a grid row. Without this, a tile without a Korean

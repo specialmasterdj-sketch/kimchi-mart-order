@@ -1039,23 +1039,29 @@ function buildTilesHtml(v, products){
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const pack = parsePackSize(p.size);
-    const eaQty = pack ? getQty(state.vendor, eaIdOf(p.id)) : 0;
+    // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
+    // 다른 상품에 필요해지면 PL_ENABLED_NAMES 에 키워드 추가.
+    const PL_ENABLED_NAMES = ['NAPA'];
+    const pName = String(p.name || p.nameKr || '').toUpperCase();
+    const showPallet = PL_ENABLED_NAMES.some(k => pName.includes(k));
+    // NAPA 등 pallet 활성 상품은 pack 정보 없어도 ea row 강제 노출 — 손님이
+    // CS / 낱개(piece) / PL(파레트) 3가지 단위로 발주 선택 가능.
+    const forceEa = showPallet && !pack;
+    const eaQty = (pack || forceEa) ? getQty(state.vendor, eaIdOf(p.id)) : 0;
     const plQty = getQty(state.vendor, plIdOf(p.id));
     const anyQty = qty > 0 || eaQty > 0 || plQty > 0;
     const safeName = (p.name||p.nameKr||'').replace(/'/g,'');
     const eaStep = pack ? pack.pack : 1;
-    const eaRow = pack ? `
+    const eaLabel = pack
+      ? `낱개 ea · 한 번 + = ${eaStep}개 (1 CS)`
+      : '🥬 낱개 / Piece';
+    const eaRow = (pack || forceEa) ? `
         <div class="qty-row" data-ea="1" style="margin-top:4px;background:#fff4e0">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${Math.max(0, eaQty-eaStep)})" ${eaQty<=0?'disabled':''}>−</button>
           <input class="qty-input ${eaQty>0?'has-qty':''}" type="text" inputmode="numeric" value="${eaQty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${eaIdOf(p.id)}',${eaQty},'${safeName} (ea)')" placeholder="ea">
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${eaQty+eaStep})">+</button>
         </div>
-        <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ${eaStep}개 (1 CS)</div>` : '';
-    // 🏗 파레트 (PL) — NAPA 만 노출. 대량 발주 빈도 높은 상품에만 한정.
-    // 다른 상품에도 필요해지면 PL_ENABLED_NAMES 에 추가하면 됨.
-    const PL_ENABLED_NAMES = ['NAPA'];
-    const pName = String(p.name || p.nameKr || '').toUpperCase();
-    const showPallet = PL_ENABLED_NAMES.some(k => pName.includes(k));
+        <div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">${eaLabel}</div>` : '';
     const plRow = showPallet ? `
         <div class="qty-row" data-pl="1" style="margin-top:4px;background:#e0f2fe;border-color:#0284c7">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${plIdOf(p.id)}',${Math.max(0, plQty-1)})" ${plQty<=0?'disabled':''}>−</button>
@@ -1113,6 +1119,7 @@ function buildTilesHtml(v, products){
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
         </div>
         ${eaRow}
+        ${plRow}
       </div>
     </div>`;
   }

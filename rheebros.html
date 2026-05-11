@@ -630,8 +630,10 @@ function parsePackSize(s){
   return { outer, pack, unit: m[3].trim() };
 }
 function eaIdOf(id){ return id + '__EA'; }
+function plIdOf(id){ return id + '__PL'; }
 function isEaId(id){ return String(id).endsWith('__EA'); }
-function baseIdOf(id){ return String(id).replace(/__EA$/, ''); }
+function isPlId(id){ return String(id).endsWith('__PL'); }
+function baseIdOf(id){ return String(id).replace(/__(EA|PL)$/, ''); }
 
 function updateCartBar(){
   const types = Object.keys(CART).length;
@@ -739,14 +741,19 @@ function renderCart(){
   }
   body.innerHTML = entries.map(([id, qty]) => {
     const ea = isEaId(id);
-    const lookupId = ea ? baseIdOf(id) : id;
+    const pl = isPlId(id);
+    const lookupId = (ea || pl) ? baseIdOf(id) : id;
     const p = BY_ID[lookupId];
     if (!p) return '';
     const pack = ea ? parsePackSize(p.packSize) : null;
-    const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (p.packSize||'-');
+    const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (pl ? '1 pallet' : (p.packSize||'-'));
     const unitChip = ea
-      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">小 ea</span>'
+      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">🥬 ea</span>'
+      : pl
+      ? '<span style="display:inline-block;background:#0284c7;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">🏗 PL</span>'
       : '<span style="display:inline-block;background:#1976d2;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">CS</span>';
+    const tailColor = ea ? '#ff9800' : pl ? '#0284c7' : '#1976d2';
+    const tailLbl   = ea ? '🥬 ea'  : pl ? '🏗 PL'  : 'cs';
     return (
       '<div class="ci" onclick="closeCart();openPd(\''+p.detailId+'\');">' +
         '<img src="' + esc(p.image) + '" onerror="this.style.visibility=\'hidden\'">' +
@@ -758,7 +765,7 @@ function renderCart(){
           '<button onclick="bumpQty(\''+id+'\',-1)">−</button>' +
           '<input type="number" min="0" max="999" value="'+qty+'" onchange="setQty(\''+id+'\', this.value)">' +
           '<button onclick="bumpQty(\''+id+'\',1)">+</button>' +
-          '<span style="font-size:12px;font-weight:800;margin-left:6px;color:' + (ea?'#ff9800':'#1976d2') + '">' + (ea?'小 ea':'cs') + '</span>' +
+          '<span style="font-size:12px;font-weight:800;margin-left:6px;color:' + tailColor + '">' + tailLbl + '</span>' +
         '</div>' +
       '</div>'
     );
@@ -787,10 +794,11 @@ function buildOrderText(){
   const lines = ['[김치마트 주문 - RHEE BROS / ' + today + ']', ''];
   entries.forEach(([id, qty]) => {
     const ea = isEaId(id);
-    const lookupId = ea ? baseIdOf(id) : id;
+    const pl = isPlId(id);
+    const lookupId = (ea || pl) ? baseIdOf(id) : id;
     const p = BY_ID[lookupId];
     if (!p) return;
-    const unit = ea ? '小' : 'CS';
+    const unit = ea ? '🥬 ea' : pl ? '🏗 PL' : 'CS';
     lines.push('[' + unit + '] #' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
   });
   const units = entries.reduce((s, [,q]) => s + q, 0);
@@ -824,9 +832,10 @@ function exportOrder(){
   const header = ['Unit', 'ItemCode', 'Product Name', 'Brand', 'Group', 'Category', 'Pack Size', 'Min Order', 'Barcode', 'Order Qty'];
   const rows = entries.map(([id, qty]) => {
     const ea = isEaId(id);
-    const lookupId = ea ? baseIdOf(id) : id;
+    const pl = isPlId(id);
+    const lookupId = (ea || pl) ? baseIdOf(id) : id;
     const p = BY_ID[lookupId] || {};
-    const unit = ea ? '小' : 'CS';
+    const unit = ea ? 'EA' : pl ? 'PL' : 'CS';
     return [unit, p.id||'', p.name||'', p.brand||'', p.group||'', p.category||'', p.packSize||'', p.minOrder||'', p.barcode||'', qty];
   });
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);

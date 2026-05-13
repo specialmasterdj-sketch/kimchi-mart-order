@@ -198,7 +198,7 @@
     display:grid;
     gap:2.5mm;
   }
-  .page.size-xs{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(7,1fr)} /* 21-up 3x7 */
+  .page.size-xs{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(6,1fr)} /* 18-up 3x6 — 7행→6행 변경으로 카드 ~17% 더 커짐 */
   .page.size-s{grid-template-columns:1fr 1fr;grid-template-rows:repeat(4, 1fr)}      /* 8-up */
   .page.size-m{grid-template-columns:1fr 1fr;grid-template-rows:repeat(2, 1fr)}      /* 4-up */
   .page.size-l{grid-template-columns:1fr;grid-template-rows:repeat(2, 1fr)}          /* 2-up */
@@ -334,16 +334,17 @@
   }
 
   /* 사이즈별 폰트 — 가격 ≫ 상품명 > 브랜드 (꽉차게) */
-  .size-xs .tag .img-box{font-size:7pt}
-  .size-xs .tag .brand{font-size:7pt;letter-spacing:0.2px;margin-top:0.5mm}
-  .size-xs .tag .name{font-size:12pt;-webkit-line-clamp:2;font-weight:800;line-height:1.05}
-  .size-xs .tag .name-ko{font-size:7pt}
+  /* xs 는 3x6 = 18-up 으로 변경 (이전 3x7 = 21-up), 카드 높이 17% 늘어 폰트도 비례 확대 */
+  .size-xs .tag .img-box{font-size:8pt}
+  .size-xs .tag .brand{font-size:9pt;letter-spacing:0.2px;margin-top:0.5mm}
+  .size-xs .tag .name{font-size:15pt;-webkit-line-clamp:3;font-weight:800;line-height:1.1}
+  .size-xs .tag .name-ko{font-size:8.5pt}
   .size-xs .tag .meta{gap:1mm}
-  .size-xs .tag .meta .size-txt{font-size:6.5pt}
-  .size-xs .tag .meta .price{font-size:32pt;letter-spacing:-0.5px}
-  .size-xs .tag .meta .each{font-size:6pt;padding-bottom:0.3mm}
-  .size-xs .tag .meta .price-old{font-size:9pt}
-  .size-xs .tag .code{font-size:4pt;bottom:0.5mm;right:1mm}
+  .size-xs .tag .meta .size-txt{font-size:8pt}
+  .size-xs .tag .meta .price{font-size:40pt;letter-spacing:-0.5px}
+  .size-xs .tag .meta .each{font-size:7pt;padding-bottom:0.3mm}
+  .size-xs .tag .meta .price-old{font-size:11pt}
+  .size-xs .tag .code{font-size:5pt;bottom:0.5mm;right:1mm}
 
   .size-s .tag .img-box{font-size:9pt}
   .size-s .tag .brand{font-size:11pt}
@@ -849,7 +850,7 @@ let branch = '';
 let tags = [];
 let pageCount = 1;
 let currentSize = 's';
-const PER_PAGE = { xs: 21, s: 8, m: 4, l: 2, xl: 1, xlv: 1 };
+const PER_PAGE = { xs: 18, s: 8, m: 4, l: 2, xl: 1, xlv: 1 };
 
 // 세션 동기화 상태
 let session = '';

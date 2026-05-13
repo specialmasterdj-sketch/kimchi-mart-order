@@ -2115,7 +2115,10 @@ async function downloadPdf(){
       slots.forEach(s => { s.style.visibility = ''; });
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
       if (i > 0) pdf.addPage('a4', orient);
-      pdf.addImage(imgData, 'JPEG', 0, 0, W, H, undefined, 'FAST');
+      // 프린터 unprintable area (가장자리 5~10mm) 안에 콘텐츠가 들어가면 잘림.
+      // 모든 가장자리에 5mm 안전 마진 추가 — 전체 면적 약간 작아지지만 잘림 방지.
+      const PRINT_MARGIN = 5; // mm
+      pdf.addImage(imgData, 'JPEG', PRINT_MARGIN, PRINT_MARGIN, W - 2*PRINT_MARGIN, H - 2*PRINT_MARGIN, undefined, 'FAST');
     }
     setBgStatus('PDF 저장 중…', 95);
     const today = new Date().toISOString().slice(0,10);

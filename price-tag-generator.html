@@ -333,17 +333,20 @@
     display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;
   }
 
-  /* 사이즈별 폰트 — 가격 ≫ 상품명 > 브랜드 (꽉차게) */
-  /* xs 는 3x6 = 18-up 으로 변경 (이전 3x7 = 21-up), 카드 높이 17% 늘어 폰트도 비례 확대 */
+  /* 사이즈별 폰트 — 가격 ≫ 상품명 > 브랜드 (꽉차게).
+     xs 는 3x6 = 18-up. 가격이 카드 폭 넘쳐 잘리던 문제 — letter-spacing
+     강화 + 폰트 살짝 축소 + price-block overflow 보호로 안전하게 들어가게. */
+  .size-xs .tag{padding:1.2mm;gap:0.4mm 1mm}
   .size-xs .tag .img-box{font-size:8pt}
-  .size-xs .tag .brand{font-size:9pt;letter-spacing:0.2px;margin-top:0.5mm}
-  .size-xs .tag .name{font-size:15pt;-webkit-line-clamp:3;font-weight:800;line-height:1.1}
-  .size-xs .tag .name-ko{font-size:8.5pt}
-  .size-xs .tag .meta{gap:1mm}
-  .size-xs .tag .meta .size-txt{font-size:8pt}
-  .size-xs .tag .meta .price{font-size:40pt;letter-spacing:-0.5px}
-  .size-xs .tag .meta .each{font-size:7pt;padding-bottom:0.3mm}
-  .size-xs .tag .meta .price-old{font-size:11pt}
+  .size-xs .tag .brand{font-size:8pt;letter-spacing:0.2px;margin-top:0.3mm}
+  .size-xs .tag .name{font-size:12pt;-webkit-line-clamp:3;font-weight:800;line-height:1.05;letter-spacing:-0.3px;word-break:break-word;overflow-wrap:break-word}
+  .size-xs .tag .name-ko{font-size:8pt}
+  .size-xs .tag .meta{gap:0.5mm}
+  .size-xs .tag .meta .price-block{overflow:hidden;max-width:100%}
+  .size-xs .tag .meta .size-txt{font-size:7.5pt}
+  .size-xs .tag .meta .price{font-size:33pt;letter-spacing:-1.5px;overflow:hidden;text-overflow:clip}
+  .size-xs .tag .meta .each{font-size:6.5pt;padding-bottom:0.2mm}
+  .size-xs .tag .meta .price-old{font-size:10pt}
   .size-xs .tag .code{font-size:5pt;bottom:0.5mm;right:1mm}
 
   .size-s .tag .img-box{font-size:9pt}

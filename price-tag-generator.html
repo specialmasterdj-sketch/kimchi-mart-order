@@ -321,12 +321,14 @@
   }
   .tag .name{font-weight:700;color:#111;line-height:1.15;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;align-self:start;word-break:break-word;max-width:100%}
   .tag .name-ko{color:#6b7280;font-weight:500;line-height:1.2;margin-top:0.5mm}
-  .tag .meta{display:flex;align-items:flex-end;gap:2mm;margin-top:auto;flex-wrap:nowrap;align-self:end;justify-self:stretch;max-width:100%;overflow:hidden;padding-right:1mm}
+  /* 2026-05-20 (3차) — 가격 끝 잘림 방지. overflow:hidden 제거 + padding 더.
+     가격이 컨테이너 폭을 살짝 벗어나도 잘리지 말고 표시. */
+  .tag .meta{display:flex;align-items:flex-end;gap:2mm;margin-top:auto;flex-wrap:nowrap;align-self:end;justify-self:stretch;max-width:100%;padding-right:2mm}
   .tag .meta .price-block{display:flex;flex-direction:column;align-items:flex-start;gap:0;line-height:1;min-width:0;max-width:100%}
-  /* 2026-05-20 — 가격 숫자 겹침 방지. letter-spacing 너무 negative 였음 (-1.5px).
-     0.5px 로 완화 + 이전가 표시될 때 폰트도 약간 작게. */
-  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.9;white-space:nowrap;letter-spacing:-0.5px;flex-shrink:1;min-width:0}
-  .tag .meta.has-old .price{font-size:0.85em}
+  /* 가격 숫자 겹침 방지 — letter-spacing 0 (이전 -1.5px → -0.5px → 0 으로 완화). */
+  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.9;white-space:nowrap;letter-spacing:0;flex-shrink:1;min-width:0}
+  /* 이전가 동시 표시 시 현재가 더 작게 (0.85em → 0.72em) — \$5.99 끝 잘림 해소. */
+  .tag .meta.has-old .price{font-size:0.72em}
   .tag .meta .each{font-weight:800;color:#111;letter-spacing:0.3px;align-self:flex-end;flex-shrink:0;white-space:nowrap;line-height:1;margin-top:0.5mm}
   .tag .meta .price-old{color:#9ca3af;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}
   .tag .meta .size-txt{font-weight:600;color:#6b7280;align-self:flex-end;margin-bottom:1mm}
@@ -2212,20 +2214,18 @@ function renderTag(r){
   // 🆕 2026-05-20 Antonio Zhao (Las Olas) 신고: 이전가가 SALE/MEMBER 템플릿에서만
   // 보였음 → 모든 템플릿에서 priceOld 채워져 있으면 표시 (취소선으로 자동 차별화).
   const oldPriceShow = !!r.priceOld;
-  // 🆕 긴 제목 자동 축소 — 글자 수 기반 점진적 축소.
-  // 2026-05-20 보정 (전무님 신고: 너무 작아짐) — 축소율 완화 + 줄 수 늘림.
-  // 글자가 너무 작아지지 않도록 최소 80% 유지 + 최대 5줄 허용.
+  // 🆕 긴 제목 자동 축소 — 2번째 보정 (전무님 5/20 두 번째 신고: 여전히 너무 작음).
+  // 정책 변경: 50자까지는 축소 없음 — 그냥 5줄로 wrap 허용. 50자+ 부터만 약간 축소.
+  // 가독성이 압축률보다 우선.
   const nameText = String(r.name || '');
   const nameLen = nameText.length;
   let nameScale = 1;
-  let nameLines = 3;
-  if (nameLen > 60)      { nameScale = 0.80; nameLines = 5; }
-  else if (nameLen > 50) { nameScale = 0.86; nameLines = 5; }
-  else if (nameLen > 40) { nameScale = 0.92; nameLines = 4; }
-  else if (nameLen > 30) { nameScale = 0.96; nameLines = 4; }
-  const nameStyle = nameScale < 1
-    ? ` style="font-size:calc(var(--name-base, 1em) * ${nameScale}); -webkit-line-clamp:${nameLines}; line-height:1.08"`
-    : ` style="-webkit-line-clamp:${nameLines}"`;
+  let nameLines = 5;   // 기본 5줄 허용 (이전 3줄 → 잘리던 원인)
+  if (nameLen > 70)      { nameScale = 0.78; }
+  else if (nameLen > 60) { nameScale = 0.86; }
+  else if (nameLen > 50) { nameScale = 0.94; }
+  // 50자 이하면 풀 크기 유지 (가독성 보장)
+  const nameStyle = ` style="font-size:calc(var(--name-base, 1em) * ${nameScale}); -webkit-line-clamp:${nameLines}; line-height:1.1"`;
   // 🆕 바코드 이미지 렌더링 — JsBarcode 라이브러리로 실제 스캔 가능한 바코드 생성.
   // r.code 가 12-13자리 숫자면 EAN-13/UPC-A, 그 외엔 CODE128. 무효 코드는 폴백 텍스트.
   const codeStr = String(r.code || '').trim();

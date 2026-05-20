@@ -17,6 +17,8 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- 🆕 2026-05-20 Antonio Zhao 신고 후 추가 — 가격표에 실제 스캔 가능한 바코드 렌더링 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
 <style>
   /* === Claude × Kimchi Mart 디자인 토큰 (v2 — contrast 강화) === */
   :root{
@@ -326,6 +328,15 @@
   .tag .meta .price-old{color:#9ca3af;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}
   .tag .meta .size-txt{font-weight:600;color:#6b7280;align-self:flex-end;margin-bottom:1mm}
   .tag .code{position:absolute;bottom:1.5mm;right:3mm;font-family:monospace;color:#9ca3af}
+  /* 🆕 2026-05-20 — 실제 스캔 가능 바코드 SVG. 각 사이즈에서 가격표 하단 우측에 표시.
+     화면+인쇄 모두 보이도록 색은 검정 고정 (price-old 의 line-through 와 무관). */
+  .tag .barcode-svg{position:absolute;bottom:1.5mm;right:3mm;height:auto;max-width:35mm}
+  .size-xs .tag .barcode-svg{max-width:22mm;height:10mm}
+  .size-s  .tag .barcode-svg{max-width:30mm;height:13mm}
+  .size-m  .tag .barcode-svg{max-width:42mm;height:15mm}
+  .size-l  .tag .barcode-svg{max-width:55mm;height:18mm}
+  .size-xl .tag .barcode-svg{max-width:75mm;height:22mm}
+  .size-xlv .tag .barcode-svg{max-width:55mm;height:20mm}
   .tag .remove{
     position:absolute;top:2mm;left:2mm;
     width:18px;height:18px;border:0;border-radius:50%;
@@ -1659,6 +1670,8 @@ function updateLivePreview(){
       </div>
     </div>
   `;
+  // 미리보기에서도 바코드 SVG 채우기
+  try { if (typeof renderBarcodes === 'function') renderBarcodes(); } catch(e){}
 }
 
 // ============ 이미지 처리 ============
@@ -2176,6 +2189,8 @@ function render(){
   pagesEl.innerHTML = html;
   const cntEl = document.getElementById('count');
   if (cntEl) cntEl.textContent = t('count_fmt').replace('%d', tags.length).replace('%p', pageCount + (per ? ` (${per}↑)` : ''));
+  // 🆕 2026-05-20 — innerHTML 갱신 후 SVG 바코드 채우기 (Antonio Zhao 신고).
+  try { if (typeof renderBarcodes === 'function') renderBarcodes(); } catch(e){ console.warn('[barcode]', e); }
 }
 
 function renderTag(r){
@@ -2191,7 +2206,27 @@ function renderTag(r){
         : `<span>📷<br>${imgNoneHint}</span>`);
   const imgClick = r.id === 'draft' ? `onclick="document.getElementById('f-img-file').click()"` : '';
   const imgClass = r.img ? 'img-box has' : 'img-box';
-  const oldPriceShow = r.priceOld && (r.tpl === 'sale' || r.tpl === 'member');
+  // 🆕 2026-05-20 Antonio Zhao (Las Olas) 신고: 이전가가 SALE/MEMBER 템플릿에서만
+  // 보였음 → 모든 템플릿에서 priceOld 채워져 있으면 표시 (취소선으로 자동 차별화).
+  const oldPriceShow = !!r.priceOld;
+  // 🆕 긴 제목 자동 축소 — 글자 수에 따라 font-size 비율 조정.
+  // (예: "Pulmone soy milk guksu with spicy sauce kit" 같은 긴 제목 잘림 방지.)
+  const nameText = String(r.name || '');
+  const nameLen = nameText.length;
+  // 임계점: 25자 초과부터 점진적 축소. 60자에서 60% 까지.
+  let nameScale = 1;
+  if (nameLen > 60) nameScale = 0.60;
+  else if (nameLen > 50) nameScale = 0.70;
+  else if (nameLen > 40) nameScale = 0.80;
+  else if (nameLen > 30) nameScale = 0.90;
+  const nameStyle = nameScale < 1 ? ` style="font-size:calc(var(--name-base, 1em) * ${nameScale}); -webkit-line-clamp:4; line-height:1.1"` : '';
+  // 🆕 바코드 이미지 렌더링 — JsBarcode 라이브러리로 실제 스캔 가능한 바코드 생성.
+  // r.code 가 12-13자리 숫자면 EAN-13/UPC-A, 그 외엔 CODE128. 무효 코드는 폴백 텍스트.
+  const codeStr = String(r.code || '').trim();
+  const barcodeId = `bc_${r.id}_${Math.random().toString(36).slice(2,7)}`;
+  const barcodeHtml = codeStr
+    ? `<svg id="${barcodeId}" class="barcode-svg" data-code="${escapeHtml(codeStr)}"></svg>`
+    : '';
   return `
     <div class="${tagCls}">
       ${removeBtn}
@@ -2200,7 +2235,7 @@ function renderTag(r){
         ${imgInner}
       </div>
       ${r.brand ? `<div class="brand">${escapeHtml(r.brand)}</div>` : '<div class="brand" style="visibility:hidden">-</div>'}
-      <div class="name">${escapeHtml(r.name || '')}${r.nameKo ? `<div class="name-ko">${escapeHtml(r.nameKo)}</div>` : ''}</div>
+      <div class="name"${nameStyle}>${escapeHtml(nameText)}${r.nameKo ? `<div class="name-ko">${escapeHtml(r.nameKo)}</div>` : ''}</div>
       <div class="meta">
         ${r.size ? `<div class="size-txt">${escapeHtml(r.size)}</div>` : ''}
         <div class="price-block">
@@ -2209,10 +2244,41 @@ function renderTag(r){
           <span class="each">EACH</span>
         </div>
       </div>
-      ${r.code ? `<div class="code">#${escapeHtml(r.code)}</div>` : ''}
+      ${barcodeHtml || (codeStr ? `<div class="code">#${escapeHtml(codeStr)}</div>` : '')}
     </div>
   `;
 }
+
+// 🆕 2026-05-20 — 바코드 SVG 렌더링. renderTag 가 만든 placeholder SVG 들을
+// JsBarcode 로 실제 바코드로 채움. renderTag 이후 호출 필요.
+function renderBarcodes(){
+  if (typeof JsBarcode === 'undefined') return;
+  document.querySelectorAll('svg.barcode-svg:not([data-rendered])').forEach(svg => {
+    const code = svg.getAttribute('data-code');
+    if (!code) return;
+    try {
+      // EAN-13 (13자리) / UPC-A (12자리) / 그 외 CODE128
+      const isEan13 = /^\d{13}$/.test(code);
+      const isUpcA  = /^\d{12}$/.test(code);
+      const format = isEan13 ? 'EAN13' : isUpcA ? 'UPC' : 'CODE128';
+      JsBarcode(svg, code, {
+        format, width: 1.4, height: 28, displayValue: true,
+        fontSize: 10, margin: 2, background: '#ffffff', lineColor: '#000000'
+      });
+      svg.setAttribute('data-rendered', '1');
+    } catch(e) {
+      // 폴백 — JsBarcode 가 에러 (체크섬 불일치 등) → CODE128 로 재시도
+      try {
+        JsBarcode(svg, code, { format:'CODE128', width:1.4, height:28, displayValue:true, fontSize:10, margin:2 });
+        svg.setAttribute('data-rendered', '1');
+      } catch(e2) {
+        // 그래도 실패 → 텍스트로 표시
+        svg.outerHTML = `<div class="code">#${code.replace(/[<>&"']/g, '')}</div>`;
+      }
+    }
+  });
+}
+window.renderBarcodes = renderBarcodes;
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

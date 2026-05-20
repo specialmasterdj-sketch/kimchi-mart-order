@@ -323,20 +323,23 @@
   .tag .name-ko{color:#6b7280;font-weight:500;line-height:1.2;margin-top:0.5mm}
   .tag .meta{display:flex;align-items:flex-end;gap:2mm;margin-top:auto;flex-wrap:nowrap;align-self:end;justify-self:stretch;max-width:100%;overflow:hidden;padding-right:1mm}
   .tag .meta .price-block{display:flex;flex-direction:column;align-items:flex-start;gap:0;line-height:1;min-width:0;max-width:100%}
-  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.9;white-space:nowrap;letter-spacing:-1.5px;flex-shrink:1;min-width:0}
+  /* 2026-05-20 — 가격 숫자 겹침 방지. letter-spacing 너무 negative 였음 (-1.5px).
+     0.5px 로 완화 + 이전가 표시될 때 폰트도 약간 작게. */
+  .tag .meta .price{font-weight:900;color:#dc2626;line-height:0.9;white-space:nowrap;letter-spacing:-0.5px;flex-shrink:1;min-width:0}
+  .tag .meta.has-old .price{font-size:0.85em}
   .tag .meta .each{font-weight:800;color:#111;letter-spacing:0.3px;align-self:flex-end;flex-shrink:0;white-space:nowrap;line-height:1;margin-top:0.5mm}
   .tag .meta .price-old{color:#9ca3af;text-decoration:line-through;text-decoration-thickness:1.5px;font-weight:600}
   .tag .meta .size-txt{font-weight:600;color:#6b7280;align-self:flex-end;margin-bottom:1mm}
   .tag .code{position:absolute;bottom:1.5mm;right:3mm;font-family:monospace;color:#9ca3af}
-  /* 🆕 2026-05-20 — 실제 스캔 가능 바코드 SVG. 각 사이즈에서 가격표 하단 우측에 표시.
-     화면+인쇄 모두 보이도록 색은 검정 고정 (price-old 의 line-through 와 무관). */
-  .tag .barcode-svg{position:absolute;bottom:1.5mm;right:3mm;height:auto;max-width:35mm}
-  .size-xs .tag .barcode-svg{max-width:22mm;height:10mm}
-  .size-s  .tag .barcode-svg{max-width:30mm;height:13mm}
-  .size-m  .tag .barcode-svg{max-width:42mm;height:15mm}
-  .size-l  .tag .barcode-svg{max-width:55mm;height:18mm}
-  .size-xl .tag .barcode-svg{max-width:75mm;height:22mm}
-  .size-xlv .tag .barcode-svg{max-width:55mm;height:20mm}
+  /* 🆕 2026-05-20 — 실제 스캔 가능 바코드 SVG. 좌측 하단 (가격과 안 겹치게).
+     이전엔 우측 하단이라 $5.99 가격 숫자와 겹쳤음 (전무님 신고 5/20). */
+  .tag .barcode-svg{position:absolute;bottom:1.5mm;left:3mm;height:auto;max-width:35mm;z-index:3;background:#fff;padding:0.5mm}
+  .size-xs .tag .barcode-svg{max-width:22mm;height:9mm}
+  .size-s  .tag .barcode-svg{max-width:30mm;height:11mm}
+  .size-m  .tag .barcode-svg{max-width:42mm;height:13mm}
+  .size-l  .tag .barcode-svg{max-width:55mm;height:15mm}
+  .size-xl .tag .barcode-svg{max-width:75mm;height:18mm}
+  .size-xlv .tag .barcode-svg{max-width:55mm;height:17mm}
   .tag .remove{
     position:absolute;top:2mm;left:2mm;
     width:18px;height:18px;border:0;border-radius:50%;
@@ -2209,17 +2212,20 @@ function renderTag(r){
   // 🆕 2026-05-20 Antonio Zhao (Las Olas) 신고: 이전가가 SALE/MEMBER 템플릿에서만
   // 보였음 → 모든 템플릿에서 priceOld 채워져 있으면 표시 (취소선으로 자동 차별화).
   const oldPriceShow = !!r.priceOld;
-  // 🆕 긴 제목 자동 축소 — 글자 수에 따라 font-size 비율 조정.
-  // (예: "Pulmone soy milk guksu with spicy sauce kit" 같은 긴 제목 잘림 방지.)
+  // 🆕 긴 제목 자동 축소 — 글자 수 기반 점진적 축소.
+  // 2026-05-20 보정 (전무님 신고: 너무 작아짐) — 축소율 완화 + 줄 수 늘림.
+  // 글자가 너무 작아지지 않도록 최소 80% 유지 + 최대 5줄 허용.
   const nameText = String(r.name || '');
   const nameLen = nameText.length;
-  // 임계점: 25자 초과부터 점진적 축소. 60자에서 60% 까지.
   let nameScale = 1;
-  if (nameLen > 60) nameScale = 0.60;
-  else if (nameLen > 50) nameScale = 0.70;
-  else if (nameLen > 40) nameScale = 0.80;
-  else if (nameLen > 30) nameScale = 0.90;
-  const nameStyle = nameScale < 1 ? ` style="font-size:calc(var(--name-base, 1em) * ${nameScale}); -webkit-line-clamp:4; line-height:1.1"` : '';
+  let nameLines = 3;
+  if (nameLen > 60)      { nameScale = 0.80; nameLines = 5; }
+  else if (nameLen > 50) { nameScale = 0.86; nameLines = 5; }
+  else if (nameLen > 40) { nameScale = 0.92; nameLines = 4; }
+  else if (nameLen > 30) { nameScale = 0.96; nameLines = 4; }
+  const nameStyle = nameScale < 1
+    ? ` style="font-size:calc(var(--name-base, 1em) * ${nameScale}); -webkit-line-clamp:${nameLines}; line-height:1.08"`
+    : ` style="-webkit-line-clamp:${nameLines}"`;
   // 🆕 바코드 이미지 렌더링 — JsBarcode 라이브러리로 실제 스캔 가능한 바코드 생성.
   // r.code 가 12-13자리 숫자면 EAN-13/UPC-A, 그 외엔 CODE128. 무효 코드는 폴백 텍스트.
   const codeStr = String(r.code || '').trim();
@@ -2236,7 +2242,7 @@ function renderTag(r){
       </div>
       ${r.brand ? `<div class="brand">${escapeHtml(r.brand)}</div>` : '<div class="brand" style="visibility:hidden">-</div>'}
       <div class="name"${nameStyle}>${escapeHtml(nameText)}${r.nameKo ? `<div class="name-ko">${escapeHtml(r.nameKo)}</div>` : ''}</div>
-      <div class="meta">
+      <div class="meta${oldPriceShow ? ' has-old' : ''}">
         ${r.size ? `<div class="size-txt">${escapeHtml(r.size)}</div>` : ''}
         <div class="price-block">
           ${oldPriceShow ? `<span class="price-old">$${escapeHtml(r.priceOld)}</span>` : ''}

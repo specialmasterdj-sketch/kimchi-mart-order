@@ -2211,9 +2211,9 @@ function renderTag(r){
         : `<span>📷<br>${imgNoneHint}</span>`);
   const imgClick = r.id === 'draft' ? `onclick="document.getElementById('f-img-file').click()"` : '';
   const imgClass = r.img ? 'img-box has' : 'img-box';
-  // 🆕 2026-05-20 Antonio Zhao (Las Olas) 신고: 이전가가 SALE/MEMBER 템플릿에서만
-  // 보였음 → 모든 템플릿에서 priceOld 채워져 있으면 표시 (취소선으로 자동 차별화).
-  const oldPriceShow = !!r.priceOld;
+  // 2026-05-20 (4차) 전무님 명시: 템플릿 컨트롤대로 동작 — 일반=현재가만,
+  // SALE/MEMBER=이전가+현재가. Antonio 가 이전가 보고싶으면 SALE 템플릿 선택해야.
+  const oldPriceShow = r.priceOld && (r.tpl === 'sale' || r.tpl === 'member');
   // 🆕 긴 제목 자동 축소 — 2번째 보정 (전무님 5/20 두 번째 신고: 여전히 너무 작음).
   // 정책 변경: 50자까지는 축소 없음 — 그냥 5줄로 wrap 허용. 50자+ 부터만 약간 축소.
   // 가독성이 압축률보다 우선.

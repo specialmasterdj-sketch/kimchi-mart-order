@@ -229,7 +229,7 @@ window.addEventListener('km-rec-filter', (e) => {
   try {
     const u = new URLSearchParams(location.search);
     const b = (u.get('branch') || '').toUpperCase();
-    const VALID = ['MIAMI','PEMBROKE_PINES','HOLLYWOOD','CORAL_SPRINGS','LASOLAS','WEST_PALM'];
+    const VALID = ['MIAMI','PEMBROKE_PINES','HOLLYWOOD','CORAL_SPRINGS','LASOLAS','WEST_PALM','ALL'];
     if (b && VALID.indexOf(b) >= 0) localStorage.setItem('km_branch', b);
   } catch(e){}
 })();

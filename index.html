@@ -14,7 +14,19 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
+<script src="recommend.js"></script>
 <script>
+/* URL ?branch=<ID> override — set by vendor-order-center.html so this app
+   loads the right per-branch cart regardless of whatever km_branch the device
+   was left on by the previous user. Runs before currentBranch is read below. */
+(function applyUrlBranch(){
+  try {
+    const u = new URLSearchParams(location.search);
+    const b = (u.get('branch') || '').toUpperCase();
+    const VALID = ['MIAMI','PEMBROKE_PINES','HOLLYWOOD','CORAL_SPRINGS','LASOLAS','WEST_PALM'];
+    if (b && VALID.indexOf(b) >= 0) localStorage.setItem('km_branch', b);
+  } catch(e){}
+})();
 // One-shot service-worker + cache reset for the v66 styling rollout.
 // Some users' PWAs were stuck on v65 (numpad styles missing). On the
 // first load after this deploys, every visitor unregisters their old
@@ -399,7 +411,19 @@ const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
 let currentBranch = '';
 try { currentBranch = localStorage.getItem('km_branch') || ''; } catch(e){}
 
-function ordersKey(branchId){ return 'km_orders__' + (branchId || ''); }
+// Cart is per-branch × per-user — each person's order stays isolated.
+// No handoff between people — one person owns their order start to finish.
+function currentUserKey(){
+  try {
+    const me = JSON.parse(localStorage.getItem('chat.me') || 'null');
+    const raw = (me && me.name || '').trim();
+    if (!raw) return 'UNASSIGNED';
+    return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
+  } catch(e){ return 'UNASSIGNED'; }
+}
+function ordersKey(branchId, userKey){
+  return 'km_orders__' + (branchId || '') + '__' + (userKey || currentUserKey());
+}
 
 // ===== STATE =====
 // Restore last navigation so page reload returns to where the user was.
@@ -443,40 +467,26 @@ function saveNavState(){
   } catch(e){}
 }
 
-// Load saved orders for the current branch (falls back to legacy km_orders
-// if present, one-time migrated into the first picked branch).
+// Load saved orders for the current branch × user. Each person sees only
+// their own in-progress cart; nothing migrates from other users / branches.
 function loadBranchOrders(){
   if (!currentBranch){ state.orders = {}; return; }
   try {
-    const raw = localStorage.getItem(ordersKey(currentBranch));
+    const raw = localStorage.getItem(ordersKey(currentBranch, currentUserKey()));
     state.orders = raw ? JSON.parse(raw) : {};
   } catch(e){ state.orders = {}; }
-  // Migrate legacy single-key orders into whichever branch is picked first,
-  // only if that branch has nothing yet.
-  if (Object.keys(state.orders).length === 0){
-    try {
-      const legacy = localStorage.getItem('km_orders');
-      if (legacy){
-        const obj = JSON.parse(legacy);
-        if (obj && typeof obj === 'object' && Object.values(obj).some(v => v && Object.keys(v).length)){
-          state.orders = obj;
-          localStorage.setItem(ordersKey(currentBranch), JSON.stringify(state.orders));
-        }
-        localStorage.removeItem('km_orders');
-      }
-    } catch(e){}
-  }
   for (let v in VENDORS) { if (!state.orders[v]) state.orders[v] = {}; }
 }
 loadBranchOrders();
 
 function saveState() {
+  const user = currentUserKey();
   if (currentBranch){
     try {
       const json = JSON.stringify(state.orders);
-      localStorage.setItem(ordersKey(currentBranch), json);
+      localStorage.setItem(ordersKey(currentBranch, user), json);
       // Redundant backup with timestamp for crash recovery
-      localStorage.setItem(ordersKey(currentBranch) + '_backup', JSON.stringify({
+      localStorage.setItem(ordersKey(currentBranch, user) + '_backup', JSON.stringify({
         t: Date.now(), orders: state.orders
       }));
       // Flash "saved" indicator
@@ -487,9 +497,9 @@ function saveState() {
     }
   }
   try { localStorage.setItem('km_history', JSON.stringify(state.history)); } catch(e){}
-  // Hook for future cloud sync (Firebase, etc.)
+  // Hook for future cloud sync (Firebase, etc.) — pass user too.
   if (typeof window.cloudPushOrders === 'function'){
-    try { window.cloudPushOrders(currentBranch, state.orders); } catch(e){}
+    try { window.cloudPushOrders(currentBranch, user, state.orders); } catch(e){}
   }
 }
 
@@ -545,6 +555,10 @@ function restoreLastTrash(){
 function setBranch(id){
   if (!BRANCH_BY_ID[id]) return;
   if (currentBranch === id){ closeBranchModal(); return; }
+  // Persist outgoing branch×user slot before switching so nothing is lost.
+  if (currentBranch){
+    try { saveState(); } catch(e){}
+  }
   currentBranch = id;
   try { localStorage.setItem('km_branch', id); } catch(e){}
   loadBranchOrders();
@@ -946,6 +960,11 @@ function showToast(msg) {
 
 // ===== RENDER =====
 function render() {
+  // Keep recommend.js scoped to the current vendor whenever the page draws.
+  // Cheap (just resubscribes if changed) and covers every navigation path.
+  if (window.kmRecs && state.vendor){
+    window.kmRecs.setVendor(state.vendor);
+  }
   const scrollPos = window.scrollY;
   // .product-grid has its own internal scroll on desktop layout — preserve it
   // too, otherwise ordering on FIKO (large catalog) jumps back to the top.
@@ -1085,11 +1104,16 @@ function buildTilesHtml(v, products){
     const stockBadge = (typeof VelaStock !== 'undefined') ? VelaStock.badgeHtml(p) : '';
     // Catalog-style tile: image already contains name + code + size, so skip
     // the text rows and show only the cell image plus the qty controls.
+    const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
+    const recBadges = window.kmRecs ? window.kmRecs.badgeHTML(p.id) : '';
+    const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     if (p.catalog || p.category === 'wal-lkk') {
-      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}">
+      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}">
         ${newBadge}
+        ${recTools}
         <div class="img-wrap">${riskCorner}${imgHtml}</div>
         <div class="info">
+          ${recBadges ? `<div style="text-align:center;margin-bottom:2px">${recBadges}</div>` : ''}
           ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
           <div class="qty-row">
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
@@ -1102,11 +1126,12 @@ function buildTilesHtml(v, products){
       </div>`;
       continue;
     }
-    tiles += `<div class="product-tile ${anyQty?'has-qty':''}">
+    tiles += `<div class="product-tile ${anyQty?'has-qty':''}${recRing}">
       ${newBadge}
+      ${recTools}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">
-        <div class="name">${p.name || p.nameKr}</div>
+        <div class="name">${p.name || p.nameKr}${recBadges}</div>
         ${krHtml}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
         ${barcodeHtml}
@@ -1724,7 +1749,7 @@ async function emailWithPDF() {
     if (state.history.length > 20) state.history = state.history.slice(0, 20);
     saveState();
     if (typeof window.cloudPushHistory === 'function'){
-      try { window.cloudPushHistory(currentBranch, histEntry); } catch(e){}
+      try { window.cloudPushHistory(currentBranch, currentUserKey(), histEntry); } catch(e){}
     }
 
   } catch(err) {
@@ -1928,7 +1953,7 @@ viewing Miami sees qty=3 instantly, and either can continue the cart.
 -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -1944,6 +1969,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+
+// Wire recommend.js with this page's Firebase handle. Vendor is set later
+// by render() as state.vendor changes (deep-link, home grid click).
+if (window.kmRecs){
+  window.kmRecs.init({
+    db, ref, set, onValue, remove,
+    vendor: (window.KM?.state?.vendor) || '',
+    branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
+  });
+  window.kmRecs.subscribe(() => {
+    try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
+  });
+}
 
 // --- AUTH GATE ---
 setPersistence(auth, browserLocalPersistence);
@@ -1996,32 +2034,44 @@ window._authLogout = function(){ signOut(auth); };
 // Guard so remote updates don't bounce back as local pushes.
 let applyingRemote = false;
 let currentSubBranch = null;
+let currentSubUser = null;
 let unsubscribe = null;
 let unsubscribeHistory = null;
 
-function branchPath(branchId){ return 'orders/' + branchId; }
-function historyPath(branchId){ return 'history/' + branchId; }
+function fbUserKey(){
+  try {
+    const me = JSON.parse(localStorage.getItem('chat.me') || 'null');
+    const raw = (me && me.name || '').trim();
+    if (!raw) return '';
+    return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
+  } catch(e){ return ''; }
+}
+// Paths are per branch × per user — each person's in-progress cart AND
+// finished-order history are isolated. No handoff between people.
+function branchPath(branchId, userKey){ return 'orders/' + branchId + '/' + userKey; }
+function historyPath(branchId, userKey){ return 'history/' + branchId + '/' + userKey; }
 
 // Write: called by saveState() whenever the user changes qty locally.
-window.cloudPushOrders = function(branchId, orders){
-  if (!branchId || applyingRemote) return;
+window.cloudPushOrders = function(branchId, userKey, orders){
+  if (!branchId || !userKey || applyingRemote) return;
   const clean = {};
   for (const v in orders){
     const items = orders[v] || {};
     const entries = Object.entries(items).filter(([, q]) => q > 0);
     if (entries.length) clean[v] = Object.fromEntries(entries);
   }
-  set(ref(db, branchPath(branchId)), clean).catch(e => console.warn('cloud push failed', e));
+  set(ref(db, branchPath(branchId, userKey)), clean).catch(e => console.warn('cloud push failed', e));
 };
 
-function subscribeBranch(branchId){
+function subscribeBranch(branchId, userKey){
   if (unsubscribe){ try { unsubscribe(); } catch(e){} unsubscribe = null; }
   if (unsubscribeHistory){ try { unsubscribeHistory(); } catch(e){} unsubscribeHistory = null; }
   currentSubBranch = branchId;
-  if (!branchId) return;
+  currentSubUser = userKey;
+  if (!branchId || !userKey) return;
 
-  // Orders
-  const branchRef = ref(db, branchPath(branchId));
+  // Orders (per branch × per user)
+  const branchRef = ref(db, branchPath(branchId, userKey));
   unsubscribe = onValue(branchRef, (snap) => {
     const remote = snap.val() || {};
     applyingRemote = true;
@@ -2032,8 +2082,6 @@ function subscribeBranch(branchId){
       for (const v in remote){ next[v] = { ...remote[v] }; }
       if (!window.KM) return;
       // Skip re-render if remote matches local (echo from our own write).
-      // Otherwise every +/- tap would snap the grid scroll back to the top
-      // because render() rebuilds the entire product list.
       const prev = JSON.stringify(window.KM.state.orders || {});
       const incoming = JSON.stringify(next);
       window.KM.state.orders = next;
@@ -2050,8 +2098,8 @@ function subscribeBranch(branchId){
     }
   }, (err) => { console.warn('cloud read failed', err); });
 
-  // History (latest 50 by timestamp; we reverse for newest-first UI)
-  const histRef = query(ref(db, historyPath(branchId)), orderByChild('ts'), limitToLast(50));
+  // History (latest 50 by timestamp; per branch × per user)
+  const histRef = query(ref(db, historyPath(branchId, userKey)), orderByChild('ts'), limitToLast(50));
   unsubscribeHistory = onValue(histRef, (snap) => {
     const entries = [];
     snap.forEach(child => { entries.push(child.val()); });
@@ -2063,34 +2111,44 @@ function subscribeBranch(branchId){
   }, (err) => { console.warn('history read failed', err); });
 }
 
-// Write: called after a PO is generated so every device in the branch sees it.
-window.cloudPushHistory = function(branchId, entry){
-  if (!branchId || !entry) return;
-  try { push(ref(db, historyPath(branchId)), entry); }
+// Write: called after a PO is generated.
+window.cloudPushHistory = function(branchId, userKey, entry){
+  if (!branchId || !userKey || !entry) return;
+  try { push(ref(db, historyPath(branchId, userKey)), entry); }
   catch(e){ console.warn('history push failed', e); }
 };
+
+function resyncSubscription(){
+  const b = window.KM?.branch;
+  const u = fbUserKey();
+  if (b && u && (b !== currentSubBranch || u !== currentSubUser)) subscribeBranch(b, u);
+  // Resubscribe the recommendation streams too so branch-scoped recs update.
+  if (window.kmRecs && b) window.kmRecs.setBranch(b);
+}
 
 // Hook branch switches via KM.setBranch wrapper.
 const origSetBranch = window.KM?.setBranch;
 if (window.KM){
   window.KM.setBranch = (id) => {
     origSetBranch && origSetBranch(id);
-    const b = window.KM.branch;
-    if (b && b !== currentSubBranch) subscribeBranch(b);
+    resyncSubscription();
   };
 }
 // Also patch the global setBranch (used by the branch-modal buttons).
 const bareSetBranch = window.setBranch;
 window.setBranch = (id) => {
   bareSetBranch && bareSetBranch(id);
-  const b = window.KM?.branch;
-  if (b && b !== currentSubBranch) subscribeBranch(b);
+  resyncSubscription();
 };
+// Resubscribe if chat.me changes in another tab (different login).
+window.addEventListener('storage', (e) => {
+  if (e.key === 'chat.me' || e.key === 'km_branch') resyncSubscription();
+});
 
 // First subscribe if a branch is already chosen at load time.
-if (window.KM?.branch) subscribeBranch(window.KM.branch);
+resyncSubscription();
 
-console.info('[Firebase] real-time order sync active');
+console.info('[Firebase] real-time order sync active (per branch × per user)');
 </script>
 </body>
 </html>

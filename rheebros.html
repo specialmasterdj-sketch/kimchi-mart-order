@@ -219,7 +219,24 @@
 <div class="toast" id="toast"></div>
 
 <script src="rheebros_products.js"></script>
+<script src="recommend.js"></script>
 <script>
+// Recommended-products filter state — toggled from a chip above the grid.
+let REC_FILTER_ON = false;
+window.addEventListener('km-rec-filter', (e) => {
+  if (e?.detail?.id === 'rec-filter-rhee'){ REC_FILTER_ON = !!e.detail.on; render(); }
+});
+/* URL ?branch=<ID> override — set by vendor-order-center.html so this app
+   loads the right per-branch cart regardless of whatever km_branch the device
+   was left on by the previous user. */
+(function applyUrlBranch(){
+  try {
+    const u = new URLSearchParams(location.search);
+    const b = (u.get('branch') || '').toUpperCase();
+    const VALID = ['MIAMI','PEMBROKE_PINES','HOLLYWOOD','CORAL_SPRINGS','LASOLAS','WEST_PALM'];
+    if (b && VALID.indexOf(b) >= 0) localStorage.setItem('km_branch', b);
+  } catch(e){}
+})();
 /* RHEE BROS catalog — products loaded from hanmi_products.js (generated from PDF). */
 const _HANMI_RAW = (window.RHEE_PRODUCTS || []);
 const PRODUCTS = _HANMI_RAW.map(p => {
@@ -256,29 +273,21 @@ let CUR_CAT = '';
 let LANG = 'ko';
 let CURRENT_PD_ID = '';
 
-// CART is stored per-branch (rhee-cart-v1-<BRANCH>) so prices/quantities
-// never leak between stores — same rule as the lookup/invoice apps.
+// CART is stored per-branch × per-user (rhee-cart-v1-<BRANCH>-<USER>) so
+// each person's in-progress order stays isolated. No handoff between
+// people — one person owns their order start to finish.
 function _branchForCartKey(){
   try { return localStorage.getItem('km_branch') || 'UNASSIGNED'; } catch(e){ return 'UNASSIGNED'; }
 }
-function _cartKey(){ return 'rhee-cart-v1-' + _branchForCartKey(); }
-
-// One-time migration: the old code stored a single shared cart under
-// 'rhee-cart-v1' which leaked across branches. Move that data under
-// whatever branch is currently selected (best-guess attribution) and delete
-// the legacy key so no future cross-contamination can occur.
-(function migrateLegacyCart(){
+function _userForCartKey(){
   try {
-    const legacy = localStorage.getItem('rhee-cart-v1');
-    if (!legacy) return;
-    const cur = _branchForCartKey();
-    if (cur === 'UNASSIGNED') return;  // keep legacy until user picks a branch
-    const brKey = 'rhee-cart-v1-' + cur;
-    if (!localStorage.getItem(brKey)) localStorage.setItem(brKey, legacy);
-    localStorage.removeItem('rhee-cart-v1');
-    console.info('[rheebros] migrated legacy cart to branch:', cur);
-  } catch(e){}
-})();
+    const me = JSON.parse(localStorage.getItem('chat.me') || 'null');
+    const raw = (me && me.name || '').trim();
+    if (!raw) return 'UNASSIGNED';
+    return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
+  } catch(e){ return 'UNASSIGNED'; }
+}
+function _cartKey(){ return 'rhee-cart-v1-' + _branchForCartKey() + '-' + _userForCartKey(); }
 
 try {
   const saved = localStorage.getItem(_cartKey());
@@ -330,16 +339,16 @@ function updateBranchLabel(){
 function setBranch(id){
   if (!BRANCH_BY_ID[id]) return;
   const oldBranch = _branchForCartKey();
-  // Persist current CART under old branch's key BEFORE switching so nothing
-  // is lost from the outgoing branch.
+  const user = _userForCartKey();
+  // Persist current CART under old branch×user slot before switching.
   if (oldBranch && oldBranch !== 'UNASSIGNED'){
-    try { localStorage.setItem('rhee-cart-v1-' + oldBranch, JSON.stringify(CART)); } catch(e){}
+    try { localStorage.setItem('rhee-cart-v1-' + oldBranch + '-' + user, JSON.stringify(CART)); } catch(e){}
   }
   try { localStorage.setItem('km_branch', id); } catch(e){}
-  // Swap CART contents in-place — clear, then load the new branch's saved cart.
+  // Swap CART contents in-place — clear, then load the new branch×user slot.
   for (const k of Object.keys(CART)) delete CART[k];
   try {
-    const saved = localStorage.getItem('rhee-cart-v1-' + id);
+    const saved = localStorage.getItem('rhee-cart-v1-' + id + '-' + user);
     if (saved) Object.assign(CART, JSON.parse(saved));
   } catch(e){}
   updateBranchLabel();
@@ -349,6 +358,8 @@ function setBranch(id){
   if ($('cart-modal').classList.contains('show')) renderCart();
   // Re-subscribe cart sync to the new branch
   if (typeof window.__wismRefreshSub === 'function') window.__wismRefreshSub();
+  // Resubscribe recommend.js to the branch-scoped recs path.
+  if (window.kmRecs) window.kmRecs.setBranch(id);
 }
 function openBranchModal(){
   const grid = $('branch-grid');
@@ -514,6 +525,7 @@ function render(){
   const q = hangulDecompose(raw);
 
   const filtered = PRODUCTS.filter(p => {
+    if (REC_FILTER_ON && window.kmRecs && !window.kmRecs.isRecommended(p.id)) return false;
     // When actively searching, bypass category/tab filters so a query
     // across the whole catalog is never silently hidden by a tab pick.
     if (q){
@@ -526,9 +538,15 @@ function render(){
   });
 
   const hasFilter = CUR_GROUP || CUR_CAT || q;
+  const recChip = (window.kmRecs ? window.kmRecs.filterChipHTML('rec-filter-rhee', '추천만 보기') : '');
   $('stats').innerHTML =
     '<span>' + t('items', {n: filtered.length}) + '</span>' +
+    recChip +
     (hasFilter ? '<button class="clear-flt" onclick="clearFilters()">' + t('clearFlt') + '</button>' : '');
+  if (REC_FILTER_ON){
+    const cb = document.getElementById('rec-filter-rhee');
+    if (cb){ cb.checked = true; cb.parentElement.classList.add('active'); }
+  }
 
   if (!filtered.length){
     $('grid').innerHTML = '<div class="empty"><div class="big">🔍</div>' + t('noResults') + '</div>';
@@ -563,12 +581,16 @@ function render(){
       '</div>' +
       '<div style="font-size:9.5px;color:#0369a1;text-align:center;margin-top:2px;font-weight:700">🏗 파레트 / Pallet</div>'
     ) : '';
+    const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
+    const recBadges = window.kmRecs ? window.kmRecs.badgeHTML(p.id) : '';
+    const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     return (
-      '<div class="card ' + (anyQty?'has-qty':'') + '" onclick="openPd(\''+p.detailId+'\')">' +
+      '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
+        recTools +
         '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' +
         '<div class="pbody">' +
-          '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+          '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + recBadges + '</div>' +
           '<div class="pmeta"><span class="code">#' + esc(p.id) + '</span> · ' + esc(p.packSize||'-') + '</div>' +
           (p.barcodeDisplay ? '<div class="pmeta" style="font-family:monospace;font-size:9.5px;color:#666">' + esc(p.barcodeDisplay) + '</div>' : '') +
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
@@ -872,7 +894,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 <!-- Real-time cart sync per branch (mirrors the main order app) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -889,53 +911,47 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => { if (!user) location.replace('index.html'); });
 
+// Wire recommend.js to this page's Firebase handle.
+if (window.kmRecs){
+  window.kmRecs.init({
+    db, ref, set, onValue, remove,
+    vendor: 'rhee_full',
+    branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
+  });
+  window.kmRecs.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+
 let applyingRemote = false;
 let unsub = null;
 function getBranch(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
-function path(b){ return 'carts/rheebros/' + b; }
+function getUser(){
+  try {
+    const me = JSON.parse(localStorage.getItem('chat.me') || 'null');
+    const raw = (me && me.name || '').trim();
+    if (!raw) return '';
+    return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
+  } catch(e){ return ''; }
+}
+// Path is per branch × per user — each person's order is isolated.
+function path(b, u){ return 'carts/rheebros/' + b + '/' + u; }
 
 window.cloudPushCart = function(cart){
   if (applyingRemote) return;
-  const b = getBranch(); if (!b) return;
+  const b = getBranch(), u = getUser();
+  if (!b || !u) return;
   const clean = {};
   for (const k in cart){ if (cart[k] > 0) clean[k] = cart[k]; }
-  set(ref(db, path(b)), clean).catch(e => console.warn('cart push failed', e));
+  set(ref(db, path(b, u)), clean).catch(e => console.warn('cart push failed', e));
 };
 
-let firstSync = true;
 function subscribe(){
   if (unsub){ try { unsub(); } catch(e){} unsub = null; }
-  firstSync = true; // reset per-branch
-  const b = getBranch(); if (!b) return;
-  console.info('[Firebase] RheeBros subscribing to carts/rheebros/' + b);
-  unsub = onValue(ref(db, path(b)), (snap) => {
+  const b = getBranch(), u = getUser();
+  if (!b || !u) return;
+  console.info('[Firebase] RheeBros subscribing to ' + path(b, u));
+  unsub = onValue(ref(db, path(b, u)), (snap) => {
+    // User-scoped path — mirror remote authoritatively. No merge.
     const remote = snap.val() || {};
-    if (firstSync){
-      firstSync = false;
-      // Protect against data loss on first sync: merge remote + local
-      // by keeping the MAX qty per item. This way neither side wipes the
-      // other — if a colleague already added items on their phone and
-      // this device had its own local items, both are preserved.
-      const local = (window.KM_W && window.KM_W.CART) || {};
-      const merged = {};
-      const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
-      keys.forEach(k => {
-        const lq = +local[k] || 0, rq = +remote[k] || 0;
-        const mx = Math.max(lq, rq);
-        if (mx > 0) merged[k] = mx;
-      });
-      applyingRemote = true;
-      try { if (window.KM_W) window.KM_W.applyRemote(merged); }
-      finally { applyingRemote = false; }
-      // Push merged back so cloud reflects the union.
-      if (JSON.stringify(merged) !== JSON.stringify(remote)){
-        set(ref(db, path(b)), merged).catch(e => console.warn('merged push failed', e));
-      }
-      console.info('[Firebase] first sync merged', Object.keys(merged).length, 'items');
-      return;
-    }
-    // Subsequent updates: remote is authoritative — reflects deliberate edits
-    // from other devices (including removals).
     applyingRemote = true;
     try { if (window.KM_W) window.KM_W.applyRemote(remote); }
     finally { applyingRemote = false; }
@@ -944,9 +960,11 @@ function subscribe(){
 subscribe();
 // Exposed hook so the branch selector can re-subscribe after picking a branch.
 window.__wismRefreshSub = subscribe;
-// Re-subscribe if the user changes branch in another tab.
-window.addEventListener('storage', (e) => { if (e.key === 'km_branch') subscribe(); });
-console.info('[Firebase] RheeBros cart sync active');
+// Re-subscribe if the user changes branch OR identity in another tab.
+window.addEventListener('storage', (e) => {
+  if (e.key === 'km_branch' || e.key === 'chat.me') subscribe();
+});
+console.info('[Firebase] RheeBros cart sync active (per branch × per user)');
 </script>
 </body>
 </html>

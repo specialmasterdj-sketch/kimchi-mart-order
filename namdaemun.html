@@ -405,6 +405,17 @@
 
 <script src="jayone_products.js"></script>
 <script>
+/* URL ?branch=<ID> override — set by vendor-order-center.html so this app
+   loads the right per-branch cart regardless of whatever km_branch the device
+   was left on by the previous user. */
+(function applyUrlBranch(){
+  try {
+    const u = new URLSearchParams(location.search);
+    const b = (u.get('branch') || '').toUpperCase();
+    const VALID = ['MIAMI','PEMBROKE_PINES','HOLLYWOOD','CORAL_SPRINGS','LASOLAS','WEST_PALM'];
+    if (b && VALID.indexOf(b) >= 0) localStorage.setItem('km_branch', b);
+  } catch(e){}
+})();
 // ============ DATA ============
 const VEGETABLES = [
   {plu:"4080", en:"ASPARAGUS", ko:"아스파라거스", unit:"11BH", price:52, cat:"열매"},
@@ -608,11 +619,21 @@ const BRANCHES = [
 ];
 const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
 const BRANCH_KEY = "km_branch"; // shared across Kimchi Mart apps
-const cartKey = (branchId) => `ndm_cart_v1__${branchId || ''}`;
+// Cart is per-branch × per-user — each person's order stays isolated.
+// No handoff between people — one person owns their order start to finish.
+function _userKey() {
+  try {
+    const me = JSON.parse(localStorage.getItem('chat.me') || 'null');
+    const raw = (me && me.name || '').trim();
+    if (!raw) return 'UNASSIGNED';
+    return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
+  } catch (e) { return 'UNASSIGNED'; }
+}
+const cartKey = (branchId, userKey) => `ndm_cart_v1__${branchId || ''}__${userKey || _userKey()}`;
 
 // ============ STATE ============
 // Shared (not per-branch): prices, priceDate, activeSection/sub (UI navigation)
-// Per-branch (isolated): qty
+// Per-branch × per-user (isolated): qty
 const SHARED_KEY = "ndm_app_v1";
 const DEFAULT_PRICE_DATE = "2026-04-25";
 let state = loadState();
@@ -624,7 +645,7 @@ function loadState() {
   try { shared = JSON.parse(localStorage.getItem(SHARED_KEY)) || {}; } catch {}
   let qty = {};
   if (branchId) {
-    try { qty = JSON.parse(localStorage.getItem(cartKey(branchId))) || {}; } catch {}
+    try { qty = JSON.parse(localStorage.getItem(cartKey(branchId, _userKey()))) || {}; } catch {}
   }
   return {
     activeSection: shared.activeSection || "veg",
@@ -645,21 +666,22 @@ function saveState() {
     prices: state.prices, priceDate: state.priceDate,
   }));
   if (state.branchId) {
-    localStorage.setItem(cartKey(state.branchId), JSON.stringify(state.qty));
+    localStorage.setItem(cartKey(state.branchId, _userKey()), JSON.stringify(state.qty));
   }
 }
 
 function setBranch(newId) {
   if (!BRANCH_BY_ID[newId]) return;
-  // Save outgoing branch's qty
+  const user = _userKey();
+  // Save outgoing branch×user qty
   if (state.branchId) {
-    localStorage.setItem(cartKey(state.branchId), JSON.stringify(state.qty));
+    localStorage.setItem(cartKey(state.branchId, user), JSON.stringify(state.qty));
   }
   state.branchId = newId;
   try { localStorage.setItem(BRANCH_KEY, newId); } catch {}
-  // Load incoming branch's qty
+  // Load incoming branch×user qty
   try {
-    state.qty = JSON.parse(localStorage.getItem(cartKey(newId))) || {};
+    state.qty = JSON.parse(localStorage.getItem(cartKey(newId, user))) || {};
   } catch {
     state.qty = {};
   }
@@ -690,7 +712,7 @@ function updateBranchUI() {
 function openBranchModal() {
   const grid = document.getElementById("branchGrid");
   grid.innerHTML = BRANCHES.map(b => {
-    const cart = (function() { try { return JSON.parse(localStorage.getItem(cartKey(b.id))) || {}; } catch { return {}; } })();
+    const cart = (function() { try { return JSON.parse(localStorage.getItem(cartKey(b.id, _userKey()))) || {}; } catch { return {}; } })();
     const count = Object.values(cart).filter(v => v > 0).length;
     const current = b.id === state.branchId;
     return `

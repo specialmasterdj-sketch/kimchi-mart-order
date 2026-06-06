@@ -33,7 +33,7 @@
   // owner pins it, the mark is effectively locked.
   // Owner names match the chat.html / database.rules.json whitelist (DJ +
   // Sun Kim are both registered as owners as of 2026-05-28).
-  const OWNER_ROLES = /^(OWNER|오너|사장|대표|BOSS|DUEÑO|PROPIETARIO)$/i;
+  const OWNER_ROLES = /^(OWNER|EXECUTIVE|오너|사장|대표|전무|BOSS|DUEÑO|PROPIETARIO|EJECUTIVO)$/i;
   const OWNER_NAMES = ['DJ','BHK','B.H.K','비에이치케이','SUNKIM','SUN KIM','선킴','김선'];
 
   function canMark(){

@@ -147,9 +147,9 @@
     css.id = 'km-rec-styles';
     css.textContent = (
       // Yellow box around the whole card — meant to scream "발주 필수".
-      '.km-rec-card{outline:4px solid #f59e0b !important;outline-offset:-4px;' +
+      '.km-rec-card{outline:1.5px solid #f59e0b !important;outline-offset:-1.5px;' +
         'background:linear-gradient(180deg,#fffbeb 0%,#fff7d6 100%) !important;' +
-        'box-shadow:0 0 0 1px rgba(245,158,11,.45),0 6px 18px rgba(245,158,11,.28) !important;' +
+        'box-shadow:0 0 0 1px rgba(245,158,11,.25),0 4px 12px rgba(245,158,11,.18) !important;' +
         'position:relative}' +
       // Top-left corner flag (triangle) on every marked card
       '.km-rec-card::before{content:"⭐";position:absolute;top:0;left:0;width:34px;height:34px;' +

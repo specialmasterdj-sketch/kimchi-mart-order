@@ -404,6 +404,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="jayone_products.js"></script>
+<script src="recommend.js"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -868,11 +869,15 @@ function itemHtml(secId, it) {
   const foot = hasBarcode
     ? `<div class="item-foot"><span class="unit">${unitStr}</span></div><div class="barcode">${escapeHtml(it.barcode)}</div>`
     : `<div class="item-foot"><span class="unit">${unitStr}</span><span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span></div>`;
+  const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(key) : '';
+  const recBadge  = window.kmRecs ? window.kmRecs.badgeHTML(key)  : '';
+  const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
   return `
-    <div class="item ${qty>0?'has-qty':''}" data-key="${key}">
+    <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">
+      ${recTools}
       ${imgStr}
       <div class="item-head">
-        <div class="name-en">${escapeHtml(it.en)}</div>
+        <div class="name-en">${escapeHtml(it.en)}${recBadge}</div>
         ${pluStr}
       </div>
       <div class="name-ko">${escapeHtml(it.ko)}</div>
@@ -1141,6 +1146,36 @@ renderAll();
 // Prompt for branch on first visit
 if (!state.branchId) {
   setTimeout(openBranchModal, 120);
+}
+</script>
+
+<!-- Firebase + kmRecs wiring so the TOP PICK yellow-box marks sync across
+     all staff devices, same as hanmi/wismettac/rheebros. -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
+  authDomain: "kimchi-mart-order.firebaseapp.com",
+  databaseURL: "https://kimchi-mart-order-default-rtdb.firebaseio.com",
+  projectId: "kimchi-mart-order",
+  storageBucket: "kimchi-mart-order.firebasestorage.app",
+  messagingSenderId: "640942647201",
+  appId: "1:640942647201:web:1e3421fb55c89155230de0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+if (window.kmRecs){
+  window.kmRecs.init({
+    db, ref, set, onValue, remove,
+    vendor: 'namdaemun',
+    branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
+  });
+  window.kmRecs.subscribe(() => {
+    try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
+  });
 }
 </script>
 </body>

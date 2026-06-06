@@ -1,0 +1,97 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('role').val().matches(/^(OWNER|EXECUTIVE|MANAGER|ASSISTANT_MANAGER|SUPERVISOR)$/)",
+      "$uid": {
+        ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && (auth.uid === $uid || (root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('role').val().matches(/^(OWNER|EXECUTIVE|MANAGER|ASSISTANT_MANAGER|SUPERVISOR)$/)))",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && (auth.uid === $uid && !data.exists() || auth.uid === $uid && newData.child('status').val() === data.child('status').val() && newData.child('role').val() === data.child('role').val() && newData.child('branch').val() === data.child('branch').val() || (root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('role').val().matches(/^(OWNER|EXECUTIVE|MANAGER|ASSISTANT_MANAGER|SUPERVISOR)$/)))"
+      }
+    },
+
+    "schedules": {
+      ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous'",
+      ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'"
+    },
+
+    "joinPins": {
+      ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous'",
+      ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'OWNER' || root.child('users').child(auth.uid).child('role').val() === 'EXECUTIVE')"
+    },
+
+    "config": {
+      ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'",
+      ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'OWNER' || root.child('users').child(auth.uid).child('role').val() === 'EXECUTIVE')"
+    },
+
+    "orders":            { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "history":           { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "inventory":         { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "catalog":           { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "carts":             { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "attendance":        { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "bathroom_schedule": { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('role').val().matches(/^(OWNER|EXECUTIVE|MANAGER|ASSISTANT_MANAGER|SUPERVISOR)$/)", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('role').val().matches(/^(OWNER|EXECUTIVE|MANAGER|ASSISTANT_MANAGER|SUPERVISOR)$/)" },
+    "chat": {
+      "rooms": {
+        ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'"
+      },
+      "messages": {
+        "$roomId": {
+          ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'",
+          ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'"
+        },
+        "hr_inquiries": {
+          ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'OWNER' || root.child('users').child(auth.uid).child('name').val() === 'DJ' || root.child('users').child(auth.uid).child('name').val().contains('SUN KIM') || root.child('users').child(auth.uid).child('name').val().contains('Sun Kim') || root.child('users').child(auth.uid).child('name').val().contains('SUNKIM'))",
+          ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'"
+        }
+      }
+    },
+    "secrets": {
+      ".read":  false,
+      ".write": false,
+      "hrInquiryPin": {
+        ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'OWNER' || root.child('users').child(auth.uid).child('name').val() === 'DJ' || root.child('users').child(auth.uid).child('name').val().contains('SUN KIM') || root.child('users').child(auth.uid).child('name').val().contains('Sun Kim') || root.child('users').child(auth.uid).child('name').val().contains('SUNKIM'))",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved' && (root.child('users').child(auth.uid).child('role').val() === 'OWNER' || root.child('users').child(auth.uid).child('name').val() === 'DJ' || root.child('users').child(auth.uid).child('name').val().contains('SUN KIM') || root.child('users').child(auth.uid).child('name').val().contains('Sun Kim') || root.child('users').child(auth.uid).child('name').val().contains('SUNKIM'))"
+      }
+    },
+    "clockins":          { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "expense-cache":     { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "expenses":          { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "expiry":            { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "floorplan":         { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "invoiceHistory":    { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "match-misses":      { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "payroll":           { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "payroll-cpa":       { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "payroll-emails":    { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "price-tag-sessions":{ ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "products":          { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "recs_global":       { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "receiving":         { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "rewards":           {
+      ".read":  "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'",
+      ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'",
+      "deals_app_only": { ".read": true },
+      "customers": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "transactions": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "_healthcheck": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "taskCategories":    { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "taskTemplates":     { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "tasks":             { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "temp":              { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" },
+    "updates":           { ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'", ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && root.child('users').child(auth.uid).child('status').val() === 'approved'" }
+  }
+}

@@ -121,7 +121,7 @@
   // Visible to ALL users. Renders nothing if the product is not marked.
   function badgeHTML(productId){
     if (!isGlobal(productId)) return '';
-    return '<span class="km-rec-badge" title="사장님 추천 — 무조건 발주">⭐ 사장님 추천</span>';
+    return '<span class="km-rec-badge" title="TOP PICK — 무조건 발주">TOP PICK</span>';
   }
 
   // Toggle button — only rendered for OWNER. Empty string for everyone else
@@ -157,10 +157,10 @@
         'background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff;' +
         'clip-path:polygon(0 0,100% 0,0 100%);z-index:4;pointer-events:none;' +
         'text-shadow:0 1px 1px rgba(0,0,0,.3);padding:2px 0 0 2px}' +
-      // Inline "사장님 추천" label
-      '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:2px 8px;' +
-        'border-radius:6px;font-size:.72em;font-weight:800;letter-spacing:.3px;' +
-        'margin-left:6px;vertical-align:middle;box-shadow:0 1px 3px rgba(245,158,11,.4)}' +
+      // Inline "TOP PICK" label
+      '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
+        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
+        'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
       // Floating toggle (owner-only — others never see it)
       '.km-rec-tools{position:absolute;top:6px;right:6px;display:flex;gap:3px;z-index:6}' +
       '.km-rec-tool{width:32px;height:32px;border-radius:50%;border:2px solid #d97706;' +
@@ -185,7 +185,7 @@
     return (
       '<label class="km-rec-filter" for="' + id + '" id="' + id + '_lbl">' +
         '<input type="checkbox" id="' + id + '" onchange="this.parentElement.classList.toggle(\'active\', this.checked);window.dispatchEvent(new CustomEvent(\'km-rec-filter\',{detail:{id:this.id,on:this.checked}}))">' +
-        '<span>⭐ ' + (label || '사장님 추천만 보기') + '</span>' +
+        '<span>⭐ ' + (label || 'TOP PICK만 보기') + '</span>' +
       '</label>'
     );
   }

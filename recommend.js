@@ -28,11 +28,13 @@
   function normName(n){ return (n || '').replace(/\s+/g,'').toUpperCase(); }
   function role(){ return ((me() || {}).role || '').trim().toUpperCase(); }
 
-  // Owner-only by user's explicit decision — only B.H.K marks ⭐. Everyone
-  // else can SEE the badge/box but cannot toggle. This effectively locks
-  // marks: once 사장님 marks it, no other manager can un-mark.
+  // Owner-only marking. Anyone with OWNER role OR a name in the owner list
+  // can pin ⭐. Everyone else SEES the badge but cannot toggle — once an
+  // owner pins it, the mark is effectively locked.
+  // Owner names match the chat.html / database.rules.json whitelist (DJ +
+  // Sun Kim are both registered as owners as of 2026-05-28).
   const OWNER_ROLES = /^(OWNER|오너|사장|대표|BOSS|DUEÑO|PROPIETARIO)$/i;
-  const OWNER_NAMES = ['BHK','B.H.K','BHK','비에이치케이'];
+  const OWNER_NAMES = ['DJ','BHK','B.H.K','비에이치케이','SUNKIM','SUN KIM','선킴','김선'];
 
   function canMark(){
     const m = me() || {};

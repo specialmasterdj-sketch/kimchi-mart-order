@@ -301,13 +301,10 @@ input { font-family:inherit; }
 
 <!-- AUTH LOGIN GATE -->
 <div id="auth-gate">
-  <div class="auth-card">
+  <div class="auth-card" style="text-align:center">
     <h1>KIMCHI MART</h1>
-    <div class="subtitle">Manager Login</div>
-    <input type="email" id="auth-email" placeholder="Email" autocomplete="email">
-    <input type="password" id="auth-pw" placeholder="Password" autocomplete="current-password">
-    <button class="auth-btn" id="auth-login-btn" onclick="window._authLogin()">Login</button>
-    <div class="auth-error" id="auth-error"></div>
+    <div class="subtitle">불러오는 중...</div>
+    <div class="auth-loading" style="margin:24px auto"></div>
   </div>
 </div>
 
@@ -1984,12 +1981,30 @@ if (window.kmRecs){
 }
 
 // --- AUTH GATE ---
+// No in-app login form. If Firebase session is already restored (shared
+// IndexedDB at the same origin), we just unlock the app. If after a short
+// wait there's still no user, redirect to the Manager Apps login so the
+// user only ever types a password ONCE for the whole suite.
 setPersistence(auth, browserLocalPersistence);
 const gate = document.getElementById('auth-gate');
 const appEl = document.getElementById('app');
 
+const AUTH_LOGIN_URL = 'https://specialmasterdj-sketch.github.io/kfood-guide/auth.html';
+function redirectToManagerLogin(){
+  // auth.html only accepts SAME-ORIGIN relative returns — both repos live
+  // on specialmasterdj-sketch.github.io so we strip the origin and pass
+  // the absolute path so the user lands back here after Manager-Apps login.
+  const ret = encodeURIComponent(location.pathname + location.search);
+  location.replace(AUTH_LOGIN_URL + '?return=' + ret);
+}
+
+let _authRedirectTimer = setTimeout(() => {
+  if (!auth.currentUser) redirectToManagerLogin();
+}, 3500);
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    clearTimeout(_authRedirectTimer);
     gate.classList.add('hidden');
     appEl.style.display = '';
     console.info('[Auth] logged in:', user.email);
@@ -2003,33 +2018,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-window._authLogin = async function(){
-  const email = document.getElementById('auth-email').value.trim();
-  const pw = document.getElementById('auth-pw').value;
-  const errEl = document.getElementById('auth-error');
-  const btn = document.getElementById('auth-login-btn');
-  if (!email || !pw){ errEl.textContent = 'Email과 Password를 입력하세요'; return; }
-  btn.disabled = true;
-  btn.innerHTML = '<span class="auth-loading"></span>';
-  errEl.textContent = '';
-  try {
-    await signInWithEmailAndPassword(auth, email, pw);
-  } catch(e){
-    const msg = e.code === 'auth/invalid-credential' ? '이메일 또는 비밀번호가 틀렸습니다'
-              : e.code === 'auth/too-many-requests' ? '너무 많은 시도. 잠시 후 다시 시도하세요'
-              : '로그인 실패: ' + e.message;
-    errEl.textContent = msg;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Login';
-  }
-};
-
-document.getElementById('auth-pw').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') window._authLogin();
-});
-
-window._authLogout = function(){ signOut(auth); };
+window._authLogout = function(){ signOut(auth).then(() => redirectToManagerLogin()); };
 
 // Guard so remote updates don't bounce back as local pushes.
 let applyingRemote = false;

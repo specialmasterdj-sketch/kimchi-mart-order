@@ -822,7 +822,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-onAuthStateChanged(auth, (user) => { if (!user) location.replace('index.html'); });
+// If Firebase auth is restored from shared IndexedDB, unlock. Otherwise
+// bounce to the Manager Apps login (single shared password for the whole
+// suite). Small grace window so a slow IndexedDB cold-start doesn't kick
+// the user out when they're actually authenticated.
+let _authBouncedW = false;
+function _bounceToManagerLogin(){
+  if (_authBouncedW) return;
+  _authBouncedW = true;
+  const ret = encodeURIComponent(location.pathname + location.search);
+  location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/auth.html?return=' + ret);
+}
+let _authGraceTimer = setTimeout(() => {
+  if (!auth.currentUser) _bounceToManagerLogin();
+}, 3500);
+onAuthStateChanged(auth, (user) => {
+  if (user) { clearTimeout(_authGraceTimer); return; }
+});
 
 // Wire recommend.js to this page's Firebase handle. Re-render the grid
 // whenever the recommendation set changes so badges/rings stay live.

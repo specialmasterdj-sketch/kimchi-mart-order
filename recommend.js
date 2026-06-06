@@ -88,16 +88,60 @@
   function isRecommended(productId){ return isGlobal(productId); }
 
   function toggleGlobal(productId){
-    if (!canMark() || !state.fbOps || !state.vendor) return;
+    if (!canMark()){
+      _recToast('⚠ 별표 권한이 없습니다 (오너 전용)');
+      return;
+    }
+    if (!state.fbOps || !state.vendor){
+      _recToast('⚠ 별표 기능 초기화 안 됨 (새로고침 해보세요)');
+      console.warn('[kmRecs] toggle blocked — fbOps/vendor missing', !!state.fbOps, state.vendor);
+      return;
+    }
     const id = String(productId);
     const path = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
-    if (state.globalIds.has(id)){
-      state.fbOps.remove(state.fbOps.ref(state.db, path)).catch(e => console.warn('rec remove failed', e));
+    const wasOn = state.globalIds.has(id);
+    // Optimistic UI: flip the mark immediately so the click is visibly
+    // responsive, then reconcile with the server. If the write is rejected
+    // (e.g. RTDB rules block recs_global), revert and surface the error so
+    // it is not silently swallowed.
+    if (wasOn) state.globalIds.delete(id); else state.globalIds.add(id);
+    notify();
+    const onErr = (e) => {
+      console.warn('rec toggle failed', e);
+      if (wasOn) state.globalIds.add(id); else state.globalIds.delete(id);
+      notify();
+      _recToast('⚠ 별표 저장 실패: ' + ((e && e.message) || e) + ' — 권한/규칙 확인 필요');
+    };
+    if (wasOn){
+      state.fbOps.remove(state.fbOps.ref(state.db, path)).catch(onErr);
     } else {
       state.fbOps.set(state.fbOps.ref(state.db, path), { ts: Date.now(), by: m.name || 'unknown' })
-        .catch(e => console.warn('rec set failed', e));
+        .catch(onErr);
     }
+  }
+
+  // Small toast helper — reuses the host page's toast() if present, otherwise
+  // falls back to a self-contained floating message so failures are visible.
+  function _recToast(msg){
+    try {
+      if (typeof window.toast === 'function'){ window.toast(msg); return; }
+    } catch(e){}
+    try {
+      let el = document.getElementById('km-rec-toast');
+      if (!el){
+        el = document.createElement('div');
+        el.id = 'km-rec-toast';
+        el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);' +
+          'background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;' +
+          'font-weight:700;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:90vw;text-align:center';
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity = '1';
+      clearTimeout(el._t);
+      el._t = setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; }, 3000);
+    } catch(e){ console.warn(msg); }
   }
   function toggleBranch(/*productId*/){ /* no-op — branch scope removed */ }
 

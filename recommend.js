@@ -311,11 +311,13 @@
       '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
         'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
         'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
-      // Owner free-form note ("3cs over available", etc.)
-      '.km-rec-note{display:inline-block;background:#0369a1;color:#fff;padding:1px 6px;' +
-        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.2px;' +
-        'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(3,105,161,.35);' +
-        'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      // Owner free-form note ("over 3cs ok", etc.) — block under the badges
+      // with enough room to read at a glance, wraps if the text is long.
+      '.km-rec-note{display:block;background:#0369a1;color:#fff;padding:3px 8px;' +
+        'border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.2px;line-height:1.3;' +
+        'margin:4px 0 0 0;box-shadow:0 1px 3px rgba(3,105,161,.4);' +
+        'white-space:normal;word-break:break-word;text-align:center;cursor:pointer}' +
+      '.km-rec-note:hover{background:#075985}' +
       // Floating toggle (owner-only — others never see it)
       '.km-rec-tools{position:absolute;top:6px;right:6px;display:flex;gap:3px;z-index:6}' +
       '.km-rec-tool{width:32px;height:32px;border-radius:50%;border:2px solid #d97706;' +

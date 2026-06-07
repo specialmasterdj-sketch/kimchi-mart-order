@@ -69,6 +69,13 @@
     state.vendor = String(vendor);
     state.branch = (branch || '').toString().toUpperCase();
     state.fbOps = { ref, set, onValue, remove };
+    // Hydrate from localStorage immediately so chips show even before the
+    // first Firebase snapshot arrives (or if it never does because of auth).
+    state.notes = Object.assign({}, _loadLocalNotes());
+    // Deferred notify so vendor pages have time to register their subscribe()
+    // listener between init() and the actual fire. Without this delay the
+    // hydrated notes sit in state but never trigger a re-render.
+    setTimeout(notify, 0);
     subscribeGlobal();
     subscribeNotes();
   }
@@ -98,9 +105,14 @@
         if (e.ts) marked.add(id);
         if (e.note) notes[id] = String(e.note);
       }
+      // Merge in any locally-saved notes that Firebase hasn't acked yet so
+      // the chip stays visible even when the cross-device write fails (the
+      // owner still wants to see their own memo while we figure out why).
+      const localNotes = _loadLocalNotes();
+      for (const id in localNotes){ if (!notes[id]) notes[id] = localNotes[id]; }
       state.globalIds = marked;
       state.notes = notes;
-      console.info('[kmRecs] ' + path + ' snapshot:', marked.size, 'marked,', Object.keys(notes).length, 'notes');
+      console.info('[kmRecs] ' + path + ' snapshot:', marked.size, 'marked,', Object.keys(notes).length, 'notes (incl ' + Object.keys(localNotes).length + ' local)');
       notify();
     }, (err) => {
       console.warn('[kmRecs] read failed for ' + path + ':', err && err.message);
@@ -109,6 +121,9 @@
       // database.rules.json. Retry a few times with backoff so an auth race
       // recovers, but stop after ~30s so we don't hammer Firebase forever
       // when the underlying issue is a missing approved status.
+      // Even on read failure, re-notify so the page shows whatever we have
+      // (localStorage-hydrated notes) instead of staying blank.
+      notify();
       state._retryCount = (state._retryCount || 0) + 1;
       if (state._retryCount > 5){
         console.warn('[kmRecs] giving up after ' + state._retryCount + ' retries — check user approval / DB rules');
@@ -153,14 +168,15 @@
     // already-deployed RTDB rules and survives a TOP PICK toggle on/off.
     const basePath = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
-    const prevText = state.notes[id];
+    // Persist locally FIRST so the chip stays visible even if Firebase rejects
+    // or the network is flaky — owner still sees their own memo.
     if (text){ state.notes[id] = text; } else { delete state.notes[id]; }
+    _saveLocalNote(id, text);
     notify();
     const onErr = (e) => {
       console.warn('note save failed', e);
-      if (prevText){ state.notes[id] = prevText; } else { delete state.notes[id]; }
-      notify();
-      _recToast('⚠ 메모 저장 실패: ' + ((e && e.message) || e));
+      // DO NOT revert local state — keep the chip visible from localStorage.
+      _recToast('⚠ 메모 Firebase 동기화 실패 (로컬에만 저장): ' + ((e && e.message) || e));
     };
     if (text){
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/note'), text).catch(onErr);
@@ -169,6 +185,20 @@
       state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/note')).catch(onErr);
       state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/noteBy')).catch(() => {});
     }
+  }
+
+  // localStorage backup so notes stay visible even when Firebase rejects /
+  // is offline. Keyed per vendor so wang notes don't collide with rhee_full.
+  function _localKey(){ return 'kmrecs_local_notes_' + (state.vendor || ''); }
+  function _loadLocalNotes(){
+    try { return JSON.parse(localStorage.getItem(_localKey()) || '{}') || {}; } catch(e){ return {}; }
+  }
+  function _saveLocalNote(id, text){
+    try {
+      const map = _loadLocalNotes();
+      if (text) map[id] = text; else delete map[id];
+      localStorage.setItem(_localKey(), JSON.stringify(map));
+    } catch(e){ console.warn('local note save failed', e); }
   }
   // Branch-scoped variants kept as no-ops so old vendor integrations still
   // load without error. They always return false / do nothing.

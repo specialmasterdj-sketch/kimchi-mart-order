@@ -73,24 +73,10 @@
     subscribeNotes();
   }
 
-  function subscribeNotes(){
-    const { db, fbOps, vendor } = state;
-    if (!fbOps || !vendor) return;
-    if (state.unsubNotes){ try { state.unsubNotes(); } catch(e){} state.unsubNotes = null; }
-    const path = 'recs_notes/' + vendor;
-    state.unsubNotes = fbOps.onValue(fbOps.ref(db, path), (snap) => {
-      const v = snap.val() || {};
-      const next = {};
-      for (const id in v){
-        const text = v[id] && v[id].text;
-        if (text) next[id] = String(text);
-      }
-      state.notes = next;
-      notify();
-    }, (err) => {
-      console.warn('[kmRecs] notes read failed for ' + path + ':', err && err.message);
-    });
-  }
+  // Notes now live INSIDE recs_global/<vendor>/<id> as an extra `note` field
+  // so they inherit the existing Firebase rules — no schema/rules deployment
+  // needed. subscribeNotes is kept as an alias for backward compatibility.
+  function subscribeNotes(){ /* merged into subscribeGlobal */ }
 
   function subscribeGlobal(){
     const { db, fbOps, vendor } = state;
@@ -102,8 +88,19 @@
     state.unsubGlobal = fbOps.onValue(fbOps.ref(db, path), (snap) => {
       state._retryCount = 0;
       const v = snap.val() || {};
-      state.globalIds = new Set(Object.keys(v));
-      console.info('[kmRecs] ' + path + ' snapshot:', state.globalIds.size, 'marked');
+      // A product is "marked" only if it has a `ts` field — note-only entries
+      // (without TOP PICK) must not flip the yellow box on.
+      const marked = new Set();
+      const notes = {};
+      for (const id in v){
+        const e = v[id];
+        if (!e) continue;
+        if (e.ts) marked.add(id);
+        if (e.note) notes[id] = String(e.note);
+      }
+      state.globalIds = marked;
+      state.notes = notes;
+      console.info('[kmRecs] ' + path + ' snapshot:', marked.size, 'marked,', Object.keys(notes).length, 'notes');
       notify();
     }, (err) => {
       console.warn('[kmRecs] read failed for ' + path + ':', err && err.message);
@@ -152,9 +149,10 @@
     const next = window.prompt('OVER 수량 입력 (예: 3cs, 5, 10box) — 비우면 삭제', current);
     if (next === null) return; // user cancelled
     const text = String(next).trim().slice(0, 24);
-    const path = 'recs_notes/' + state.vendor + '/' + id;
+    // Store the note as a child of recs_global/<vendor>/<id> so it shares the
+    // already-deployed RTDB rules and survives a TOP PICK toggle on/off.
+    const basePath = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
-    // Optimistic UI so the chip flips immediately even before Firebase ack.
     const prevText = state.notes[id];
     if (text){ state.notes[id] = text; } else { delete state.notes[id]; }
     notify();
@@ -165,10 +163,11 @@
       _recToast('⚠ 메모 저장 실패: ' + ((e && e.message) || e));
     };
     if (text){
-      state.fbOps.set(state.fbOps.ref(state.db, path), { text, ts: Date.now(), by: m.name || 'unknown' })
-        .catch(onErr);
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/note'), text).catch(onErr);
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/noteBy'), m.name || 'unknown').catch(() => {});
     } else {
-      state.fbOps.remove(state.fbOps.ref(state.db, path)).catch(onErr);
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/note')).catch(onErr);
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/noteBy')).catch(() => {});
     }
   }
   // Branch-scoped variants kept as no-ops so old vendor integrations still
@@ -187,7 +186,7 @@
       return;
     }
     const id = String(productId);
-    const path = 'recs_global/' + state.vendor + '/' + id;
+    const basePath = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
     const wasOn = state.globalIds.has(id);
     // Optimistic UI: flip the mark immediately so the click is visibly
@@ -202,11 +201,14 @@
       notify();
       _recToast('⚠ 별표 저장 실패: ' + ((e && e.message) || e) + ' — 권한/규칙 확인 필요');
     };
+    // Write/remove only the ts+by child paths so an existing note attached
+    // to the same product is preserved when toggling the star on/off.
     if (wasOn){
-      state.fbOps.remove(state.fbOps.ref(state.db, path)).catch(onErr);
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/ts')).catch(onErr);
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/by')).catch(() => {});
     } else {
-      state.fbOps.set(state.fbOps.ref(state.db, path), { ts: Date.now(), by: m.name || 'unknown' })
-        .catch(onErr);
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/ts'), Date.now()).catch(onErr);
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/by'), m.name || 'unknown').catch(() => {});
     }
   }
 

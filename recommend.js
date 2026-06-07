@@ -16,7 +16,8 @@
     db: null,
     vendor: '',
     branch: '',
-    globalIds: new Set(),
+    globalIds: new Set(),   // star / TOP PICK (recs_global/<vendor>/<id>/ts)
+    bestIds: new Set(),     // BEST ITEM — separate red mark (.../best)
     notes: {},          // { productId: "3cs over available" }
     listeners: [],
     fbOps: null,
@@ -98,11 +99,13 @@
       // A product is "marked" only if it has a `ts` field — note-only entries
       // (without TOP PICK) must not flip the yellow box on.
       const marked = new Set();
+      const best = new Set();
       const notes = {};
       for (const id in v){
         const e = v[id];
         if (!e) continue;
         if (e.ts) marked.add(id);
+        if (e.best) best.add(id);
         if (e.note) notes[id] = String(e.note);
       }
       // Merge in any locally-saved notes that Firebase hasn't acked yet so
@@ -111,6 +114,7 @@
       const localNotes = _loadLocalNotes();
       for (const id in localNotes){ if (!notes[id]) notes[id] = localNotes[id]; }
       state.globalIds = marked;
+      state.bestIds = best;
       state.notes = notes;
       console.info('[kmRecs] ' + path + ' snapshot:', marked.size, 'marked,', Object.keys(notes).length, 'notes (incl ' + Object.keys(localNotes).length + ' local)');
       notify();
@@ -146,6 +150,7 @@
   }
 
   function isGlobal(productId){ return state.globalIds.has(String(productId)); }
+  function isBest(productId){ return state.bestIds.has(String(productId)); }
   function getNote(productId){ return state.notes[String(productId)] || ''; }
 
   // Owner-only — prompts for a short note (e.g. "3cs over available") and
@@ -203,7 +208,9 @@
   // Branch-scoped variants kept as no-ops so old vendor integrations still
   // load without error. They always return false / do nothing.
   function isBranch(/*productId*/){ return false; }
-  function isRecommended(productId){ return isGlobal(productId); }
+  // "추천만 보기" filter shows BOTH star (TOP PICK) and BEST ITEM marks so
+  // first-time orderers can isolate every important product at once.
+  function isRecommended(productId){ return isGlobal(productId) || isBest(productId); }
 
   function toggleGlobal(productId){
     if (!canMark()){
@@ -239,6 +246,39 @@
     } else {
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/ts'), Date.now()).catch(onErr);
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/by'), m.name || 'unknown').catch(() => {});
+    }
+  }
+
+  // BEST ITEM — a SEPARATE mark from the star, stored at
+  // recs_global/<vendor>/<id>/best so it toggles independently of /ts (star)
+  // and /note (memo). Owner-only, same optimistic-write pattern as the star.
+  function toggleBest(productId){
+    if (!canMark()){
+      _recToast('⚠ BEST ITEM 권한이 없습니다 (오너 전용)');
+      return;
+    }
+    if (!state.fbOps || !state.vendor){
+      _recToast('⚠ 기능 초기화 안 됨 (새로고침 해보세요)');
+      return;
+    }
+    const id = String(productId);
+    const basePath = 'recs_global/' + state.vendor + '/' + id;
+    const m = me() || {};
+    const wasOn = state.bestIds.has(id);
+    if (wasOn) state.bestIds.delete(id); else state.bestIds.add(id);
+    notify();
+    const onErr = (e) => {
+      console.warn('best toggle failed', e);
+      if (wasOn) state.bestIds.add(id); else state.bestIds.delete(id);
+      notify();
+      _recToast('⚠ BEST ITEM 저장 실패: ' + ((e && e.message) || e) + ' — 권한/규칙 확인');
+    };
+    if (wasOn){
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/best')).catch(onErr);
+      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/bestBy')).catch(() => {});
+    } else {
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/best'), Date.now()).catch(onErr);
+      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/bestBy'), m.name || 'unknown').catch(() => {});
     }
   }
 
@@ -280,13 +320,19 @@
   // strong yellow box treatment (border + background tint + corner flag)
   // so staff notice them at a glance while scrolling the catalog.
   function cardClass(productId){
-    return isGlobal(productId) ? ' km-rec-card' : '';
+    let c = '';
+    if (isGlobal(productId)) c += ' km-rec-card';       // star → yellow box
+    if (isBest(productId))   c += ' km-rec-best-card';  // best → red outline
+    return c;
   }
 
-  // Visible to ALL users. Renders nothing if the product is not marked.
+  // Visible to ALL users. Star (TOP PICK, orange) and BEST ITEM (red) are
+  // independent badges — a product can show either, both, or neither.
   function badgeHTML(productId){
-    if (!isGlobal(productId)) return '';
-    return '<span class="km-rec-badge" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
+    let out = '';
+    if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
+    if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
+    return out;
   }
 
   // Toggle button — only rendered for OWNER. Empty string for everyone else
@@ -297,13 +343,19 @@
     if (!canMark()) return '';
     const id = String(productId).replace(/'/g, "\\'");
     const on = isGlobal(productId);
+    const onBest = isBest(productId);
     const hasNote = !!getNote(productId);
     return (
       '<div class="km-rec-tools" onclick="event.stopPropagation()">' +
         '<button class="km-rec-tool' + (on ? ' on' : '') + '" ' +
                 'onclick="event.stopPropagation();window.kmRecs.toggleGlobal(\'' + id + '\')" ' +
-                'title="' + (on ? '추천 해제' : '⭐ 추천 마크 (전 지점 무조건 발주)') + '">' +
+                'title="' + (on ? '추천(TOP PICK) 해제' : '⭐ 추천 마크 (TOP PICK)') + '">' +
           (on ? '⭐' : '☆') +
+        '</button>' +
+        '<button class="km-rec-tool km-rec-best-btn' + (onBest ? ' on' : '') + '" ' +
+                'onclick="event.stopPropagation();window.kmRecs.toggleBest(\'' + id + '\')" ' +
+                'title="' + (onBest ? 'BEST ITEM 해제' : 'BEST ITEM 표시 (빨간 라벨 · 전 지점)') + '">' +
+          'BEST' +
         '</button>' +
         '<button class="km-rec-tool km-rec-note-btn' + (hasNote ? ' on' : '') + '" ' +
                 'onclick="event.stopPropagation();window.kmRecs.editNote(\'' + id + '\')" ' +
@@ -363,12 +415,21 @@
         'clip-path:polygon(0 0,100% 0,0 100%);z-index:4;pointer-events:none;' +
         'text-shadow:0 1px 1px rgba(0,0,0,.3);padding:2px 0 0 2px}' +
       // Inline "TOP PICK" label
-      '.km-rec-badge{display:inline-block;background:#dc2626;color:#fff;padding:2px 7px;' +
+      // Star / TOP PICK badge — orange.
+      '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
+        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
+        'margin:0 4px 3px 0;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
+      // BEST ITEM badge — bold red with a gentle pulse so first-time orderers
+      // cannot miss it. Independent of the star.
+      '.km-rec-badge-best{display:inline-block;background:#dc2626;color:#fff;padding:2px 7px;' +
         'border-radius:4px;font-size:10.5px;font-weight:800;letter-spacing:.4px;' +
         'margin:0 0 3px 0;vertical-align:middle;box-shadow:0 1px 3px rgba(220,38,38,.45);' +
         'text-transform:uppercase;animation:kmRecPulse 2s ease-in-out infinite}' +
       '@keyframes kmRecPulse{0%,100%{box-shadow:0 1px 3px rgba(220,38,38,.45)}' +
         '50%{box-shadow:0 0 0 3px rgba(220,38,38,.18),0 1px 3px rgba(220,38,38,.45)}}' +
+      // BEST ITEM card outline — red. Declared after .km-rec-card so a product
+      // that is BOTH star+best keeps the yellow background but gets the red ring.
+      '.km-rec-best-card{outline:2px solid #dc2626 !important;outline-offset:-2px;position:relative}' +
       // Owner-set "over: ___" reference (e.g., "over: 3cs"). Inline next to
       // the TOP PICK badge so ordering staff can see the minimum at a glance.
       '.km-rec-note{display:inline-block;background:#0369a1;color:#fff;padding:1px 6px;' +
@@ -387,6 +448,11 @@
       '.km-rec-tool:hover{opacity:1;background:#fef3c7}' +
       '.km-rec-tool.on{opacity:1;background:#fbbf24;color:#fff;border-color:#b45309;' +
         'box-shadow:0 0 0 2px rgba(245,158,11,.3)}' +
+      // BEST ITEM toggle button — red text, fills solid red when on.
+      '.km-rec-best-btn{border-color:#dc2626;color:#dc2626;font-size:9px;font-weight:800;letter-spacing:.3px}' +
+      '.km-rec-best-btn:hover{background:#fee2e2}' +
+      '.km-rec-best-btn.on{opacity:1;background:#dc2626;color:#fff;border-color:#b91c1c;' +
+        'box-shadow:0 0 0 2px rgba(220,38,38,.3)}' +
       // Header filter chip
       '.km-rec-filter{display:inline-flex;align-items:center;gap:6px;background:#fff8e1;border:1.5px solid #f59e0b;' +
         'border-radius:18px;padding:5px 12px;font-size:.82em;font-weight:700;color:#92400e;cursor:pointer;' +
@@ -410,8 +476,8 @@
   // Public API — kept stable so vendor pages don't need to change.
   window.kmRecs = {
     init, setVendor, setBranch, refresh,
-    isGlobal, isBranch, isRecommended,
-    toggleGlobal, toggleBranch,
+    isGlobal, isBest, isBranch, isRecommended,
+    toggleGlobal, toggleBest, toggleBranch,
     subscribe,
     badgeHTML, toggleHTML, filterChipHTML, cardClass,
     noteHTML, editNote, getNote, defaultUnit,

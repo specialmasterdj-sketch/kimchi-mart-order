@@ -959,22 +959,14 @@ function getUser(){
     return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
   } catch(e){ return ''; }
 }
-// Hollywood = ONE shared branch cart so its managers can co-edit the same
-// RHEE BROS order (see each other's items, add/remove in real time). Every
-// other branch stays per-user isolated as before.
-function isSharedBranch(b){
-  const s = String(b || '').toUpperCase();
-  return s === 'HOLLYWOOD' || /할리우드|헐리우드/.test(String(b || ''));
-}
-function path(b, u){
-  return isSharedBranch(b) ? 'carts/rheebros/' + b + '/_shared'
-                           : 'carts/rheebros/' + b + '/' + u;
-}
+// Path is per branch × per user — each person's order is isolated.
+// (Reverted 2026-06-07: a branch-shared cart hid existing per-user orders.)
+function path(b, u){ return 'carts/rheebros/' + b + '/' + u; }
 
 window.cloudPushCart = function(cart){
   if (applyingRemote) return;
   const b = getBranch(), u = getUser();
-  if (!b || (!isSharedBranch(b) && !u)) return;
+  if (!b || !u) return;
   const clean = {};
   for (const k in cart){ if (cart[k] > 0) clean[k] = cart[k]; }
   set(ref(db, path(b, u)), clean).catch(e => console.warn('cart push failed', e));
@@ -983,7 +975,7 @@ window.cloudPushCart = function(cart){
 function subscribe(){
   if (unsub){ try { unsub(); } catch(e){} unsub = null; }
   const b = getBranch(), u = getUser();
-  if (!b || (!isSharedBranch(b) && !u)) return;
+  if (!b || !u) return;
   console.info('[Firebase] RheeBros subscribing to ' + path(b, u));
   unsub = onValue(ref(db, path(b, u)), (snap) => {
     // Mirror remote authoritatively (Hollywood shares one cart; others are
@@ -1001,7 +993,7 @@ window.__wismRefreshSub = subscribe;
 window.addEventListener('storage', (e) => {
   if (e.key === 'km_branch' || e.key === 'chat.me') subscribe();
 });
-console.info('[Firebase] RheeBros cart sync active (Hollywood=shared branch cart, others per-user)');
+console.info('[Firebase] RheeBros cart sync active (per branch × per user)');
 </script>
 </body>
 </html>

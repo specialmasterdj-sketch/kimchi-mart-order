@@ -149,9 +149,9 @@
     }
     const id = String(productId);
     const current = state.notes[id] || '';
-    const next = window.prompt('메모 입력 (예: 3cs over available) — 비우면 삭제', current);
+    const next = window.prompt('OVER 수량 입력 (예: 3cs, 5, 10box) — 비우면 삭제', current);
     if (next === null) return; // user cancelled
-    const text = String(next).trim().slice(0, 80);
+    const text = String(next).trim().slice(0, 24);
     const path = 'recs_notes/' + state.vendor + '/' + id;
     const m = me() || {};
     // Optimistic UI so the chip flips immediately even before Firebase ack.
@@ -282,13 +282,13 @@
     );
   }
 
-  // Visible to ALL users — shows the owner's free-form note (e.g.
-  // "3cs over available"). Renders nothing if no note is set.
+  // Visible to ALL users — shows the owner's minimum-order reference
+  // ("over: 3cs"). Renders nothing if no note is set.
   function noteHTML(productId){
     const text = getNote(productId);
     if (!text) return '';
     const safe = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    return '<span class="km-rec-note" title="' + safe + '">' + safe + '</span>';
+    return '<span class="km-rec-note" title="OVER: ' + safe + '"><span class="km-rec-note-prefix">OVER:</span>' + safe + '</span>';
   }
 
   function injectStyles(){
@@ -311,13 +311,14 @@
       '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
         'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
         'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
-      // Owner free-form note ("over 3cs ok", etc.) — block under the badges
-      // with enough room to read at a glance, wraps if the text is long.
-      '.km-rec-note{display:block;background:#0369a1;color:#fff;padding:3px 8px;' +
-        'border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.2px;line-height:1.3;' +
-        'margin:4px 0 0 0;box-shadow:0 1px 3px rgba(3,105,161,.4);' +
-        'white-space:normal;word-break:break-word;text-align:center;cursor:pointer}' +
+      // Owner-set "over: ___" reference (e.g., "over: 3cs"). Inline next to
+      // the TOP PICK badge so ordering staff can see the minimum at a glance.
+      '.km-rec-note{display:inline-block;background:#0369a1;color:#fff;padding:1px 6px;' +
+        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.3px;' +
+        'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(3,105,161,.35);' +
+        'text-transform:uppercase;white-space:nowrap;cursor:pointer}' +
       '.km-rec-note:hover{background:#075985}' +
+      '.km-rec-note-prefix{opacity:.75;font-weight:600;margin-right:2px}' +
       // Floating toggle (owner-only — others never see it)
       '.km-rec-tools{position:absolute;top:6px;right:6px;display:flex;gap:3px;z-index:6}' +
       '.km-rec-tool{width:32px;height:32px;border-radius:50%;border:2px solid #d97706;' +

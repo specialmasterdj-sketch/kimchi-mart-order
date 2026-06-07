@@ -1999,13 +1999,17 @@ function redirectToManagerLogin(){
   location.replace(AUTH_LOGIN_URL + '?return=' + ret);
 }
 
+// Wait for the authoritative onAuthStateChanged signal instead of a short
+// timer — Firebase fires it only AFTER restoring the session from IndexedDB,
+// so a slow cold-start no longer triggers a premature redirect → login loop.
+// The timer is just a 10s safety net in case Firebase never initialises.
 let _authRedirectTimer = setTimeout(() => {
   if (!auth.currentUser) redirectToManagerLogin();
-}, 3500);
+}, 10000);
 
 onAuthStateChanged(auth, (user) => {
+  clearTimeout(_authRedirectTimer);
   if (user) {
-    clearTimeout(_authRedirectTimer);
     gate.classList.add('hidden');
     appEl.style.display = '';
     console.info('[Auth] logged in:', user.email);
@@ -2017,6 +2021,8 @@ onAuthStateChanged(auth, (user) => {
   } else {
     gate.classList.remove('hidden');
     appEl.style.display = 'none';
+    // Authoritative sign-out (not a race) → Manager Apps login.
+    redirectToManagerLogin();
   }
 });
 

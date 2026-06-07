@@ -834,15 +834,21 @@ function _bounceToManagerLogin(){
   const ret = encodeURIComponent(location.pathname + location.search);
   location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/auth.html?return=' + ret);
 }
+// Wait for the authoritative onAuthStateChanged signal instead of a short
+// timer — Firebase fires it only AFTER restoring the session from IndexedDB,
+// so a slow cold-start no longer triggers a premature bounce → login loop.
+// The timer is just a 10s safety net in case Firebase never initialises.
 let _authGraceTimer = setTimeout(() => {
   if (!auth.currentUser) _bounceToManagerLogin();
-}, 3500);
+}, 10000);
 onAuthStateChanged(auth, (user) => {
+  clearTimeout(_authGraceTimer);
   if (user) {
-    clearTimeout(_authGraceTimer);
     if (window.kmRecs) window.kmRecs.refresh();
     return;
   }
+  // Genuinely signed out (not a race) → go to the Manager Apps login.
+  _bounceToManagerLogin();
 });
 
 // Wire recommend.js to this page's Firebase handle. Re-render the grid

@@ -1107,9 +1107,9 @@ function buildTilesHtml(v, products){
     if (p.catalog || p.category === 'wal-lkk') {
       tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}">
         ${newBadge}
-        ${recTools}
         <div class="img-wrap">${riskCorner}${imgHtml}</div>
         <div class="info">
+          ${recTools}
           ${recBadges ? `<div style="text-align:center;margin-bottom:2px">${recBadges}</div>` : ''}
           ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
           <div class="qty-row">
@@ -1125,10 +1125,10 @@ function buildTilesHtml(v, products){
     }
     tiles += `<div class="product-tile ${anyQty?'has-qty':''}${recRing}">
       ${newBadge}
-      ${recTools}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">
         <div class="name">${p.name || p.nameKr}${recBadges}</div>
+        ${recTools}
         ${krHtml}
         <div class="meta"><span class="code">#${p.id}</span> · ${p.size || '-'}</div>
         ${barcodeHtml}

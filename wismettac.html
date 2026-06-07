@@ -527,10 +527,10 @@ function render(){
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
-        recTools +
         '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' +
         '<div class="pbody">' +
           '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + recBadges + '</div>' +
+          recTools +
           '<div class="pmeta"><span class="code">#' + esc(p.id) + '</span> · ' + esc(p.packSize||'-') + '</div>' +
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           ((typeof VelaStock !== 'undefined' && VelaStock.badgeHtml(p)) ? '<div style="margin:2px 0 4px">' + VelaStock.badgeHtml(p) + '</div>' : '') +

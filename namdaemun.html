@@ -874,13 +874,13 @@ function itemHtml(secId, it) {
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
   return `
     <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">
-      ${recTools}
       ${imgStr}
       <div class="item-head">
         <div class="name-en">${escapeHtml(it.en)}${recBadge}</div>
         ${pluStr}
       </div>
       <div class="name-ko">${escapeHtml(it.ko)}</div>
+      ${recTools}
       ${foot}
       <div class="qty-control">
         <button class="qty-btn" data-act="dec">−</button>

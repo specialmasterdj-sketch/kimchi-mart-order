@@ -351,15 +351,16 @@
         'text-transform:uppercase;white-space:nowrap;cursor:pointer}' +
       '.km-rec-note:hover{background:#075985}' +
       '.km-rec-note-prefix{opacity:.75;font-weight:600;margin-right:2px}' +
-      // Floating toggle (owner-only — others never see it)
-      '.km-rec-tools{position:absolute;top:6px;right:6px;display:flex;gap:3px;z-index:6}' +
-      '.km-rec-tool{width:32px;height:32px;border-radius:50%;border:2px solid #d97706;' +
-        'background:rgba(255,255,255,.95);font-size:17px;line-height:1;cursor:pointer;padding:0;' +
-        'display:flex;align-items:center;justify-content:center;font-family:inherit;' +
-        'opacity:.7;transition:.12s}' +
-      '.km-rec-tool:hover{opacity:1;transform:scale(1.1)}' +
+      // Owner-only toggle row — square buttons that flow normally below the
+      // product name (instead of an absolute corner overlay that hides text).
+      '.km-rec-tools{display:flex;gap:4px;justify-content:center;margin:4px 0;z-index:6}' +
+      '.km-rec-tool{min-width:28px;height:24px;border-radius:4px;border:1.5px solid #d97706;' +
+        'background:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0 6px;' +
+        'display:inline-flex;align-items:center;justify-content:center;font-family:inherit;' +
+        'opacity:.85;transition:.12s}' +
+      '.km-rec-tool:hover{opacity:1;background:#fef3c7}' +
       '.km-rec-tool.on{opacity:1;background:#fbbf24;color:#fff;border-color:#b45309;' +
-        'box-shadow:0 0 0 3px rgba(245,158,11,.3)}' +
+        'box-shadow:0 0 0 2px rgba(245,158,11,.3)}' +
       // Header filter chip
       '.km-rec-filter{display:inline-flex;align-items:center;gap:6px;background:#fff8e1;border:1.5px solid #f59e0b;' +
         'border-radius:18px;padding:5px 12px;font-size:.82em;font-weight:700;color:#92400e;cursor:pointer;' +

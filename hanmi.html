@@ -629,9 +629,9 @@ function render(){
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.brand === 'CJ' ? '<span class="new-badge" style="background:#C8352A">CJ</span>' : '') +
-        recTools +
         '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' +
         '<div class="pbody" style="padding:6px 8px">' +
+          recTools +
           (recBadges ? '<div style="text-align:center;margin:-2px 0 4px">' + recBadges + '</div>' : '') +
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +

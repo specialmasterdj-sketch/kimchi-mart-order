@@ -74,11 +74,41 @@
     const { db, fbOps, vendor } = state;
     if (!fbOps || !vendor) return;
     if (state.unsubGlobal){ try { state.unsubGlobal(); } catch(e){} state.unsubGlobal = null; }
-    state.unsubGlobal = fbOps.onValue(fbOps.ref(db, 'recs_global/' + vendor), (snap) => {
+    if (state._retryT){ clearTimeout(state._retryT); state._retryT = null; }
+    const path = 'recs_global/' + vendor;
+    console.info('[kmRecs] subscribing to ' + path);
+    state.unsubGlobal = fbOps.onValue(fbOps.ref(db, path), (snap) => {
+      state._retryCount = 0;
       const v = snap.val() || {};
       state.globalIds = new Set(Object.keys(v));
+      console.info('[kmRecs] ' + path + ' snapshot:', state.globalIds.size, 'marked');
       notify();
+    }, (err) => {
+      console.warn('[kmRecs] read failed for ' + path + ':', err && err.message);
+      // Read fails when the snapshot fires before Firebase auth restored the
+      // user from IndexedDB, OR when the signed-in user is not approved in
+      // database.rules.json. Retry a few times with backoff so an auth race
+      // recovers, but stop after ~30s so we don't hammer Firebase forever
+      // when the underlying issue is a missing approved status.
+      state._retryCount = (state._retryCount || 0) + 1;
+      if (state._retryCount > 5){
+        console.warn('[kmRecs] giving up after ' + state._retryCount + ' retries — check user approval / DB rules');
+        return;
+      }
+      if (state._retryT) return;
+      const delay = Math.min(15000, 1000 * Math.pow(2, state._retryCount - 1));
+      state._retryT = setTimeout(() => {
+        state._retryT = null;
+        console.info('[kmRecs] retrying subscription (#' + state._retryCount + ') after read error');
+        subscribeGlobal();
+      }, delay);
     });
+  }
+
+  // Public refresh hook — vendor pages call this from onAuthStateChanged
+  // so the subscription re-attaches with the freshly-restored auth token.
+  function refresh(){
+    if (state.fbOps && state.vendor) subscribeGlobal();
   }
 
   function isGlobal(productId){ return state.globalIds.has(String(productId)); }
@@ -236,7 +266,7 @@
 
   // Public API — kept stable so vendor pages don't need to change.
   window.kmRecs = {
-    init, setVendor, setBranch,
+    init, setVendor, setBranch, refresh,
     isGlobal, isBranch, isRecommended,
     toggleGlobal, toggleBranch,
     subscribe,

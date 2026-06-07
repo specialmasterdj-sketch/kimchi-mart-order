@@ -2008,6 +2008,7 @@ onAuthStateChanged(auth, (user) => {
     gate.classList.add('hidden');
     appEl.style.display = '';
     console.info('[Auth] logged in:', user.email);
+    if (window.kmRecs) window.kmRecs.refresh();
     if (window._km_needsHubRedirect) {
       location.replace('https://specialmasterdj-sketch.github.io/kfood-guide/vendor-order-center.html');
       return;

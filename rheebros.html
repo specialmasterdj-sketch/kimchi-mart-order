@@ -924,7 +924,11 @@ let _authGraceTimer = setTimeout(() => {
   if (!auth.currentUser) _bounceToManagerLogin();
 }, 3500);
 onAuthStateChanged(auth, (user) => {
-  if (user) { clearTimeout(_authGraceTimer); return; }
+  if (user) {
+    clearTimeout(_authGraceTimer);
+    if (window.kmRecs) window.kmRecs.refresh();
+    return;
+  }
 });
 
 // Wire recommend.js to this page's Firebase handle.

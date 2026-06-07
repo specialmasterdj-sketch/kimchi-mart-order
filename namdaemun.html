@@ -1154,6 +1154,7 @@ if (!state.branchId) {
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -1166,6 +1167,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 if (window.kmRecs){
   window.kmRecs.init({
@@ -1177,6 +1179,11 @@ if (window.kmRecs){
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
   });
 }
+// Re-subscribe once the user's auth token is restored from IndexedDB —
+// otherwise the very first read can race ahead of auth and silently fail.
+onAuthStateChanged(auth, (user) => {
+  if (user && window.kmRecs) window.kmRecs.refresh();
+});
 </script>
 </body>
 </html>

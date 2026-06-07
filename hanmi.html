@@ -624,7 +624,8 @@ function render(){
     // description, pack size and barcode — so we don't duplicate that text
     // below. Just image + qty counter, matching the book 1:1.
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
-    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id)) : '';
+    const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
+    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +

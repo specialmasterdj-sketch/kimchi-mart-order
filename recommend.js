@@ -314,14 +314,34 @@
     );
   }
 
+  // Pick the natural unit for a product when the owner types just a number.
+  // Rice / grain SKUs 15 LB or heavier are sold by the bag; everything else
+  // ships in cases. Looks at name + Korean name + category fields so it
+  // works across all vendor product shapes (hanmi, wismettac, rheebros, …).
+  function defaultUnit(p){
+    if (!p) return 'cs';
+    const blob = String(
+      (p.name||'') + ' ' + (p.nameKr||'') + ' ' +
+      (p.category||'') + ' ' + (p.categoryKr||'')
+    ).toUpperCase();
+    const isRiceGrain = /RICE|GRAIN|JASMINE|쌀|곡물/.test(blob);
+    if (!isRiceGrain) return 'cs';
+    const size = String(p.size || p.packSize || '');
+    const lbMatch = size.match(/(\d+(?:\.\d+)?)\s*LB/i);
+    const lbs = lbMatch ? parseFloat(lbMatch[1]) : 0;
+    return lbs >= 15 ? 'bag' : 'cs';
+  }
+
   // Visible to ALL users — shows the owner's minimum-order reference
-  // ("OVER: 5cs"). Bare numbers get a default "cs" unit appended so the
-  // owner can type just "5" instead of "5cs".
-  function noteHTML(productId){
+  // ("OVER: 5cs"). Bare numbers get a default unit appended so the owner
+  // can type just "5". defaultUnit is normally "cs" but vendor pages pass
+  // "bag" for rice / grain SKUs 15 LB or larger.
+  function noteHTML(productId, defaultUnitOverride){
     const text = getNote(productId);
     if (!text) return '';
+    const unit = defaultUnitOverride || 'cs';
     const trimmed = String(text).trim();
-    const display = /^\d+$/.test(trimmed) ? trimmed + 'cs' : trimmed;
+    const display = /^\d+$/.test(trimmed) ? trimmed + unit : trimmed;
     const safe = display.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     return '<span class="km-rec-note" title="OVER: ' + safe + '"><span class="km-rec-note-prefix">OVER:</span>' + safe + '</span>';
   }
@@ -391,7 +411,7 @@
     toggleGlobal, toggleBranch,
     subscribe,
     badgeHTML, toggleHTML, filterChipHTML, cardClass,
-    noteHTML, editNote, getNote,
+    noteHTML, editNote, getNote, defaultUnit,
     canMark,
   };
 

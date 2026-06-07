@@ -522,7 +522,8 @@ function render(){
       '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:600">낱개 ea · 한 번 + = ' + eaStep + '개 (1 CS)</div>'
     ) : '';
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
-    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id)) : '';
+    const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
+    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +

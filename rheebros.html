@@ -582,7 +582,8 @@ function render(){
       '<div style="font-size:9.5px;color:#0369a1;text-align:center;margin-top:2px;font-weight:700">🏗 파레트 / Pallet</div>'
     ) : '';
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
-    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id)) : '';
+    const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
+    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +

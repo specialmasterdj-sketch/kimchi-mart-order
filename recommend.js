@@ -315,11 +315,14 @@
   }
 
   // Visible to ALL users — shows the owner's minimum-order reference
-  // ("over: 3cs"). Renders nothing if no note is set.
+  // ("OVER: 5cs"). Bare numbers get a default "cs" unit appended so the
+  // owner can type just "5" instead of "5cs".
   function noteHTML(productId){
     const text = getNote(productId);
     if (!text) return '';
-    const safe = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const trimmed = String(text).trim();
+    const display = /^\d+$/.test(trimmed) ? trimmed + 'cs' : trimmed;
+    const safe = display.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     return '<span class="km-rec-note" title="OVER: ' + safe + '"><span class="km-rec-note-prefix">OVER:</span>' + safe + '</span>';
   }
 

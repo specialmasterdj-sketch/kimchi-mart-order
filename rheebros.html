@@ -895,7 +895,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 <!-- Real-time cart sync per branch (mirrors the main order app) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -959,14 +959,24 @@ function getUser(){
     return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
   } catch(e){ return ''; }
 }
-// Path is per branch × per user — each person's order is isolated.
-// (Reverted 2026-06-07: a branch-shared cart hid existing per-user orders.)
-function path(b, u){ return 'carts/rheebros/' + b + '/' + u; }
+// Hollywood = ONE shared branch cart so its managers build a single RHEE
+// BROS order together. It starts EMPTY; each manager merges their own saved
+// order in with the "내 기존 주문 합치기" button. Per-user carts are NEVER
+// written or deleted in shared mode, so nothing is ever lost. Other branches
+// stay per-user isolated.
+function isSharedBranch(b){
+  const s = String(b || '').toUpperCase();
+  return s === 'HOLLYWOOD' || /할리우드|헐리우드/.test(String(b || ''));
+}
+function path(b, u){
+  return isSharedBranch(b) ? 'carts/rheebros/' + b + '/_shared'
+                           : 'carts/rheebros/' + b + '/' + u;
+}
 
 window.cloudPushCart = function(cart){
   if (applyingRemote) return;
   const b = getBranch(), u = getUser();
-  if (!b || !u) return;
+  if (!b || (!isSharedBranch(b) && !u)) return;
   const clean = {};
   for (const k in cart){ if (cart[k] > 0) clean[k] = cart[k]; }
   set(ref(db, path(b, u)), clean).catch(e => console.warn('cart push failed', e));
@@ -975,7 +985,8 @@ window.cloudPushCart = function(cart){
 function subscribe(){
   if (unsub){ try { unsub(); } catch(e){} unsub = null; }
   const b = getBranch(), u = getUser();
-  if (!b || !u) return;
+  if (!b || (!isSharedBranch(b) && !u)) return;
+  if (window.__rheeSharedBanner) window.__rheeSharedBanner();
   console.info('[Firebase] RheeBros subscribing to ' + path(b, u));
   unsub = onValue(ref(db, path(b, u)), (snap) => {
     // Mirror remote authoritatively (Hollywood shares one cart; others are
@@ -986,6 +997,45 @@ function subscribe(){
     finally { applyingRemote = false; }
   }, (err) => console.warn('cart read failed', err));
 }
+
+// --- Hollywood shared cart: explicit, per-manager merge of their own saved
+// order into the shared cart. Reads the user's per-user cart ONCE and adds
+// (sums) it into _shared. Never deletes the per-user cart. ---
+window.mergeMyOrderToShared = async function(){
+  const b = getBranch();
+  if (!isSharedBranch(b)) return;
+  const u = getUser();
+  if (!u){ try { toast('먼저 본인 이름을 확인하세요'); } catch(_){} return; }
+  try {
+    const mineSnap = await get(ref(db, 'carts/rheebros/' + b + '/' + u));
+    const mine = mineSnap.val() || {};
+    const items = Object.keys(mine).filter(k => mine[k] > 0);
+    if (!items.length){ try { toast('합칠 내 주문이 없습니다'); } catch(_){} return; }
+    if (!window.confirm('내 기존 주문 ' + items.length + '개 품목을 공유 주문에 더합니다.\n(같은 품목은 수량이 합산됩니다) 계속할까요?')) return;
+    const sref = ref(db, 'carts/rheebros/' + b + '/_shared');
+    const curSnap = await get(sref);
+    const merged = Object.assign({}, curSnap.val() || {});
+    for (const pid of items){ merged[pid] = (merged[pid] || 0) + mine[pid]; }
+    await set(sref, merged);
+    try { toast('✅ 공유 주문에 추가했습니다 (' + items.length + '개 품목)'); } catch(_){}
+  } catch(e){ console.warn('merge to shared failed', e); try { toast('합치기 실패: ' + (e.message || e)); } catch(_){} }
+};
+
+// Hollywood-only banner with the merge button (added above the product grid).
+window.__rheeSharedBanner = function(){
+  const existing = document.getElementById('rhee-shared-bar');
+  if (!isSharedBranch(getBranch())){ if (existing) existing.remove(); return; }
+  if (existing) return;
+  const grid = document.getElementById('grid');
+  if (!grid || !grid.parentNode) return;
+  const bar = document.createElement('div');
+  bar.id = 'rhee-shared-bar';
+  bar.style.cssText = 'margin:8px 10px;padding:10px 12px;background:#eef7ee;border:1.5px solid #2E7D32;border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+  bar.innerHTML = '<span style="font-size:12.5px;font-weight:800;color:#1B5E20;flex:1;min-width:150px">🤝 헐리우드 공유 주문 — 직원이 함께 담는 하나의 주문</span>' +
+    '<button onclick="window.mergeMyOrderToShared()" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">➕ 내 기존 주문 합치기</button>';
+  grid.parentNode.insertBefore(bar, grid);
+};
+
 subscribe();
 // Exposed hook so the branch selector can re-subscribe after picking a branch.
 window.__wismRefreshSub = subscribe;

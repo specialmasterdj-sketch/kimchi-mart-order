@@ -286,7 +286,7 @@
   // Visible to ALL users. Renders nothing if the product is not marked.
   function badgeHTML(productId){
     if (!isGlobal(productId)) return '';
-    return '<span class="km-rec-badge" title="TOP PICK — 무조건 발주">TOP PICK</span>';
+    return '<span class="km-rec-badge" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
   }
 
   // Toggle button — only rendered for OWNER. Empty string for everyone else
@@ -363,9 +363,12 @@
         'clip-path:polygon(0 0,100% 0,0 100%);z-index:4;pointer-events:none;' +
         'text-shadow:0 1px 1px rgba(0,0,0,.3);padding:2px 0 0 2px}' +
       // Inline "TOP PICK" label
-      '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
-        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
-        'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
+      '.km-rec-badge{display:inline-block;background:#dc2626;color:#fff;padding:2px 7px;' +
+        'border-radius:4px;font-size:10.5px;font-weight:800;letter-spacing:.4px;' +
+        'margin:0 0 3px 0;vertical-align:middle;box-shadow:0 1px 3px rgba(220,38,38,.45);' +
+        'text-transform:uppercase;animation:kmRecPulse 2s ease-in-out infinite}' +
+      '@keyframes kmRecPulse{0%,100%{box-shadow:0 1px 3px rgba(220,38,38,.45)}' +
+        '50%{box-shadow:0 0 0 3px rgba(220,38,38,.18),0 1px 3px rgba(220,38,38,.45)}}' +
       // Owner-set "over: ___" reference (e.g., "over: 3cs"). Inline next to
       // the TOP PICK badge so ordering staff can see the minimum at a glance.
       '.km-rec-note{display:inline-block;background:#0369a1;color:#fff;padding:1px 6px;' +

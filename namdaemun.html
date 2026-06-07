@@ -870,7 +870,7 @@ function itemHtml(secId, it) {
     ? `<div class="item-foot"><span class="unit">${unitStr}</span></div><div class="barcode">${escapeHtml(it.barcode)}</div>`
     : `<div class="item-foot"><span class="unit">${unitStr}</span><span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span></div>`;
   const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(key) : '';
-  const recBadge  = window.kmRecs ? window.kmRecs.badgeHTML(key)  : '';
+  const recBadge  = window.kmRecs ? (window.kmRecs.badgeHTML(key) + window.kmRecs.noteHTML(key))  : '';
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
   return `
     <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">

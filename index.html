@@ -1102,7 +1102,7 @@ function buildTilesHtml(v, products){
     // Catalog-style tile: image already contains name + code + size, so skip
     // the text rows and show only the cell image plus the qty controls.
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
-    const recBadges = window.kmRecs ? window.kmRecs.badgeHTML(p.id) : '';
+    const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     if (p.catalog || p.category === 'wal-lkk') {
       tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}">

@@ -17,9 +17,11 @@
     vendor: '',
     branch: '',
     globalIds: new Set(),
+    notes: {},          // { productId: "3cs over available" }
     listeners: [],
     fbOps: null,
     unsubGlobal: null,
+    unsubNotes: null,
   };
 
   function me(){
@@ -68,6 +70,26 @@
     state.branch = (branch || '').toString().toUpperCase();
     state.fbOps = { ref, set, onValue, remove };
     subscribeGlobal();
+    subscribeNotes();
+  }
+
+  function subscribeNotes(){
+    const { db, fbOps, vendor } = state;
+    if (!fbOps || !vendor) return;
+    if (state.unsubNotes){ try { state.unsubNotes(); } catch(e){} state.unsubNotes = null; }
+    const path = 'recs_notes/' + vendor;
+    state.unsubNotes = fbOps.onValue(fbOps.ref(db, path), (snap) => {
+      const v = snap.val() || {};
+      const next = {};
+      for (const id in v){
+        const text = v[id] && v[id].text;
+        if (text) next[id] = String(text);
+      }
+      state.notes = next;
+      notify();
+    }, (err) => {
+      console.warn('[kmRecs] notes read failed for ' + path + ':', err && err.message);
+    });
   }
 
   function subscribeGlobal(){
@@ -108,10 +130,47 @@
   // Public refresh hook — vendor pages call this from onAuthStateChanged
   // so the subscription re-attaches with the freshly-restored auth token.
   function refresh(){
-    if (state.fbOps && state.vendor) subscribeGlobal();
+    if (state.fbOps && state.vendor){ subscribeGlobal(); subscribeNotes(); }
   }
 
   function isGlobal(productId){ return state.globalIds.has(String(productId)); }
+  function getNote(productId){ return state.notes[String(productId)] || ''; }
+
+  // Owner-only — prompts for a short note (e.g. "3cs over available") and
+  // stores it under recs_notes/<vendor>/<id>. Empty input clears the note.
+  function editNote(productId){
+    if (!canMark()){
+      _recToast('⚠ 메모 권한이 없습니다 (오너 전용)');
+      return;
+    }
+    if (!state.fbOps || !state.vendor){
+      _recToast('⚠ 메모 기능 초기화 안 됨');
+      return;
+    }
+    const id = String(productId);
+    const current = state.notes[id] || '';
+    const next = window.prompt('메모 입력 (예: 3cs over available) — 비우면 삭제', current);
+    if (next === null) return; // user cancelled
+    const text = String(next).trim().slice(0, 80);
+    const path = 'recs_notes/' + state.vendor + '/' + id;
+    const m = me() || {};
+    // Optimistic UI so the chip flips immediately even before Firebase ack.
+    const prevText = state.notes[id];
+    if (text){ state.notes[id] = text; } else { delete state.notes[id]; }
+    notify();
+    const onErr = (e) => {
+      console.warn('note save failed', e);
+      if (prevText){ state.notes[id] = prevText; } else { delete state.notes[id]; }
+      notify();
+      _recToast('⚠ 메모 저장 실패: ' + ((e && e.message) || e));
+    };
+    if (text){
+      state.fbOps.set(state.fbOps.ref(state.db, path), { text, ts: Date.now(), by: m.name || 'unknown' })
+        .catch(onErr);
+    } else {
+      state.fbOps.remove(state.fbOps.ref(state.db, path)).catch(onErr);
+    }
+  }
   // Branch-scoped variants kept as no-ops so old vendor integrations still
   // load without error. They always return false / do nothing.
   function isBranch(/*productId*/){ return false; }
@@ -200,10 +259,13 @@
 
   // Toggle button — only rendered for OWNER. Empty string for everyone else
   // (so other managers cannot un-mark a product the owner pinned).
+  // Includes a second "memo" button so the owner can attach a short note
+  // like "3cs over available" without needing a separate UI.
   function toggleHTML(productId){
     if (!canMark()) return '';
     const id = String(productId).replace(/'/g, "\\'");
     const on = isGlobal(productId);
+    const hasNote = !!getNote(productId);
     return (
       '<div class="km-rec-tools" onclick="event.stopPropagation()">' +
         '<button class="km-rec-tool' + (on ? ' on' : '') + '" ' +
@@ -211,8 +273,22 @@
                 'title="' + (on ? '추천 해제' : '⭐ 추천 마크 (전 지점 무조건 발주)') + '">' +
           (on ? '⭐' : '☆') +
         '</button>' +
+        '<button class="km-rec-tool km-rec-note-btn' + (hasNote ? ' on' : '') + '" ' +
+                'onclick="event.stopPropagation();window.kmRecs.editNote(\'' + id + '\')" ' +
+                'title="' + (hasNote ? '메모 편집' : '메모 추가 (예: 3cs over available)') + '">' +
+          '📝' +
+        '</button>' +
       '</div>'
     );
+  }
+
+  // Visible to ALL users — shows the owner's free-form note (e.g.
+  // "3cs over available"). Renders nothing if no note is set.
+  function noteHTML(productId){
+    const text = getNote(productId);
+    if (!text) return '';
+    const safe = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return '<span class="km-rec-note" title="' + safe + '">' + safe + '</span>';
   }
 
   function injectStyles(){
@@ -235,6 +311,11 @@
       '.km-rec-badge{display:inline-block;background:#f59e0b;color:#fff;padding:1px 5px;' +
         'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;' +
         'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(245,158,11,.35);text-transform:uppercase}' +
+      // Owner free-form note ("3cs over available", etc.)
+      '.km-rec-note{display:inline-block;background:#0369a1;color:#fff;padding:1px 6px;' +
+        'border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.2px;' +
+        'margin-left:4px;vertical-align:middle;box-shadow:0 1px 2px rgba(3,105,161,.35);' +
+        'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
       // Floating toggle (owner-only — others never see it)
       '.km-rec-tools{position:absolute;top:6px;right:6px;display:flex;gap:3px;z-index:6}' +
       '.km-rec-tool{width:32px;height:32px;border-radius:50%;border:2px solid #d97706;' +
@@ -271,6 +352,7 @@
     toggleGlobal, toggleBranch,
     subscribe,
     badgeHTML, toggleHTML, filterChipHTML, cardClass,
+    noteHTML, editNote, getNote,
     canMark,
   };
 

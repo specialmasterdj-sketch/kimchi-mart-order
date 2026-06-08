@@ -1129,6 +1129,7 @@ function buildTilesHtml(v, products){
             <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
             <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
           </div>
+          <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
           ${eaRow}
           ${plRow}
         </div>
@@ -1152,6 +1153,7 @@ function buildTilesHtml(v, products){
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
         </div>
+        <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
         ${eaRow}
         ${plRow}
       </div>

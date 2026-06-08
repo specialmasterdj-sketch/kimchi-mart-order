@@ -809,13 +809,32 @@ function renderCart(){
 
 /* -------- EXPORT -------- */
 function clearCart(){
-  if (!Object.keys(CART).length) return;
-  if (!confirm(t('confirmClear'))) return;
+  const types = Object.keys(CART).length;
+  if (!types) return;
+  // 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + 자동 백업.
+  //   다른 매니저들이 추가한 주문이 한 번에 사라지는 사고 방지.
+  const units = Object.values(CART).reduce((s,n)=>s+(+n||0),0);
+  const b = getBranchId();
+  const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
+  const branchLbl = b || '?';
+  const warn = `⚠️ 공유 주문 카트입니다.\n\n[${branchLbl}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 24시간 내 복구 가능)`;
+  if (!confirm(warn)) return;
+  // 🗂 자동 백업 — Firebase RTDB 의 history 경로에 timestamp 별 저장
+  try {
+    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
+      const ts = String(Date.now());
+      const snapshot = {};
+      for (const k of Object.keys(CART)) snapshot[k] = CART[k];
+      set(ref(db, 'carts/rheebros/' + b + '/_shared_history/' + ts), {
+        ts: +ts, by: u || 'unknown', types, units, cart: snapshot
+      }).catch(e => console.warn('clear backup failed', e));
+    }
+  } catch(e){ console.warn('clear backup error', e); }
   for (const k in CART) delete CART[k];
   saveCart();
   render();
   renderCart();
-  toast('✓');
+  toast('✓ 비웠음 (백업 보관 중)');
 }
 
 function buildOrderText(){
@@ -972,21 +991,16 @@ function getUser(){
 // order in with the "내 기존 주문 합치기" button. Per-user carts are NEVER
 // written or deleted in shared mode, so nothing is ever lost. Other branches
 // stay per-user isolated.
+// 🆕 2026-06-08 사장님 지시: 모든 지점 공유 카트 모드. 매니저/직원이 한 지점
+//   카트에 같이 RHEE BROS 주문을 빌드. 사장님 owner 도 같이 합류 (예외 X).
+//   지점별 독립 — Miami 카트와 Hollywood 카트는 서로 안 보임.
 function isSharedBranch(b){
-  const s = String(b || '').toUpperCase();
-  return s === 'HOLLYWOOD' || /할리우드|헐리우드/.test(String(b || ''));
-}
-// 🆕 2026-06-08 사장님 지시: Hollywood 공유 카트 유지하되 owner 본인은 예외.
-//   DJ / BHK / SUN KIM 등 owner 계정으로 들어오면 본인 개인 카트만 보고 쓰게.
-//   일반 매니저·직원은 그대로 공유 카트로 협업.
-const OWNER_PER_USER = ['DJ','BHK','B.H.K','SUNKIM','SUN KIM','선킴','김선','비에이치케이'];
-function _isOwnerUser(u){
-  const norm = String(u||'').replace(/\s+/g,'').toUpperCase();
-  return OWNER_PER_USER.some(n => n.replace(/\s+/g,'').toUpperCase() === norm);
+  return !!String(b || '').trim();   // 지점 ID 가 있으면 항상 공유
 }
 function path(b, u){
-  if (isSharedBranch(b) && !_isOwnerUser(u)) return 'carts/rheebros/' + b + '/_shared';
-  return 'carts/rheebros/' + b + '/' + u;
+  // 공유 카트는 carts/rheebros/<branch>/_shared 한 곳에서 협업.
+  // u 파라미터는 history 백업 시 actor 식별용으로만 사용.
+  return 'carts/rheebros/' + b + '/_shared';
 }
 
 window.cloudPushCart = function(cart){

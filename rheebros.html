@@ -578,7 +578,7 @@ function render(){
         '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+eaKey+'\','+eaQty+')" style="color:#b87500">' + eaQty + '</button>' +
         '<button class="qbtn plus" onclick="bumpQty(\''+eaKey+'\',1)">+</button>' +
       '</div>' +
-      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / Piece</div>'
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / pc</div>'
     ) : '';
     const plRow = showPL ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:6px;background:#e0f2fe;border:1px solid #0284c7;border-radius:8px;padding:4px">' +
@@ -776,7 +776,7 @@ function renderCart(){
     const p = BY_ID[lookupId];
     if (!p) return '';
     const pack = ea ? parsePackSize(p.packSize) : null;
-    const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (pl ? '1 pallet' : (p.packSize||'-'));
+    const sizeLabel = ea && pack ? ('1 pc (' + pack.unit + ')') : (pl ? '1 pallet' : (p.packSize||'-'));
     const unitChip = ea
       ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">🥬 ea</span>'
       : pl
@@ -828,7 +828,7 @@ function buildOrderText(){
     const lookupId = (ea || pl) ? baseIdOf(id) : id;
     const p = BY_ID[lookupId];
     if (!p) return;
-    const unit = ea ? '🥬 ea' : pl ? '🏗 PL' : 'CS';
+    const unit = ea ? '🥬 pc' : pl ? '🏗 PL' : 'CS';
     lines.push('[' + unit + '] #' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
   });
   const units = entries.reduce((s, [,q]) => s + q, 0);
@@ -865,7 +865,7 @@ function exportOrder(){
     const pl = isPlId(id);
     const lookupId = (ea || pl) ? baseIdOf(id) : id;
     const p = BY_ID[lookupId] || {};
-    const unit = ea ? 'EA' : pl ? 'PL' : 'CS';
+    const unit = ea ? 'PC' : pl ? 'PL' : 'CS';
     return [unit, p.id||'', p.name||'', p.brand||'', p.group||'', p.category||'', p.packSize||'', p.minOrder||'', p.barcode||'', qty];
   });
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);

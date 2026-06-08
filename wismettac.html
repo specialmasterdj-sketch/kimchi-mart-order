@@ -510,9 +510,12 @@ function render(){
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
     const pack = parsePackSize(p.packSize);
-    // 🆕 2026-06-08 사장님 지시: packSize 가 "BX" 로 시작하는 상품만 낱개 노출.
-    //   CS 시작은 절대 X. parsePackSize 결과는 라벨 "1 CS = N pc" 정보용으로만 사용.
-    const showEA = /^\s*BX\b/i.test(String(p.packSize || ''));
+    // 🆕 2026-06-08 사장님 지시: Wismettac 은 BX 접두어 안 쓰고 slash multi-tier
+    //   (예: "12/10/1.58 OZ", "12/3.21 OZ") 로 표기. 1 case = 많은 pc (12X10=120)
+    //   이라 직원이 "1" 만 누르면 실수로 대량 발주. 그래서 slash multi-tier 도
+    //   낱개 게이트에 포함. (다른 vendor 페이지는 여전히 BX 만.)
+    const _ps = String(p.packSize || '');
+    const showEA = /^\s*BX\b/i.test(_ps) || /\d\s*\/\s*\d/.test(_ps);
     const eaQty = showEA ? (CART[eaIdOf(p.detailId)] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0;
     // + 버튼은 항상 1 씩만 추가 (한 번에 packSize 갯수 추가 X).

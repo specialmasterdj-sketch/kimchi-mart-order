@@ -1063,24 +1063,26 @@ function buildTilesHtml(v, products){
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const pack = parsePackSize(p.size);
+    // 🆕 2026-06-08 사장님 지시: packSize 가 "BX" 로 시작하는 상품만 낱개 노출.
+    //   CS 시작은 절대 X. parsePackSize 결과는 라벨 정보용으로만.
+    const showEA = /^\s*BX\b/i.test(String(p.size || ''));
     // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
     // 다른 상품에 필요해지면 PL_ENABLED_NAMES 에 키워드 추가.
     const PL_ENABLED_NAMES = ['NAPA'];
     const pName = String(p.name || p.nameKr || '').toUpperCase();
     const showPallet = PL_ENABLED_NAMES.some(k => pName.includes(k));
-    // NAPA 등 pallet 활성 상품은 pack 정보 없어도 ea row 강제 노출 — 손님이
-    // CS / 낱개(piece) / PL(파레트) 3가지 단위로 발주 선택 가능.
-    const forceEa = showPallet && !pack;
-    const eaQty = (pack || forceEa) ? getQty(state.vendor, eaIdOf(p.id)) : 0;
+    // NAPA 등 pallet 활성 상품은 pack 정보 없어도 ea row 강제 노출.
+    const forceEa = showPallet && !showEA;
+    const eaQty = (showEA || forceEa) ? getQty(state.vendor, eaIdOf(p.id)) : 0;
     const plQty = getQty(state.vendor, plIdOf(p.id));
     const anyQty = qty > 0 || eaQty > 0 || plQty > 0;
     const safeName = (p.name||p.nameKr||'').replace(/'/g,'');
     // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
     //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
-    const eaLabel = pack
+    const eaLabel = (showEA && pack)
       ? `🥬 낱개 / pc (1 CS = ${pack.pack}pc)`
       : '🥬 낱개 / pc';
-    const eaRow = (pack || forceEa) ? `
+    const eaRow = (showEA || forceEa) ? `
         <div class="qty-row" data-ea="1" style="margin-top:4px;background:#fff4e0">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${eaIdOf(p.id)}',${Math.max(0, eaQty-1)})" ${eaQty<=0?'disabled':''}>−</button>
           <input class="qty-input ${eaQty>0?'has-qty':''}" type="text" inputmode="numeric" value="${eaQty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${eaIdOf(p.id)}',${eaQty},'${safeName} (pc)')" placeholder="pc">

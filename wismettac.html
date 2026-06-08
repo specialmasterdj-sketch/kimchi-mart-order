@@ -510,17 +510,19 @@ function render(){
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
     const pack = parsePackSize(p.packSize);
-    const eaQty = pack ? (CART[eaIdOf(p.detailId)] || 0) : 0;
+    // 🆕 2026-06-08 사장님 지시: packSize 가 "BX" 로 시작하는 상품만 낱개 노출.
+    //   CS 시작은 절대 X. parsePackSize 결과는 라벨 "1 CS = N pc" 정보용으로만 사용.
+    const showEA = /^\s*BX\b/i.test(String(p.packSize || ''));
+    const eaQty = showEA ? (CART[eaIdOf(p.detailId)] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0;
-    // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
-    //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
-    const eaRow = pack ? (
+    // + 버튼은 항상 1 씩만 추가 (한 번에 packSize 갯수 추가 X).
+    const eaRow = showEA ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:4px;background:#fff4e0;border-radius:8px;padding:2px">' +
         '<button class="qbtn minus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',-1)"' + (eaQty<=0?' disabled':'') + '>−</button>' +
         '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+eaIdOf(p.detailId)+'\','+eaQty+')">' + eaQty + '</button>' +
         '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',1)">+</button>' +
       '</div>' +
-      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / pc (1 CS = ' + pack.pack + 'pc)</div>'
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / pc' + (pack ? ' (1 CS = ' + pack.pack + 'pc)' : '') + '</div>'
     ) : '';
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
     const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';

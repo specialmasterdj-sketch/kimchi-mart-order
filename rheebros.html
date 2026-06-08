@@ -976,9 +976,17 @@ function isSharedBranch(b){
   const s = String(b || '').toUpperCase();
   return s === 'HOLLYWOOD' || /할리우드|헐리우드/.test(String(b || ''));
 }
+// 🆕 2026-06-08 사장님 지시: Hollywood 공유 카트 유지하되 owner 본인은 예외.
+//   DJ / BHK / SUN KIM 등 owner 계정으로 들어오면 본인 개인 카트만 보고 쓰게.
+//   일반 매니저·직원은 그대로 공유 카트로 협업.
+const OWNER_PER_USER = ['DJ','BHK','B.H.K','SUNKIM','SUN KIM','선킴','김선','비에이치케이'];
+function _isOwnerUser(u){
+  const norm = String(u||'').replace(/\s+/g,'').toUpperCase();
+  return OWNER_PER_USER.some(n => n.replace(/\s+/g,'').toUpperCase() === norm);
+}
 function path(b, u){
-  return isSharedBranch(b) ? 'carts/rheebros/' + b + '/_shared'
-                           : 'carts/rheebros/' + b + '/' + u;
+  if (isSharedBranch(b) && !_isOwnerUser(u)) return 'carts/rheebros/' + b + '/_shared';
+  return 'carts/rheebros/' + b + '/' + u;
 }
 
 window.cloudPushCart = function(cart){

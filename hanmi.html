@@ -615,11 +615,23 @@ function render(){
     return;
   }
 
+  // 🥬 낱개(pc) row — 2026-06-07 사장님 지시: case-pack 상품도 낱개 주문 가능.
+  //   packSize 가 multi-tier (예: "BX 3X25X1 OZ", "6/14.11 OZ") 인 상품에 자동 노출.
+  const MULTI_PACK_RE = /\d\s*[xX×\/]\s*\d/;
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
-    // Hanmi orders at case-pack granularity only — no inner-pack EA row.
-    const anyQty = qty > 0;
-    const eaRow = '';
+    const eaKey = eaIdOf(p.detailId);
+    const showEA = MULTI_PACK_RE.test(String(p.packSize || ''));
+    const eaQty = showEA ? (CART[eaKey] || 0) : 0;
+    const anyQty = qty > 0 || eaQty > 0;
+    const eaRow = showEA ? (
+      '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:6px;background:#fff4e0;border:1px solid #fbbf24;border-radius:8px;padding:2px">' +
+        '<button class="qbtn minus" onclick="bumpQty(\''+eaKey+'\',-1)"' + (eaQty<=0?' disabled':'') + '>−</button>' +
+        '<span class="qnum" style="color:#b87500">' + eaQty + '</span>' +
+        '<button class="qbtn plus" onclick="bumpQty(\''+eaKey+'\',1)">+</button>' +
+      '</div>' +
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / pc</div>'
+    ) : '';
     // The catalog-cell image already prints the code, Korean name, English
     // description, pack size and barcode — so we don't duplicate that text
     // below. Just image + qty counter, matching the book 1:1.
@@ -797,7 +809,7 @@ function renderCart(){
     const p = BY_ID[lookupId];
     if (!p) return '';
     const pack = ea ? parsePackSize(p.packSize) : null;
-    const sizeLabel = ea && pack ? ('1 ea (' + pack.unit + ')') : (p.packSize||'-');
+    const sizeLabel = ea && pack ? ('1 pc (' + pack.unit + ')') : (p.packSize||'-');
     const unitChip = ea
       ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">小 ea</span>'
       : '<span style="display:inline-block;background:#1976d2;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">CS</span>';
@@ -844,7 +856,7 @@ function buildOrderText(){
     const lookupId = ea ? baseIdOf(id) : id;
     const p = BY_ID[lookupId];
     if (!p) return;
-    const unit = ea ? '小' : 'CS';
+    const unit = ea ? 'PC' : 'CS';
     lines.push('[' + unit + '] #' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
   });
   const units = entries.reduce((s, [,q]) => s + q, 0);
@@ -880,7 +892,7 @@ function exportOrder(){
     const ea = isEaId(id);
     const lookupId = ea ? baseIdOf(id) : id;
     const p = BY_ID[lookupId] || {};
-    const unit = ea ? '小' : 'CS';
+    const unit = ea ? 'PC' : 'CS';
     return [unit, p.id||'', p.name||'', p.brand||'', p.group||'', p.category||'', p.packSize||'', p.minOrder||'', p.barcode||'', qty];
   });
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);

@@ -837,13 +837,29 @@ function renderCart(){
 
 /* -------- EXPORT -------- */
 function clearCart(){
-  if (!Object.keys(CART).length) return;
-  if (!confirm(t('confirmClear'))) return;
+  const types = Object.keys(CART).length;
+  if (!types) return;
+  // 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + Firebase 자동 백업.
+  const units = Object.values(CART).reduce((s,n)=>s+(+n||0),0);
+  const b = (function(){ try { return localStorage.getItem('km_branch')||''; } catch(_){ return ''; } })();
+  const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
+  const warn = `⚠️ 공유 주문 카트입니다.\n\n[${b||'?'}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)`;
+  if (!confirm(warn)) return;
+  try {
+    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
+      const ts = String(Date.now());
+      const snapshot = {};
+      for (const k of Object.keys(CART)) snapshot[k] = CART[k];
+      set(ref(db, 'carts/hanmi/' + b + '/_shared_history/' + ts), {
+        ts: +ts, by: u || 'unknown', types, units, cart: snapshot
+      }).catch(e => console.warn('clear backup failed', e));
+    }
+  } catch(e){ console.warn('clear backup error', e); }
   for (const k in CART) delete CART[k];
   saveCart();
   render();
   renderCart();
-  toast('✓');
+  toast('✓ 비웠음 (백업 보관 중)');
 }
 
 function buildOrderText(){
@@ -1043,7 +1059,8 @@ function getUser(){
 }
 // Path is per branch × per user — each person's in-progress order is
 // isolated. No handoff between people.
-function path(b, u){ return 'carts/hanmi/' + b + '/' + u; }
+// 🆕 2026-06-08 사장님 지시: 모든 지점 공유 카트. 지점별 한 카트에 협업.
+function path(b, u){ return 'carts/hanmi/' + b + '/_shared'; }
 
 window.cloudPushCart = function(cart){
   if (applyingRemote) return;

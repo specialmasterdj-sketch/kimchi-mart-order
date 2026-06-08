@@ -1325,7 +1325,7 @@ function renderOrder(app) {
         '<button class="btn-email" style="min-width:220px;font-size:17px;padding:18px 28px" onclick="emailWithPDF()">&#128233; <span data-t="email_order">' + t('email_order') + '</span></button>' +
         '<button class="btn-purple" onclick="printOrder()">&#128424; <span data-t="print_pdf">' + t('print_pdf') + '</span></button>' +
         '<button class="btn-excel" onclick="downloadCSV()">&#128202; <span data-t="csv_download">' + t('csv_download') + '</span></button>' +
-        '<button class="btn-clear" onclick="if(confirm(\'' + t('clear_confirm') + '\')){state.orders[state.vendor]={};saveState();render();}" data-t="clear_all">' + t('clear_all') + '</button>' +
+        '<button class="btn-clear" onclick="window.clearVendorCartSafely()" data-t="clear_all">' + t('clear_all') + '</button>' +
       '</div>' +
     '</div>';
 }
@@ -2056,10 +2056,38 @@ function fbUserKey(){
 }
 // Paths are per branch × per user — each person's in-progress cart AND
 // finished-order history are isolated. No handoff between people.
-function branchPath(branchId, userKey){ return 'orders/' + branchId + '/' + userKey; }
+// 🆕 2026-06-08 사장님 지시: 모든 지점 공유 카트. 지점별 한 카트에 매니저·직원 협업.
+//   userKey 무시 → 지점별 _shared 한 카트.
+function branchPath(branchId, userKey){ return 'orders/' + branchId + '/_shared'; }
 function historyPath(branchId, userKey){ return 'history/' + branchId + '/' + userKey; }
 
 // Write: called by saveState() whenever the user changes qty locally.
+// 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + Firebase 자동 백업.
+window.clearVendorCartSafely = function(){
+  const vendor = window.KM?.state?.vendor;
+  if (!vendor) return;
+  const items = (window.KM?.state?.orders?.[vendor]) || {};
+  const types = Object.keys(items).length;
+  if (!types){ try { window.KM?.toast?.('이미 비어있음'); } catch(_){} return; }
+  const units = Object.values(items).reduce((s,n)=>s+(+n||0),0);
+  const b = window.KM?.state?.currentBranch || '';
+  const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
+  const warn = `⚠️ 공유 주문 카트입니다.\n\n[${b||'?'}] 지점 [${vendor}] 의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)`;
+  if (!confirm(warn)) return;
+  try {
+    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
+      const ts = String(Date.now());
+      set(ref(db, 'orders/' + b + '/_shared_history/' + vendor + '/' + ts), {
+        ts: +ts, by: u || 'unknown', types, units, cart: items
+      }).catch(e => console.warn('clear backup failed', e));
+    }
+  } catch(e){ console.warn('clear backup error', e); }
+  window.KM.state.orders[vendor] = {};
+  try { window.KM.saveState(); } catch(_){}
+  try { window.KM.render(); } catch(_){}
+  try { window.KM.toast?.('✓ 비웠음 (백업 보관)'); } catch(_){}
+};
+
 window.cloudPushOrders = function(branchId, userKey, orders){
   if (!branchId || !userKey || applyingRemote) return;
   const clean = {};

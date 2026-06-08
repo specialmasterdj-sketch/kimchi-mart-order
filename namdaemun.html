@@ -630,7 +630,10 @@ function _userKey() {
     return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
   } catch (e) { return 'UNASSIGNED'; }
 }
-const cartKey = (branchId, userKey) => `ndm_cart_v1__${branchId || ''}__${userKey || _userKey()}`;
+// 🆕 2026-06-08 사장님 지시: 모든 지점 공유 카트. 같은 지점 매니저·직원이
+//   하나의 카트에 같이 빌드. userKey 무시 → 지점별 _shared 한 카트.
+//   (namdaemun 은 localStorage 기반이라 동일 디바이스 내에서만 공유.)
+const cartKey = (branchId, userKey) => `ndm_cart_v1__${branchId || ''}___shared`;
 
 // ============ STATE ============
 // Shared (not per-branch): prices, priceDate, activeSection/sub (UI navigation)
@@ -1118,13 +1121,24 @@ document.getElementById("emailBtn").addEventListener("click", sendEmail);
 document.getElementById("clearBtn").addEventListener("click", () => {
   const b = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
   const label = b ? `${b.en} / ${b.ko}` : "this branch / 현재 지점";
-  if (!confirm(`Clear ${label} order? / ${label}의 주문을 모두 삭제할까요?`)) return;
+  // 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + localStorage 백업.
+  const types = Object.keys(state.qty || {}).length;
+  const units = Object.values(state.qty || {}).reduce((s,n)=>s+(+n||0),0);
+  if (!types){ showToast("이미 비어있음"); return; }
+  const warn = `⚠️ 공유 주문 카트입니다.\n\n[${label}] 의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업)`;
+  if (!confirm(warn)) return;
+  try {
+    const ts = String(Date.now());
+    const bid = state.branchId || 'UNASSIGNED';
+    const histKey = `ndm_cart_v1_history__${bid}__${ts}`;
+    localStorage.setItem(histKey, JSON.stringify({ ts:+ts, types, units, cart: state.qty }));
+  } catch(e){ console.warn('namdaemun clear backup failed', e); }
   state.qty = {};
   saveState();
   closeOrderModal();
   renderContent();
   updateSummary();
-  showToast("Order cleared / 주문 초기화됨");
+  showToast("Order cleared / 주문 초기화됨 (백업 보관)");
 });
 
 document.getElementById("branchBtn").addEventListener("click", openBranchModal);

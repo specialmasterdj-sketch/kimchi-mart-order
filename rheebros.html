@@ -554,18 +554,25 @@ function render(){
     return;
   }
 
-  // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
+  // 🏗 파레트 + 낱개 활성 상품 — 분리 적용 (2026-06-07 사장님 지시).
+  //   • 🥬 낱개 (EA): packSize 가 multi-tier (예: "BX 3X25X1 OZ", "CS 8X5 LB",
+  //     "6/14.11 OZ", "12/15/1.76 OZ") 인 모든 상품에 자동 노출. 사장님이
+  //     case 통째 말고 낱개만 주문할 때 필요.
+  //   • 🏗 파레트 (PL): 기존 NAPA 같은 대량 발주 상품 화이트리스트 유지.
   const PL_ENABLED_NAMES = ['NAPA'];
+  // multi-tier pack 감지 — 숫자 사이에 X/x/×/슬래시 구분자가 1번 이상.
+  const MULTI_PACK_RE = /\d\s*[xX×\/]\s*\d/;
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
     const eaKey = p.detailId + '__EA';
     const plKey = p.detailId + '__PL';
     const pName = String(p.name || p.nameKr || '').toUpperCase();
-    const showExtras = PL_ENABLED_NAMES.some(k => pName.includes(k));
-    const eaQty = showExtras ? (CART[eaKey] || 0) : 0;
-    const plQty = showExtras ? (CART[plKey] || 0) : 0;
+    const showEA = MULTI_PACK_RE.test(String(p.packSize || ''));
+    const showPL = PL_ENABLED_NAMES.some(k => pName.includes(k));
+    const eaQty = showEA ? (CART[eaKey] || 0) : 0;
+    const plQty = showPL ? (CART[plKey] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0 || plQty > 0;
-    const eaRow = showExtras ? (
+    const eaRow = showEA ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:6px;background:#fff4e0;border:1px solid #fbbf24;border-radius:8px;padding:4px">' +
         '<button class="qbtn minus" onclick="bumpQty(\''+eaKey+'\',-1)"' + (eaQty<=0?' disabled':'') + '>−</button>' +
         '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+eaKey+'\','+eaQty+')" style="color:#b87500">' + eaQty + '</button>' +
@@ -573,7 +580,7 @@ function render(){
       '</div>' +
       '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / Piece</div>'
     ) : '';
-    const plRow = showExtras ? (
+    const plRow = showPL ? (
       '<div class="qrow" onclick="event.stopPropagation()" style="margin-top:6px;background:#e0f2fe;border:1px solid #0284c7;border-radius:8px;padding:4px">' +
         '<button class="qbtn minus" onclick="bumpQty(\''+plKey+'\',-1)"' + (plQty<=0?' disabled':'') + '>−</button>' +
         '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+plKey+'\','+plQty+')" style="color:#0369a1">' + plQty + '</button>' +

@@ -467,6 +467,45 @@
     return '<span class="km-rec-note" title="OVER: ' + safe + '"><span class="km-rec-note-prefix">OVER:</span>' + safe + '</span>';
   }
 
+  // 🎯 2026-06-09 사장님 핵심 지시: OVER 가이드의 목적은 '저장' 이 아니라 외국
+  //   매니저가 발주할 때 사장님이 정한 갯수를 케이스 입력란 옆에서 명확히 보고
+  //   그대로 주문하는 것. 아래 3개가 그 핵심.
+  //   - getOverQty: OVER note 의 앞 숫자만 추출 (배너 탭 시 자동입력용)
+  //   - overLabel: "20cs" 형태 표시 텍스트 (숫자만이면 단위 붙임)
+  //   - orderGuideHTML: 케이스 입력란 위에 들어갈 큰 발주 가이드 배너.
+  //       탭하면 그 수량이 케이스 입력란에 바로 들어감.
+  function getOverQty(productId){
+    const t = getNote(productId);
+    if (!t) return 0;
+    const m = String(t).match(/\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+  function overLabel(productId, defaultUnitOverride){
+    const text = getNote(productId);
+    if (!text) return '';
+    const unit = defaultUnitOverride || 'cs';
+    const trimmed = String(text).trim();
+    return /^\d+$/.test(trimmed) ? trimmed + unit : trimmed;
+  }
+  // tapExpr: 배너 탭 시 실행할 JS 식 문자열. '{q}' 를 OVER 수량으로 치환.
+  //   페이지마다 수량설정 함수 시그니처가 달라 (setQty(id,n) vs setQty(vendor,id,n))
+  //   페이지가 자기 호출식을 넘김. 예: "setQty('21189K',{q})".
+  function orderGuideHTML(productId, defaultUnitOverride, tapExpr){
+    const lbl = overLabel(productId, defaultUnitOverride);
+    if (!lbl) return '';
+    const qty = getOverQty(productId);
+    const safe = lbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const tappable = (qty > 0 && tapExpr);
+    const onClick = tappable
+      ? 'onclick="event.stopPropagation();' + String(tapExpr).split('{q}').join(String(qty)) + '"'
+      : 'onclick="event.stopPropagation()"';
+    return '<div class="km-over-guide" ' + onClick + ' title="ORDER ' + safe + '">' +
+             '<span class="km-over-guide-flag">🎯 ORDER</span>' +
+             '<span class="km-over-guide-qty">' + safe + '</span>' +
+             (tappable ? '<span class="km-over-guide-tap">👆</span>' : '') +
+           '</div>';
+  }
+
   function injectStyles(){
     if (document.getElementById('km-rec-styles')) return;
     const css = document.createElement('style');
@@ -551,7 +590,21 @@
       '.km-rec-prompt-cancel:hover{background:#e2e8f0}' +
       '.km-rec-prompt-ok{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff;' +
         'box-shadow:0 2px 8px rgba(245,158,11,.35)}' +
-      '.km-rec-prompt-ok:hover{opacity:.92}'
+      '.km-rec-prompt-ok:hover{opacity:.92}' +
+      // 🎯 발주 가이드 배너 — 케이스 입력란 바로 위. 외국 매니저가 사장님이 정한
+      //   OVER 갯수를 명확히 보고 탭하면 그 수량이 케이스 입력란에 자동 입력.
+      //   파란색(기존 OVER 칩과 동일 계열) + 펄스로 주목도 ↑.
+      '.km-over-guide{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;' +
+        'background:linear-gradient(135deg,#0369a1 0%,#0284c7 100%);color:#fff;border-radius:9px;' +
+        'padding:6px 8px;margin:7px 0 2px;cursor:pointer;font-weight:800;line-height:1.1;' +
+        'box-shadow:0 2px 7px rgba(3,105,161,.4);border:2px solid #075985;' +
+        'animation:kmOverPulse 1.8s ease-in-out infinite}' +
+      '.km-over-guide:active{transform:scale(.95)}' +
+      '.km-over-guide-flag{font-size:9.5px;letter-spacing:.5px;opacity:.95}' +
+      '.km-over-guide-qty{font-size:15px;letter-spacing:.3px}' +
+      '.km-over-guide-tap{font-size:12px}' +
+      '@keyframes kmOverPulse{0%,100%{box-shadow:0 2px 7px rgba(3,105,161,.4)}' +
+        '50%{box-shadow:0 0 0 4px rgba(3,105,161,.22),0 2px 7px rgba(3,105,161,.4)}}'
     );
     document.head.appendChild(css);
   }
@@ -573,6 +626,7 @@
     subscribe,
     badgeHTML, toggleHTML, filterChipHTML, cardClass,
     noteHTML, editNote, getNote, defaultUnit,
+    getOverQty, overLabel, orderGuideHTML,
     canMark,
   };
 

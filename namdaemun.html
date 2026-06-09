@@ -404,7 +404,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="jayone_products.js"></script>
-<script src="recommend.js?v=20260608d"></script>
+<script src="recommend.js?v=20260609a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -875,6 +875,8 @@ function itemHtml(secId, it) {
   const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(key) : '';
   const recBadge  = window.kmRecs ? (window.kmRecs.badgeHTML(key) + window.kmRecs.noteHTML(key))  : '';
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
+  // 🎯 발주 가이드 배너 — 수량 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
+  const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(key, 'cs', "kmApplyOver('"+key+"',{q})") : '';
   return `
     <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">
       ${imgStr}
@@ -885,6 +887,7 @@ function itemHtml(secId, it) {
       <div class="name-ko">${escapeHtml(it.ko)}</div>
       ${recTools}
       ${foot}
+      ${overGuide}
       <div class="qty-control">
         <button class="qty-btn" data-act="dec">−</button>
         <input class="qty-input" type="number" min="0" step="1" value="${qty || ''}" placeholder="0">
@@ -965,6 +968,23 @@ function setQty(key, v) {
   else delete state.qty[key];
   saveState();
 }
+
+// 🎯 2026-06-09 OVER 가이드 배너 탭 → 케이스 수량 자동입력 + UI 즉시 갱신.
+//   namdaemun 은 setQty 가 input/highlight 를 안 건드려서 (bindItemEvents 가 담당)
+//   배너 탭 전용 헬퍼로 한 번에 갱신.
+window.kmApplyOver = function(key, qty){
+  setQty(key, qty);
+  try {
+    const sel = (window.CSS && CSS.escape) ? CSS.escape(key) : key;
+    const el = document.querySelector('.item[data-key="' + sel + '"]');
+    if (el){
+      const input = el.querySelector('.qty-input');
+      if (input) input.value = state.qty[key] || '';
+      updateItemHighlight(el, key);
+    }
+    updateSummary();
+  } catch(e){ console.warn('kmApplyOver', e); }
+};
 
 // ============ SUMMARY ============
 function getOrderLines() {

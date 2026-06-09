@@ -219,7 +219,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="rheebros_products.js"></script>
-<script src="recommend.js?v=20260608d"></script>
+<script src="recommend.js?v=20260609a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
 let REC_FILTER_ON = false;
@@ -595,6 +595,9 @@ function render(){
     const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
     const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
+    // 🎯 발주 가이드 배너 — 케이스 입력란 바로 위. 매니저가 사장님 OVER 갯수를
+    //   명확히 보고 탭하면 그 수량이 케이스 입력란에 자동 입력 (setQty).
+    const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+p.detailId+"',{q})") : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
@@ -606,6 +609,7 @@ function render(){
           (p.barcodeDisplay ? '<div class="pmeta" style="font-family:monospace;font-size:9.5px;color:#666">' + esc(p.barcodeDisplay) + '</div>' : '') +
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           ((typeof VelaStock !== 'undefined' && VelaStock.badgeHtml(p)) ? '<div style="margin:2px 0 4px">' + VelaStock.badgeHtml(p) + '</div>' : '') +
+          overGuide +
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
             '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +

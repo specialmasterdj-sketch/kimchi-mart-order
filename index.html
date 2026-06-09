@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script src="recommend.js?v=20260608d"></script>
+<script src="recommend.js?v=20260609a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -1117,6 +1117,8 @@ function buildTilesHtml(v, products){
     const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
     const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
+    // 🎯 발주 가이드 배너 — 케이스 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
+    const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+state.vendor+"','"+p.id+"',{q})") : '';
     if (p.catalog || p.category === 'wal-lkk') {
       tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}">
         ${newBadge}
@@ -1125,6 +1127,7 @@ function buildTilesHtml(v, products){
           ${recTools}
           ${recBadges ? `<div style="text-align:center;margin-bottom:2px">${recBadges}</div>` : ''}
           ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
+          ${overGuide}
           <div class="qty-row">
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
             <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
@@ -1149,6 +1152,7 @@ function buildTilesHtml(v, products){
         ${brandHtml}
         ${priceHtml}
         ${stockBadge ? `<div style="margin:2px 0 4px">${stockBadge}</div>` : ''}
+        ${overGuide}
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">

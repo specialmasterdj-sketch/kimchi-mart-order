@@ -387,7 +387,14 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="products.js?v=20260609j"></script>
+<script src="products.js?v=20260609k"></script>
+<script>
+// 추가 제품(seoul_extra.js) async 병합. products.js는 가볍게 유지, seoul_extra는 라이브(404구간 없음).
+// 페이지네이션으로 대량이어도 렌더 안 멈춤. 안전 실패형(파일 지연시 기본 제품으로 정상).
+window.__mergeSeoulExtra=function(){try{if(window.__seoulExtraMerged)return;if(!window.__SEOUL_EXTRA||typeof VENDORS==="undefined"||!VENDORS.seoul_trading)return;var have=new Set(VENDORS.seoul_trading.products.map(function(p){return p.id;}));var added=0;for(var i=0;i<window.__SEOUL_EXTRA.length;i++){var p=window.__SEOUL_EXTRA[i];if(!have.has(p.id)){VENDORS.seoul_trading.products.push(p);have.add(p.id);added++;}}window.__seoulExtraMerged=true;if(added&&window.KM&&typeof window.KM.render==="function"&&window.KM.state&&window.KM.state.page==="browse"&&window.KM.state.vendor==="seoul_trading")window.KM.render();}catch(e){console.warn("seoul extra merge failed",e);}};
+window.__mergeSeoulExtra();
+</script>
+<script async src="seoul_extra.js?v=20260609k"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -1919,7 +1926,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 44;
+const SW_VERSION = 45;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

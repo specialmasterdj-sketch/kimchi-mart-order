@@ -155,7 +155,10 @@
 
   // Owner-only — prompts for a short note (e.g. "3cs over available") and
   // stores it under recs_notes/<vendor>/<id>. Empty input clears the note.
-  function editNote(productId){
+  // 🆕 2026-06-08: replaced native window.prompt() with a custom in-page modal
+  //   so it can't be silently blocked by Chrome's "prevent additional dialogs"
+  //   toggle (which the owner accidentally hit, leaving the OK button dead).
+  async function editNote(productId){
     if (!canMark()){
       _recToast('⚠ 메모 권한이 없습니다 (오너 전용)');
       return;
@@ -166,7 +169,11 @@
     }
     const id = String(productId);
     const current = state.notes[id] || '';
-    const next = window.prompt('OVER 수량 입력 (예: 3cs, 5, 10box) — 비우면 삭제', current);
+    const next = await _recPromptModal(
+      'OVER 수량 입력',
+      '예: 3cs, 5, 10box — 비우면 삭제',
+      current
+    );
     if (next === null) return; // user cancelled
     const text = String(next).trim().slice(0, 24);
     // Store the note as a child of recs_global/<vendor>/<id> so it shares the
@@ -280,6 +287,50 @@
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/best'), Date.now()).catch(onErr);
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/bestBy'), m.name || 'unknown').catch(() => {});
     }
+  }
+
+  // In-page prompt modal — replaces window.prompt() so Chrome's silent
+  // "prevent additional dialogs" toggle can't dead-lock the OK button.
+  // Returns a Promise that resolves to the entered string, or null on cancel.
+  function _recPromptModal(title, hint, current){
+    return new Promise((resolve) => {
+      let resolved = false;
+      const overlay = document.createElement('div');
+      overlay.className = 'km-rec-prompt-overlay';
+      overlay.innerHTML = (
+        '<div class="km-rec-prompt-box" role="dialog" aria-modal="true">' +
+          '<div class="km-rec-prompt-title"></div>' +
+          '<div class="km-rec-prompt-hint"></div>' +
+          '<input type="text" class="km-rec-prompt-input" maxlength="24" autocomplete="off">' +
+          '<div class="km-rec-prompt-btns">' +
+            '<button type="button" class="km-rec-prompt-cancel">취소</button>' +
+            '<button type="button" class="km-rec-prompt-ok">확인</button>' +
+          '</div>' +
+        '</div>'
+      );
+      // Use textContent so untrusted strings can't inject HTML.
+      overlay.querySelector('.km-rec-prompt-title').textContent = String(title || '');
+      overlay.querySelector('.km-rec-prompt-hint').textContent  = String(hint  || '');
+      const input = overlay.querySelector('.km-rec-prompt-input');
+      input.value = current == null ? '' : String(current);
+      document.body.appendChild(overlay);
+      // Defer focus to next tick so iOS Safari actually shows the keyboard.
+      setTimeout(() => { try { input.focus(); input.select(); } catch(e){} }, 30);
+      const done = (val) => {
+        if (resolved) return;
+        resolved = true;
+        try { overlay.remove(); } catch(e){}
+        resolve(val);
+      };
+      overlay.querySelector('.km-rec-prompt-ok').addEventListener('click', () => done(input.value));
+      overlay.querySelector('.km-rec-prompt-cancel').addEventListener('click', () => done(null));
+      // Click on the dim background = cancel (matches the cart/pd modal UX).
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) done(null); });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter'){ e.preventDefault(); done(input.value); }
+        else if (e.key === 'Escape'){ e.preventDefault(); done(null); }
+      });
+    });
   }
 
   // Small toast helper — reuses the host page's toast() if present, otherwise
@@ -459,7 +510,30 @@
         'user-select:none;font-family:inherit;margin-left:8px}' +
       '.km-rec-filter:hover{background:#fef3c7}' +
       '.km-rec-filter.active{background:#f59e0b;color:#fff;border-color:#d97706}' +
-      '.km-rec-filter input{display:none}'
+      '.km-rec-filter input{display:none}' +
+      // Custom OVER-input modal — used by editNote so Chrome cannot dead-lock
+      // the OK button via the silent "block additional dialogs" toggle.
+      '.km-rec-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100000;' +
+        'display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit;' +
+        'animation:kmRecFade .15s ease-out}' +
+      '@keyframes kmRecFade{from{opacity:0}to{opacity:1}}' +
+      '.km-rec-prompt-box{background:#fff;border-radius:14px;max-width:380px;width:100%;padding:18px 18px 14px;' +
+        'box-shadow:0 12px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px}' +
+      '.km-rec-prompt-title{font-size:15px;font-weight:800;color:#1a1a1a;line-height:1.3}' +
+      '.km-rec-prompt-hint{font-size:12.5px;color:#666;line-height:1.4}' +
+      '.km-rec-prompt-input{width:100%;padding:11px 13px;border:1.5px solid #d4d4d8;border-radius:9px;' +
+        'font-size:15px;font-weight:700;color:#222;outline:none;font-family:inherit;background:#fafafa;' +
+        'transition:border-color .12s,background .12s}' +
+      '.km-rec-prompt-input:focus{border-color:#f59e0b;background:#fff;box-shadow:0 0 0 3px rgba(245,158,11,.18)}' +
+      '.km-rec-prompt-btns{display:flex;gap:8px;margin-top:4px}' +
+      '.km-rec-prompt-btns button{flex:1;border:none;border-radius:9px;padding:11px 14px;font-size:13.5px;' +
+        'font-weight:800;cursor:pointer;font-family:inherit;transition:transform .08s,opacity .12s}' +
+      '.km-rec-prompt-btns button:active{transform:scale(0.97)}' +
+      '.km-rec-prompt-cancel{background:#f1f5f9;color:#475569}' +
+      '.km-rec-prompt-cancel:hover{background:#e2e8f0}' +
+      '.km-rec-prompt-ok{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff;' +
+        'box-shadow:0 2px 8px rgba(245,158,11,.35)}' +
+      '.km-rec-prompt-ok:hover{opacity:.92}'
     );
     document.head.appendChild(css);
   }

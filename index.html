@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script src="recommend.js?v=20260608a"></script>
+<script src="recommend.js?v=20260608b"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -1063,9 +1063,10 @@ function buildTilesHtml(v, products){
     const riskLabel = p.riskVerdict === 'SAFE' ? 'SAFE' : (p.riskVerdict || '');
     const riskCorner = riskCls ? `<div class="risk-corner ${riskCls}" title="${riskLabel}" onclick="event.stopPropagation();showRisk('${state.vendor}','${p.id}')"></div>` : '';
     const pack = parsePackSize(p.size);
-    // 🆕 2026-06-08 사장님 지시: packSize 가 "BX" 로 시작하는 상품만 낱개 노출.
-    //   CS 시작은 절대 X. parsePackSize 결과는 라벨 정보용으로만.
-    const showEA = /^\s*BX\b/i.test(String(p.size || ''));
+    // 🆕 2026-06-08 (재조정) 사장님 지시: BX-only 가 너무 좁아 KASUGAI 등 multi-tier
+    //   CS 상품이 낱개 옵션 못 받음 → 직원 발주 어려움. 룰 확장:
+    //   1) BX 로 시작, OR  2) packSize 에 'NxN' 패턴 (예: CS 2X12X3.77 OZ)
+    const showEA = /^\s*BX\b|\d\s*[Xx×]\s*\d/i.test(String(p.size || ''));
     // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
     // 다른 상품에 필요해지면 PL_ENABLED_NAMES 에 키워드 추가.
     const PL_ENABLED_NAMES = ['NAPA'];

@@ -560,11 +560,10 @@ function render(){
   //     case 통째 말고 낱개만 주문할 때 필요.
   //   • 🏗 파레트 (PL): 기존 NAPA 같은 대량 발주 상품 화이트리스트 유지.
   const PL_ENABLED_NAMES = ['NAPA'];
-  // 🆕 2026-06-08 (재조정) 사장님 지시: BX-only 가 너무 좁아 KASUGAI 등 multi-tier
-  //   CS 상품이 낱개 옵션 못 받음 → 직원 발주 어려움. 룰 확장:
-  //   1) BX 로 시작 (BX 는 항상 다수 box 내장), OR
-  //   2) packSize 에 'NxN' 패턴 — case 안에 sellable sub-unit 존재 (예: CS 2X12X3.77 OZ)
-  const MULTI_TIER_RE = /^\s*BX\b|\d\s*[Xx×]\s*\d/i;
+  // 2026-06-09 사장님 지시 (BX-only 복원): BX 로 시작하는 상품만 낱개(pc) 노출.
+  //   CS(케이스)는 케이스 단위 발주만 — 낱개 X. 직전 NxN 확장이 "CS 6X4.23 OZ"
+  //   같은 거의 모든 CS 에 낱개를 붙여 매장 매니저 혼란 → 원래 BX-only 규칙으로 되돌림.
+  const MULTI_TIER_RE = /^\s*BX\b/i;
   $('grid').innerHTML = filtered.map(p => {
     const qty = CART[p.detailId] || 0;
     const eaKey = p.detailId + '__EA';

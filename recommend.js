@@ -185,10 +185,14 @@
     if (text){ state.notes[id] = text; } else { delete state.notes[id]; }
     _saveLocalNote(id, text);
     notify();
+    // 🆕 2026-06-08: 사장님 리포트 "확인 눌러도 반영 안 됨" — UX 가 무피드백.
+    //   저장 직후 명확한 토스트 표시. Firebase 비동기 결과와 별도로 사용자는
+    //   즉시 "저장됐다" 확인 가능. (로컬엔 이미 박혔으니 진실에 부합.)
+    _recToast(text ? ('✅ OVER 저장: ' + text) : '🗑 OVER 삭제');
     const onErr = (e) => {
       console.warn('note save failed', e);
       // DO NOT revert local state — keep the chip visible from localStorage.
-      _recToast('⚠ 메모 Firebase 동기화 실패 (로컬에만 저장): ' + ((e && e.message) || e));
+      _recToast('⚠ Firebase 동기화 실패 (로컬엔 저장됨): ' + ((e && e.message) || e));
     };
     if (text){
       state.fbOps.set(state.fbOps.ref(state.db, basePath + '/note'), text).catch(onErr);
@@ -322,8 +326,18 @@
         try { overlay.remove(); } catch(e){}
         resolve(val);
       };
-      overlay.querySelector('.km-rec-prompt-ok').addEventListener('click', () => done(input.value));
-      overlay.querySelector('.km-rec-prompt-cancel').addEventListener('click', () => done(null));
+      // 🆕 2026-06-08: iOS PWA 에서 click 만으로는 가끔 OK 가 안 먹히는 케이스 보고.
+      //   pointerup 도 동시 바인딩 — 둘 중 하나만 와도 done() 발동 (resolved 가드).
+      //   pointerup 은 마우스·터치·펜 모두 통일된 이벤트.
+      const okBtn = overlay.querySelector('.km-rec-prompt-ok');
+      const cancelBtn = overlay.querySelector('.km-rec-prompt-cancel');
+      const bindFire = (el, val) => {
+        const fire = (e) => { try { e.preventDefault(); } catch(_){} done(typeof val === 'function' ? val() : val); };
+        el.addEventListener('click', fire);
+        el.addEventListener('pointerup', fire);
+      };
+      bindFire(okBtn,    () => input.value);
+      bindFire(cancelBtn, null);
       // Click on the dim background = cancel (matches the cart/pd modal UX).
       overlay.addEventListener('click', (e) => { if (e.target === overlay) done(null); });
       input.addEventListener('keydown', (e) => {

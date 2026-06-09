@@ -388,6 +388,31 @@ input { font-family:inherit; }
 </div>
 
 <script src="products.js?v=20260609e"></script>
+<script>
+// Seoul Trading 추가 제품을 부팅 차단 없이 비동기로 합친다. products.js(블로킹)는
+// 가볍게 유지하고, seoul_extra.js(별도 async)가 도착하면 여기로 머지한다. 로드 순서가
+// 어떻든(둘 중 누가 먼저든) 안전하도록 양방향 가드. 큰 데이터가 인증/로딩을 막지 않게 함.
+window.__mergeSeoulExtra = function(){
+  try {
+    if (window.__seoulExtraMerged) return;
+    if (!window.__SEOUL_EXTRA || typeof VENDORS === 'undefined' || !VENDORS.seoul_trading) return;
+    var have = new Set(VENDORS.seoul_trading.products.map(function(p){ return p.id; }));
+    var added = 0;
+    for (var i = 0; i < window.__SEOUL_EXTRA.length; i++){
+      var p = window.__SEOUL_EXTRA[i];
+      if (!have.has(p.id)){ VENDORS.seoul_trading.products.push(p); have.add(p.id); added++; }
+    }
+    window.__seoulExtraMerged = true;
+    if (added && window.KM && typeof window.KM.render === 'function'
+        && window.KM.state && window.KM.state.page === 'browse'
+        && window.KM.state.vendor === 'seoul_trading'){
+      window.KM.render();
+    }
+  } catch(e){ console.warn('seoul extra merge failed', e); }
+};
+window.__mergeSeoulExtra(); // extra가 먼저 도착한 경우 대비
+</script>
+<script async src="seoul_extra.js?v=20260609e"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>

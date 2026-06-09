@@ -394,7 +394,7 @@ input { font-family:inherit; }
 window.__mergeSeoulExtra=function(){try{if(window.__seoulExtraMerged)return;if(!window.__SEOUL_EXTRA||typeof VENDORS==="undefined"||!VENDORS.seoul_trading)return;var have=new Set(VENDORS.seoul_trading.products.map(function(p){return p.id;}));var added=0;for(var i=0;i<window.__SEOUL_EXTRA.length;i++){var p=window.__SEOUL_EXTRA[i];if(!have.has(p.id)){VENDORS.seoul_trading.products.push(p);have.add(p.id);added++;}}window.__seoulExtraMerged=true;if(added&&window.KM&&typeof window.KM.render==="function"&&window.KM.state&&window.KM.state.page==="browse"&&window.KM.state.vendor==="seoul_trading")window.KM.render();}catch(e){console.warn("seoul extra merge failed",e);}};
 window.__mergeSeoulExtra();
 </script>
-<script async src="seoul_extra.js?v=20260609k"></script>
+<script async src="seoul_extra.js?v=20260610a"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>

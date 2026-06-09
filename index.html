@@ -1051,6 +1051,59 @@ function filterBrowseProducts(v){
   return products;
 }
 
+// ===== 지연 렌더(페이지네이션) =====
+// 대형 벤더(서울트레이딩 3000+ 등)에서 모든 타일을 한 번에 그리면 메인 스레드가
+// 수 초~수십 초 블로킹돼 앱이 "멈춘 것처럼" 보인다(저사양 폰에서 사실상 freeze).
+// → 처음 BROWSE_PAGE_SIZE개만 그리고, .product-grid 스크롤이 바닥 근처로 오면
+//   IntersectionObserver 가 다음 묶음을 append. 제품 수와 무관하게 초기 렌더가 빠름.
+const BROWSE_PAGE_SIZE = 80;
+let _browseLimit = BROWSE_PAGE_SIZE;
+let _browseSig = null;
+let _browseIO = null;
+
+function _moreLabel(){ return currentLang==='es'?'Ver más':(currentLang==='en'?'Show more':'더 보기'); }
+
+function browseTilesHtml(v, all){
+  // 필터(벤더/카테고리/검색)가 바뀌면 처음부터 다시 보여준다.
+  const sig = state.vendor + '|' + state.category + '|' + state.search;
+  if (sig !== _browseSig){ _browseSig = sig; _browseLimit = BROWSE_PAGE_SIZE; }
+  let html = buildTilesHtml(v, all.slice(0, _browseLimit));
+  const remaining = all.length - _browseLimit;
+  if (remaining > 0){
+    html += '<button id="browse-more" onclick="loadMoreBrowse()" style="grid-column:1/-1;margin:10px auto;padding:11px 22px;border:1px solid #e0e0e0;border-radius:9px;background:#fff;color:var(--red);font-weight:700;font-size:13px;cursor:pointer;">'
+          + _moreLabel() + ' (' + remaining + ')</button>';
+  }
+  return html;
+}
+
+// 다음 묶음(BROWSE_PAGE_SIZE개)을 버튼 앞에 append. 버튼 클릭 + 스크롤(IO) 양쪽에서 호출.
+function loadMoreBrowse(){
+  const grid = document.querySelector('.product-grid'); if (!grid) return;
+  const v = VENDORS[state.vendor]; if (!v) return;
+  const all = filterBrowseProducts(v);
+  const btn = grid.querySelector('#browse-more'); if (!btn) return;
+  const have = grid.querySelectorAll('.product-tile').length;
+  const next = all.slice(have, have + BROWSE_PAGE_SIZE);
+  if (next.length) btn.insertAdjacentHTML('beforebegin', buildTilesHtml(v, next));
+  const nowHave = grid.querySelectorAll('.product-tile').length;
+  _browseLimit = nowHave;
+  const remaining = all.length - nowHave;
+  if (remaining <= 0) btn.remove();
+  else btn.textContent = _moreLabel() + ' (' + remaining + ')';
+}
+
+// 스크롤이 버튼 근처(600px)로 오면 자동으로 다음 묶음 로드(무한 스크롤). 버튼은 항상
+// 남아있어 IO 미작동 환경에서도 수동 클릭으로 100% 동작(안전 폴백).
+function armBrowseLazyLoad(v, all){
+  if (_browseIO){ try { _browseIO.disconnect(); } catch(e){} _browseIO = null; }
+  const grid = document.querySelector('.product-grid'); if (!grid) return;
+  const btn = grid.querySelector('#browse-more'); if (!btn) return;
+  _browseIO = new IntersectionObserver(function(entries){
+    if (entries[0] && entries[0].isIntersecting) loadMoreBrowse();
+  }, { root: grid, rootMargin: '600px' });
+  _browseIO.observe(btn);
+}
+
 function buildTilesHtml(v, products){
   let tiles = '';
   for (let p of products) {
@@ -1176,7 +1229,9 @@ function updateProductGridOnly(){
   if (!v) return false;
   const grid = document.querySelector('.product-grid');
   if (!grid) return false;
-  grid.innerHTML = buildTilesHtml(v, filterBrowseProducts(v));
+  const all = filterBrowseProducts(v);
+  grid.innerHTML = browseTilesHtml(v, all);
+  armBrowseLazyLoad(v, all);
   return true;
 }
 
@@ -1197,7 +1252,7 @@ function renderBrowse(app) {
     tabs += `<button class="tab ${state.category===c.id?'active':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`;
   }
 
-  const tiles = buildTilesHtml(v, products);
+  const tiles = browseTilesHtml(v, products);
 
   const orderCount = getOrderCount(state.vendor);
   const floatBtn = orderCount > 0 ? '<button class="float-order" style="background:' + v.color + '" onclick="state.page=\'order\';render()" data-t="view_order">' + t('view_order') + ' <span class="badge">' + orderCount + '</span></button>' : '';
@@ -1216,6 +1271,7 @@ function renderBrowse(app) {
       '</div>' +
     '</div>' +
     floatBtn;
+  armBrowseLazyLoad(v, products);
 }
 
 function renderOrder(app) {
@@ -1863,7 +1919,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 43;
+const SW_VERSION = 44;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');

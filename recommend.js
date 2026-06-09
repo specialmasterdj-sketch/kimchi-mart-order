@@ -185,21 +185,25 @@
     if (text){ state.notes[id] = text; } else { delete state.notes[id]; }
     _saveLocalNote(id, text);
     notify();
-    // 🆕 2026-06-08: 사장님 리포트 "확인 눌러도 반영 안 됨" — UX 가 무피드백.
-    //   저장 직후 명확한 토스트 표시. Firebase 비동기 결과와 별도로 사용자는
-    //   즉시 "저장됐다" 확인 가능. (로컬엔 이미 박혔으니 진실에 부합.)
-    _recToast(text ? ('✅ OVER 저장: ' + text) : '🗑 OVER 삭제');
-    const onErr = (e) => {
+    // 🆕 2026-06-08: 사장님 리포트 "확인 눌러도 반영 안 됨" — UX 무피드백 + 가끔
+    //   Firebase 쓰기가 silent fail 하던 케이스 (BROKEN RICE 01077D 사례).
+    //   해결: 진행 토스트 → Firebase 완료 후 결과 확정 토스트 (성공/실패).
+    //   사용자가 토스트로 진짜 동기화 결과를 알 수 있음.
+    _recToast('💾 ' + (text ? ('저장 중: ' + text) : '삭제 중...'));
+    try {
+      if (text){
+        await state.fbOps.set(state.fbOps.ref(state.db, basePath + '/note'), text);
+        await state.fbOps.set(state.fbOps.ref(state.db, basePath + '/noteBy'), m.name || 'unknown').catch(() => {});
+        _recToast('✅ OVER 저장: ' + text);
+      } else {
+        await state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/note'));
+        await state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/noteBy')).catch(() => {});
+        _recToast('🗑 OVER 삭제');
+      }
+    } catch(e) {
       console.warn('note save failed', e);
       // DO NOT revert local state — keep the chip visible from localStorage.
-      _recToast('⚠ Firebase 동기화 실패 (로컬엔 저장됨): ' + ((e && e.message) || e));
-    };
-    if (text){
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/note'), text).catch(onErr);
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/noteBy'), m.name || 'unknown').catch(() => {});
-    } else {
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/note')).catch(onErr);
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/noteBy')).catch(() => {});
+      _recToast('⚠ Firebase 실패! 로컬엔 저장됨 — 다시 시도 권장: ' + ((e && e.message) || e));
     }
   }
 

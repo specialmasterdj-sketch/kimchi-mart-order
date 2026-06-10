@@ -830,7 +830,9 @@ function renderContent() {
   }
   const items = filterItems(sec.items);
   if (items.length === 0) {
-    main.innerHTML = `<div class="empty-state">No results / 검색 결과가 없습니다</div>`;
+    main.innerHTML = sec.items.length === 0
+      ? `<div class="empty-state">📋 제품 목록 준비 중 · Coming soon<br><small style="color:#9ca3af;display:block;margin-top:6px">이 벤더 제품 목록(엑셀·사진)을 추가하면 바로 발주 가능합니다</small></div>`
+      : `<div class="empty-state">No results / 검색 결과가 없습니다</div>`;
     return;
   }
   // 2026-06-09 통일: 카테고리 그룹핑 없이 전체를 하나의 그리드로.

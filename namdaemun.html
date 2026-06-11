@@ -404,6 +404,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="jayone_products.js"></script>
+<script src="ottogi_products.js"></script>
 <script src="recommend.js?v=20260609a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -606,7 +607,7 @@ const SECTIONS = [
   { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
   { id: "jayeon",       label: "Jayone 자연나라",        items: JAYONE_ITEMS, enabled: JAYONE_ITEMS.length > 0 },
   { id: "meat",         label: "Meat/Fish 고기·생선",    items: [], enabled: true },
-  { id: "ottogi",       label: "Ottogi 오뚜기",          items: [], enabled: true },
+  { id: "ottogi",       label: "Ottogi 오뚜기",          items: (typeof OTTOGI_ITEMS!=="undefined"?OTTOGI_ITEMS:[]), enabled: true },
   { id: "pulmuone",     label: "Pulmuone 풀무원",        items: [], enabled: true },
   { id: "chungjungone", label: "Chungjungone 청정원",    items: [], enabled: true },
 ];
@@ -850,9 +851,8 @@ function itemHtml(secId, it) {
   const pluStr = it.plu ? `<span class="plu">#${it.plu}</span>` : '';
   const imgStr = it.image ? `<div class="item-thumb"><img src="${escapeHtml(it.image)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
   const hasBarcode = !!it.barcode;
-  const foot = hasBarcode
-    ? `<div class="item-foot"><span class="unit">${unitStr}</span></div><div class="barcode">${escapeHtml(it.barcode)}</div>`
-    : `<div class="item-foot"><span class="unit">${unitStr}</span><span class="price ${edited?'edited':''}" title="탭해서 가격 수정">$<input class="price-input" type="number" step="0.01" min="0" value="${formatPrice(price)}" inputmode="decimal"></span></div>`;
+  // 2026-06-10 사장님 지시: 가격 표시 제거 (가격 데이터는 유지, 화면에서만 숨김).
+  const foot = `<div class="item-foot"><span class="unit">${unitStr}</span></div>` + (hasBarcode ? `<div class="barcode">${escapeHtml(it.barcode)}</div>` : '');
   const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(key) : '';
   const recBadge  = window.kmRecs ? (window.kmRecs.badgeHTML(key) + window.kmRecs.noteHTML(key))  : '';
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';

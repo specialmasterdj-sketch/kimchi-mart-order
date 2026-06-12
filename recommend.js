@@ -113,6 +113,25 @@
       // owner still wants to see their own memo while we figure out why).
       const localNotes = _loadLocalNotes();
       for (const id in localNotes){ if (!notes[id]) notes[id] = localNotes[id]; }
+      // Skip notify() when the snapshot is byte-identical to what we already
+      // have. The star/best toggles apply the change locally + call notify()
+      // immediately, then write to Firebase; Firebase echoes the same data
+      // back via onValue, which used to fire a second notify() and re-render
+      // the whole list — scrolling the page back to the top mid-tap.
+      const sameSet = (a, b) => {
+        if (a.size !== b.size) return false;
+        for (const x of a) if (!b.has(x)) return false;
+        return true;
+      };
+      const sameNotes = (a, b) => {
+        const ka = Object.keys(a), kb = Object.keys(b);
+        if (ka.length !== kb.length) return false;
+        for (const k of ka) if (a[k] !== b[k]) return false;
+        return true;
+      };
+      if (sameSet(marked, state.globalIds) && sameSet(best, state.bestIds) && sameNotes(notes, state.notes)){
+        return;
+      }
       state.globalIds = marked;
       state.bestIds = best;
       state.notes = notes;

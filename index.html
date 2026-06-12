@@ -255,6 +255,39 @@ input { font-family:inherit; }
 .numpad .key.confirm { background:var(--green); color:#FFF; }
 .numpad .key.del { background:#FFEBEE; color:var(--red); }
 
+/* PRODUCT DETAIL MODAL (rheebros 식 상세 발주 패널) */
+.pd-modal { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:400; display:none; align-items:flex-end; justify-content:center; }
+.pd-modal.show { display:flex; }
+.pd-box { background:#fff; width:100%; max-width:520px; max-height:92vh; border-radius:18px 18px 0 0; display:flex; flex-direction:column; animation:pdSlideUp .25s ease; font-family:inherit; }
+@keyframes pdSlideUp { from{transform:translateY(100%);} to{transform:translateY(0);} }
+.pd-hdr { padding:14px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+.pd-hdr h2 { font-size:16px; color:var(--red); font-weight:800; margin:0; }
+.pd-hdr .pd-close { background:none; border:none; font-size:22px; color:#888; cursor:pointer; padding:0 4px; font-family:inherit; }
+.pd-body { flex:1; overflow-y:auto; }
+.pd-img-wrap { width:100%; padding:16px; background:#fafafa; text-align:center; }
+.pd-img { max-width:100%; max-height:240px; object-fit:contain; }
+.pd-info { padding:14px 16px; }
+.pd-name { font-size:17px; font-weight:800; color:#222; line-height:1.3; margin-bottom:6px; }
+.pd-name-kr { font-size:13px; color:#666; margin-bottom:6px; }
+.pd-new { display:inline-block; background:#ff9800; color:#fff; font-size:10px; font-weight:800; padding:3px 10px; border-radius:12px; margin-left:8px; vertical-align:middle; letter-spacing:.3px; }
+.pd-table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:10px; }
+.pd-table td { padding:9px 10px; border:1px solid #e5e5e5; vertical-align:top; }
+.pd-table td.label { background:#f7f7f7; color:#555; font-weight:600; width:38%; white-space:nowrap; }
+.pd-table td.value { background:#fff; color:#222; word-break:break-word; }
+.pd-table td.value.code { color:var(--red); font-weight:700; font-family:monospace; }
+.pd-table td.value.barcode { font-family:monospace; font-size:13px; letter-spacing:.5px; }
+.pd-qty-section { padding:14px 16px; background:#f9f9f9; border-top:1px solid #eee; }
+.pd-qty-label { font-size:12px; color:#666; margin-bottom:8px; font-weight:600; }
+.pd-qty-row { display:flex; align-items:center; gap:8px; }
+.pd-qty-row button { flex-shrink:0; width:48px; height:48px; border:1.5px solid var(--red); background:#fff; color:var(--red); border-radius:8px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; }
+.pd-qty-row button:active { background:#fee; }
+.pd-qty-row input { flex:1; height:48px; border:1.5px solid #ddd; border-radius:8px; text-align:center; font-size:20px; font-weight:800; font-family:inherit; outline:none; color:#222; }
+.pd-qty-row input:focus { border-color:var(--red); }
+.pd-foot { padding:12px 14px; background:#fafafa; border-top:1px solid #eee; display:flex; gap:8px; }
+.pd-foot button { flex:1; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+.pd-foot .primary { background:var(--red); color:#fff; }
+.pd-foot .outline { background:#fff; color:#666; border:1.5px solid #ddd; }
+
 /* RISK BADGE (FIKO vendor risk indicators) */
 .risk-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:3px 7px; border-radius:10px; margin-top:5px; cursor:pointer; letter-spacing:0.3px; white-space:nowrap; }
 .risk-badge.safe { background:#E8F5E9; color:#1B5E20; border:1px solid #A5D6A7; }
@@ -350,6 +383,17 @@ input { font-family:inherit; }
       <button class="key" onclick="numpadKey('0')">0</button>
       <button class="key confirm" onclick="numpadConfirm()">&#10003;</button>
     </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL (rheebros 식 상세 발주 패널) -->
+<div class="pd-modal" id="pdModal" onclick="if(event.target===this)closePd()">
+  <div class="pd-box">
+    <div class="pd-hdr">
+      <h2 id="pdHeader">제품 상세 / Product Detail</h2>
+      <button class="pd-close" onclick="closePd()">&#10005;</button>
+    </div>
+    <div class="pd-body" id="pdBody"></div>
   </div>
 </div>
 
@@ -838,6 +882,130 @@ function getQty(vendorId, productId) {
   return (state.orders[vendorId] || {})[productId] || 0;
 }
 
+// ===== PRODUCT DETAIL MODAL (rheebros 식 상세 발주 패널) =====
+// 카드 빈 영역 클릭 시 큰 사진 + 풀 정보 + 큰 +/- 입력란이 뜨는 modal.
+// 별표/메모/수량 버튼은 모두 event.stopPropagation 라 충돌 안 함.
+let CURRENT_PD = null;  // { vendor, id }
+
+function pdEsc(s){
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+  });
+}
+
+function pdFindProduct(vendorId, productId){
+  const v = VENDORS[vendorId]; if (!v || !v.products) return null;
+  return v.products.find(x => x.id === productId) || null;
+}
+
+function pdLbl(ko, en, es){
+  return currentLang === 'ko' ? ko : (currentLang === 'es' ? es : en);
+}
+
+function openPd(vendorId, productId){
+  const p = pdFindProduct(vendorId, productId);
+  if (!p) return;
+  CURRENT_PD = { vendor: vendorId, id: productId };
+  const curQty = getQty(vendorId, productId);
+  const isNew = !!p.isNew;
+  const eaQty = getQty(vendorId, productId + '__EA');
+  const showEA = eaQty > 0 || (window.kmRecs && window.kmRecs.defaultUnit && window.kmRecs.defaultUnit(p) === 'pc');
+
+  const rows = [];
+  if (p.brand)    rows.push('<tr><td class="label">' + pdLbl('브랜드','Brand','Marca') + '</td><td class="value">' + pdEsc(p.brand) + '</td></tr>');
+  if (p.category) rows.push('<tr><td class="label">' + pdLbl('카테고리','Category','Categoría') + '</td><td class="value">' + pdEsc(p.category) + '</td></tr>');
+  rows.push('<tr><td class="label">' + pdLbl('품번','Item #','Código') + '</td><td class="value code">#' + pdEsc(p.id) + '</td></tr>');
+  if (p.size)     rows.push('<tr><td class="label">' + pdLbl('팩 사이즈','Pack Size','Tamaño') + '</td><td class="value">' + pdEsc(p.size) + '</td></tr>');
+  if (p.packSize) rows.push('<tr><td class="label">' + pdLbl('팩 사이즈','Pack Size','Tamaño') + '</td><td class="value">' + pdEsc(p.packSize) + '</td></tr>');
+  if (p.minOrder) rows.push('<tr><td class="label">' + pdLbl('최소 주문','Min Order','Pedido mín.') + '</td><td class="value">' + pdEsc(p.minOrder) + '</td></tr>');
+  if (p.price)    rows.push('<tr><td class="label">' + pdLbl('가격','Price','Precio') + '</td><td class="value" style="color:var(--red);font-weight:700">$' + pdEsc(p.price) + '</td></tr>');
+  if (p.barcode)  rows.push('<tr><td class="label">' + pdLbl('바코드','Barcode','Cód. barras') + '</td><td class="value barcode">' + pdEsc(p.barcode) + '</td></tr>');
+
+  const imgSrc = p.image || '';
+  const nameMain = pdEsc(p.name || p.nameKr || '');
+  const nameKr   = p.nameKr && p.name ? '<div class="pd-name-kr">' + pdEsc(p.nameKr) + '</div>' : '';
+  const newTag   = isNew ? '<span class="pd-new">NEW</span>' : '';
+
+  const eaSection = showEA ? (
+    '<div class="pd-qty-section" style="border-top:1px dashed #ccc;background:#fff8f0">' +
+      '<div class="pd-qty-label">' + pdLbl('낱개 수량 (pc)','Pieces (pc)','Piezas') + '</div>' +
+      '<div class="pd-qty-row">' +
+        '<button onclick="pdBump(-1,\'ea\')">&minus;</button>' +
+        '<input type="number" min="0" max="9999" id="pdQtyInputEa" value="' + eaQty + '" onchange="pdSetQty(this.value,\'ea\')">' +
+        '<button onclick="pdBump(1,\'ea\')">+</button>' +
+      '</div>' +
+    '</div>'
+  ) : '';
+
+  document.getElementById('pdBody').innerHTML =
+    (imgSrc ? '<div class="pd-img-wrap"><img class="pd-img" src="' + pdEsc(imgSrc) + '" onerror="this.style.visibility=\'hidden\'"></div>' : '') +
+    '<div class="pd-info">' +
+      '<div class="pd-name">' + nameMain + newTag + '</div>' +
+      nameKr +
+      '<table class="pd-table">' + rows.join('') + '</table>' +
+    '</div>' +
+    '<div class="pd-qty-section">' +
+      '<div class="pd-qty-label">📦 ' + pdLbl('케이스 수량 (CS)','Cases (CS)','Cajas') + '</div>' +
+      '<div class="pd-qty-row">' +
+        '<button onclick="pdBump(-1,\'cs\')">&minus;</button>' +
+        '<input type="number" min="0" max="9999" id="pdQtyInput" value="' + curQty + '" onchange="pdSetQty(this.value,\'cs\')">' +
+        '<button onclick="pdBump(1,\'cs\')">+</button>' +
+      '</div>' +
+    '</div>' +
+    eaSection +
+    '<div class="pd-foot">' +
+      '<button class="outline" onclick="closePd()">' + pdLbl('닫기','Close','Cerrar') + '</button>' +
+      (curQty > 0 || eaQty > 0
+        ? '<button class="primary" onclick="pdRemove()">' + pdLbl('장바구니에서 빼기','Remove','Quitar') + '</button>'
+        : '<button class="primary" onclick="pdConfirm()">+ ' + pdLbl('장바구니 담기','Add to Cart','Añadir') + '</button>'
+      ) +
+    '</div>';
+
+  document.getElementById('pdHeader').textContent = '#' + p.id;
+  document.getElementById('pdModal').classList.add('show');
+}
+
+function closePd(){
+  const m = document.getElementById('pdModal'); if (m) m.classList.remove('show');
+  CURRENT_PD = null;
+}
+
+function pdBump(delta, kind){
+  if (!CURRENT_PD) return;
+  const id = (kind === 'ea') ? 'pdQtyInputEa' : 'pdQtyInput';
+  const input = document.getElementById(id); if (!input) return;
+  const cur = parseInt(input.value, 10) || 0;
+  input.value = Math.max(0, Math.min(9999, cur + delta));
+}
+
+function pdSetQty(v, kind){
+  const id = (kind === 'ea') ? 'pdQtyInputEa' : 'pdQtyInput';
+  const input = document.getElementById(id); if (!input) return;
+  input.value = Math.max(0, Math.min(9999, parseInt(v, 10) || 0));
+}
+
+function pdConfirm(){
+  if (!CURRENT_PD) return;
+  const csInput = document.getElementById('pdQtyInput');
+  const eaInput = document.getElementById('pdQtyInputEa');
+  let cs = parseInt(csInput && csInput.value, 10) || 0;
+  let ea = parseInt(eaInput && eaInput.value, 10) || 0;
+  if (cs === 0 && ea === 0 && csInput) cs = 1;  // 입력이 모두 0 이면 케이스 1 로 기본 담기
+  if (cs > 0) setQty(CURRENT_PD.vendor, CURRENT_PD.id, cs);
+  if (ea > 0) setQty(CURRENT_PD.vendor, CURRENT_PD.id + '__EA', ea);
+  showToast('✓ ' + pdLbl('장바구니에 담았습니다','Added to cart','Añadido'));
+  // footer 새로 그리기 (빼기 버튼으로 전환)
+  openPd(CURRENT_PD.vendor, CURRENT_PD.id);
+}
+
+function pdRemove(){
+  if (!CURRENT_PD) return;
+  setQty(CURRENT_PD.vendor, CURRENT_PD.id, 0);
+  setQty(CURRENT_PD.vendor, CURRENT_PD.id + '__EA', 0);
+  showToast('✓ ' + pdLbl('빼냈습니다','Removed','Quitado'));
+  openPd(CURRENT_PD.vendor, CURRENT_PD.id);
+}
+
 // ===== SEARCH INPUT (IME-safe) =====
 // Rendering the whole page on every keystroke destroys the <input>, which
 // interrupts the Korean IME composer — the composer gives up and dumps its
@@ -1180,7 +1348,7 @@ function buildTilesHtml(v, products){
     // 🎯 발주 가이드 배너 — 케이스 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
     const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+state.vendor+"','"+p.id+"',{q})") : '';
     if (p.catalog || p.category === 'wal-lkk') {
-      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}">
+      tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}" onclick="openPd('${state.vendor}','${p.id}')" style="cursor:pointer">
         ${newBadge}
         <div class="img-wrap">${riskCorner}${imgHtml}</div>
         <div class="info">
@@ -1200,7 +1368,7 @@ function buildTilesHtml(v, products){
       </div>`;
       continue;
     }
-    tiles += `<div class="product-tile ${anyQty?'has-qty':''}${recRing}">
+    tiles += `<div class="product-tile ${anyQty?'has-qty':''}${recRing}" onclick="openPd('${state.vendor}','${p.id}')" style="cursor:pointer">
       ${newBadge}
       <div class="img-wrap">${riskCorner}${imgHtml}</div>
       <div class="info">

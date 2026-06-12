@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v107';
+const CACHE_NAME = 'km-order-v108';
 const IMG_CACHE = 'km-order-img-v1';  // 이미지 전용 캐시 (버전 분리: shell 만 갱신해도 이미지는 유지)
 const IMG_HOST_ALLOW = [
   'ecatalog.wismettacusa.com',   // Wismettac 외부 카탈로그

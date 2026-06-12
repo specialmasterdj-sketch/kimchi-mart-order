@@ -46,7 +46,17 @@
   }
 
   function notify(){
+    // Listeners all call the page's render() which swaps innerHTML —
+    // that DOM swap resets scrollY to 0, snapping the page to the top
+    // whenever the owner taps a star deep in the list. Save the scroll
+    // position now and restore it on the next frame so star/best/memo
+    // toggles stay in place across every vendor page that uses kmRecs.
+    let sy = 0, hasWin = false;
+    try { sy = window.scrollY || window.pageYOffset || 0; hasWin = true; } catch(e){}
     for (const fn of state.listeners){ try { fn(); } catch(e){ console.warn('rec listener failed', e); } }
+    if (hasWin && sy > 0 && typeof requestAnimationFrame === 'function'){
+      requestAnimationFrame(() => { try { window.scrollTo(0, sy); } catch(e){} });
+    }
   }
 
   function setVendor(v){

@@ -90,6 +90,11 @@ input { font-family:inherit; }
 .home h2 { font-size:28px; margin-bottom:6px; }
 .home p { color:#888; margin-bottom:30px; font-size:16px; }
 .vendor-cards { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; width:100%; max-width:900px; }
+.vendor-group { width:100%; max-width:900px; background:#FFF8E1; border:2px solid #FFB300; border-radius:16px; padding:16px 16px 20px; margin-bottom:26px; box-shadow:var(--shadow); }
+.vendor-group .vendor-cards { gap:16px; }
+.vendor-group-title { font-size:17px; font-weight:800; color:#E65100; text-align:left; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+.vendor-group-title .vgt-sub { font-size:12px; font-weight:600; color:#9E6B00; background:#FFE0A3; padding:2px 9px; border-radius:12px; }
+.vendor-group-title.other-title { color:#777; font-size:15px; max-width:900px; width:100%; margin:4px 0 14px; border-top:1px solid #eee; padding-top:18px; }
 .vendor-card { background:var(--white); border-radius:var(--radius); padding:30px 20px; text-align:center; box-shadow:var(--shadow); transition:transform 0.15s; border-top:5px solid; min-height:200px; display:flex; flex-direction:column; justify-content:center; }
 .vendor-card:active { transform:scale(0.97); }
 .vendor-card h3 { font-size:22px; margin-bottom:4px; }
@@ -645,6 +650,8 @@ const TRANSLATIONS = {
   // Home page
   'select_vendor': { ko:'벤더 선택', en:'Select Vendor', es:'Seleccionar Proveedor' },
   'select_vendor_sub': { ko:'벤더를 선택하세요', en:'Choose a vendor to start ordering', es:'Elija un proveedor para comenzar' },
+  'same_supplier': { ko:'같은 공급사', en:'Same supplier', es:'Mismo proveedor' },
+  'other_suppliers': { ko:'기타 공급사', en:'Other suppliers', es:'Otros proveedores' },
   'order_history': { ko:'주문 내역', en:'Order History', es:'Historial de Pedidos' },
   'store_settings': { ko:'지점 설정', en:'Store Settings', es:'Config. Tienda' },
   'items_in_cart': { ko:'개 담김', en:'items in cart', es:'en carrito' },
@@ -1175,17 +1182,20 @@ function renderHome(app) {
   // Vendors with dedicated apps in vendor-order-center — hide from home grid
   // but keep reachable via ?vendor=<id> deep-link.
   const HIDDEN_ON_HOME = new Set(['rhee_full','rhee_frequent','seoul_trading','wang','namdaemun','wismettac']);
+  // FAF & AAF are the SAME supplier (FAF Imports / Atlanta Asian Foods) — show
+  // them grouped together in their own holder, pinned above the rest.
+  const GROUPED = ['faf','aaf'];
 
-  for (let vid in VENDORS) {
-    if (HIDDEN_ON_HOME.has(vid)) continue;
+  function cardHtml(vid){
     const v = VENDORS[vid];
+    if (!v) return '';
     const cnt = getOrderCount(vid);
     const badge = cnt > 0 ? '<span class="cart-badge">' + cnt + ' ' + t('items_in_cart') + '</span>' : '<span class="cart-badge empty">' + t('empty_cart') + '</span>';
     const tag = tagMap[vid] ? '<div class="tag">' + tagMap[vid] + '</div>' : '';
     const onclickAttr = STANDALONE[vid]
       ? "location.href='" + STANDALONE[vid] + "'"
       : "state.vendor='" + vid + "';state.category='all';state.search='';state.page='browse';render()";
-    cards += '<div class="vendor-card" style="border-color:' + v.color + '" onclick="' + onclickAttr + '">' +
+    return '<div class="vendor-card" style="border-color:' + v.color + '" onclick="' + onclickAttr + '">' +
       '<h3 style="color:' + v.color + '">' + v.name + '</h3>' +
       '<div class="kr">' + v.nameKr + '</div>' +
       tag +
@@ -1193,6 +1203,20 @@ function renderHome(app) {
       badge +
     '</div>';
   }
+
+  // grouped supplier cards (FAF · AAF)
+  const groupCards = GROUPED.filter(vid => VENDORS[vid] && !HIDDEN_ON_HOME.has(vid)).map(cardHtml).join('');
+  // everything else → "기타 공급사"
+  for (let vid in VENDORS) {
+    if (HIDDEN_ON_HOME.has(vid) || GROUPED.includes(vid)) continue;
+    cards += cardHtml(vid);
+  }
+  const groupedSection = groupCards
+    ? '<div class="vendor-group">' +
+        '<div class="vendor-group-title">🌴 FAF · AAF <span class="vgt-sub">' + t('same_supplier') + '</span></div>' +
+        '<div class="vendor-cards">' + groupCards + '</div>' +
+      '</div>'
+    : '';
   app.innerHTML = '<div class="header">' +
       homeIconHtml() +
       '<h1>' + t('app_title') + '<small>' + t('app_subtitle') + '</small></h1>' +
@@ -1201,6 +1225,8 @@ function renderHome(app) {
     '<div class="home">' +
       '<h2 data-t="select_vendor">' + t('select_vendor') + '</h2>' +
       '<p data-t="select_vendor_sub">' + t('select_vendor_sub') + '</p>' +
+      groupedSection +
+      (groupedSection ? '<div class="vendor-group-title other-title">' + t('other_suppliers') + '</div>' : '') +
       '<div class="vendor-cards">' + cards + '</div>' +
       '<div class="home-actions">' +
         '<button class="btn-secondary" onclick="state.page=\'history\';render()" data-t="order_history">' + t('order_history') + '</button>' +

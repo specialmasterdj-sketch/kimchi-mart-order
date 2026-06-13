@@ -1,8 +1,7 @@
-const CACHE_NAME = 'km-order-v109';
-const IMG_CACHE = 'km-order-img-v1';  // 이미지 전용 캐시 (버전 분리: shell 만 갱신해도 이미지는 유지)
-const IMG_HOST_ALLOW = [
-  'ecatalog.wismettacusa.com',   // Wismettac 외부 카탈로그
-];
+const CACHE_NAME = 'km-order-v110';
+// 이미지 전용 캐시. v2 = 이전 버전(v1)이 외부 Wismettac 이미지를 no-cors 로
+// 가로채 캐시했던 깨진 opaque/error 응답을 전부 폐기하기 위해 이름을 올림.
+const IMG_CACHE = 'km-order-img-v2';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -31,7 +30,7 @@ self.addEventListener('activate', event => {
 });
 
 // 이미지 캐시 정원사: 한 캐시당 ~1500 entries 로 제한해서 무한 성장 방지.
-// (Wismettac 1311 + 모든 로컬 이미지 = 수천 장 가능, LRU-비슷한 단순 첫 N개 제거.)
+// (로컬 이미지가 수천 장 가능, LRU-비슷한 단순 첫 N개 제거.)
 async function trimImageCache(maxEntries){
   try {
     const cache = await caches.open(IMG_CACHE);
@@ -44,23 +43,24 @@ async function trimImageCache(maxEntries){
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+
+  // ⚠️ Cross-origin 은 SW 가 절대 가로채지 않는다 (Firebase + Wismettac 외부 이미지).
+  // 외부 이미지를 SW 가 no-cors 로 re-fetch 하면 (1) Referer 가 바뀌어 호스트의
+  // 핫링크 차단(403)을 유발하고, (2) 죽은 호스트(503/11초) 요청이 SW 큐에 쌓여
+  // 페이지가 더 느려진다. 외부 이미지는 브라우저 네이티브 로딩에 맡긴다.
+  if (url.origin !== self.location.origin) return;
+
   const isImage = url.pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/i);
 
-  // 이미지 — 모든 origin (로컬 + Wismettac 같은 화이트리스트 외부) 을 cache-first.
-  // 첫 진입 때만 네트워크, 두 번째부터 instant. 사장님 발주 화면이 메인 hot path.
-  if (isImage && (url.origin === self.location.origin || IMG_HOST_ALLOW.indexOf(url.hostname) >= 0)) {
+  // 로컬 이미지(images/...): cache-first — 두 번째 진입부터 instant.
+  if (isImage) {
     event.respondWith(
       caches.open(IMG_CACHE).then(cache =>
         cache.match(event.request).then(cached => {
           if (cached) return cached;
-          // no-cors 로 외부 이미지도 opaque response 로 캐시 가능
-          const req = (url.origin !== self.location.origin)
-            ? new Request(event.request.url, { mode: 'no-cors' })
-            : event.request;
-          return fetch(req).then(response => {
-            if (response && (response.ok || response.type === 'opaque')) {
+          return fetch(event.request).then(response => {
+            if (response && response.ok) {
               cache.put(event.request, response.clone());
-              // background trim — 응답에 영향 없이
               event.waitUntil(trimImageCache(1500));
             }
             return response;
@@ -70,9 +70,6 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
-
-  // 그 외 cross-origin 은 sw 가 손대지 않음 (Firebase 등)
-  if (url.origin !== self.location.origin) return;
 
   // Same-origin 의 비-이미지 자원: 아래 로직 계속
 

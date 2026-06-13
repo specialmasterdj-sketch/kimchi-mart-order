@@ -296,6 +296,23 @@
   }
   .toast.show { opacity: 0.95; }
 
+  /* PRODUCT DETAIL MODAL (제품 클릭 시 세부사항) */
+  .item { cursor: pointer; }
+  .pd-img-wrap { width:100%; text-align:center; background:#fafafa; padding:18px 0; border-radius:12px; margin-bottom:14px; }
+  .pd-img-wrap img { max-width:100%; max-height:240px; object-fit:contain; }
+  .pd-noimg { font-size:64px; line-height:1; padding:24px 0; }
+  .pd-name-en { font-size:18px; font-weight:800; color:#1f2937; line-height:1.3; }
+  .pd-name-ko { font-size:14px; color:#6b7280; margin-top:4px; }
+  .pd-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:14px; }
+  .pd-table td { padding:9px 10px; border:1px solid #e5e7eb; }
+  .pd-table td.l { background:#f9fafb; color:#6b7280; font-weight:600; width:42%; white-space:nowrap; }
+  .pd-table td.v { color:#1f2937; word-break:break-word; }
+  .pd-qty { display:flex; align-items:center; gap:8px; margin-top:18px; }
+  .pd-qty button { width:46px; height:46px; border:1.5px solid #c8352a; background:#fff; color:#c8352a; border-radius:8px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0; }
+  .pd-qty button:active { background:#fdeceb; }
+  .pd-qty input { flex:1; min-width:50px; height:46px; border:1.5px solid #d1d5db; border-radius:8px; text-align:center; font-size:20px; font-weight:800; font-family:inherit; }
+  .pd-qty .pd-add { flex:2; background:#c8352a; color:#fff; border:none; font-size:15px; width:auto; }
+
   .placeholder {
     text-align: center; padding: 60px 24px;
     color: #9ca3af;
@@ -398,6 +415,16 @@
       </div>
       <div class="branch-grid" id="branchGrid"></div>
     </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="pdItemModal" onclick="if(event.target===this)closeItemDetail()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="pdItemTitle">제품 상세 / Detail</h2>
+      <button class="close-btn" onclick="closeItemDetail()">×</button>
+    </div>
+    <div class="modal-body" id="pdItemBody"></div>
   </div>
 </div>
 
@@ -955,6 +982,13 @@ function bindItemEvents(el) {
       }
     });
   }
+
+  // 카드 빈 영역 클릭 → 제품 상세 모달 (수량/별표/메모/가격 버튼은 제외)
+  el.addEventListener("click", (e) => {
+    if (e.target.closest('.qty-control') || e.target.closest('.km-rec-tools') ||
+        e.target.closest('button') || e.target.closest('input')) return;
+    openItemDetail(key);
+  });
 }
 
 function findItemByKey(key) {
@@ -966,6 +1000,61 @@ function findItemByKey(key) {
   if (!sec) return null;
   const item = sec.items.find(it => (it.plu || it.en) === rest);
   return item ? { sec, item } : null;
+}
+
+// ===== PRODUCT DETAIL MODAL (제품 클릭 시 세부사항) =====
+function openItemDetail(key) {
+  const ref = findItemByKey(key);
+  if (!ref) return;
+  const it = ref.item;
+  const qty = state.qty[key] || 0;
+  const img = it.image
+    ? '<div class="pd-img-wrap"><img src="' + escapeHtml(it.image) + '" onerror="this.style.display=\'none\'"></div>'
+    : '<div class="pd-img-wrap"><div class="pd-noimg">📦</div></div>';
+  const rows = [];
+  rows.push(['품번 / PLU', it.plu ? '#' + escapeHtml(it.plu) : '-']);
+  if (it.cat) rows.push(['분류 / Category', escapeHtml(it.cat)]);
+  if (it.unit) rows.push(['단위 / Unit', escapeHtml(it.unit)]);
+  if (it.barcode) rows.push(['바코드 / Barcode', escapeHtml(it.barcode)]);
+  const tbl = '<table class="pd-table">' + rows.map(r => '<tr><td class="l">' + r[0] + '</td><td class="v">' + r[1] + '</td></tr>').join('') + '</table>';
+  document.getElementById('pdItemBody').innerHTML =
+    img +
+    '<div class="pd-name-en">' + escapeHtml(it.en) + '</div>' +
+    (it.ko ? '<div class="pd-name-ko">' + escapeHtml(it.ko) + '</div>' : '') +
+    tbl +
+    '<div class="pd-qty">' +
+      '<button onclick="pdItemBump(-1)">−</button>' +
+      '<input type="number" min="0" id="pdItemQty" value="' + qty + '">' +
+      '<button onclick="pdItemBump(1)">+</button>' +
+      '<button class="pd-add" onclick="pdItemSave()">담기 / Save</button>' +
+    '</div>';
+  const m = document.getElementById('pdItemModal');
+  m.dataset.key = key;
+  m.classList.add('show');
+}
+function closeItemDetail() {
+  const m = document.getElementById('pdItemModal');
+  if (m) m.classList.remove('show');
+}
+function pdItemBump(d) {
+  const inp = document.getElementById('pdItemQty');
+  if (inp) inp.value = Math.max(0, (parseInt(inp.value, 10) || 0) + d);
+}
+function pdItemSave() {
+  const m = document.getElementById('pdItemModal');
+  const key = m.dataset.key;
+  const n = Math.max(0, Math.floor(Number(document.getElementById('pdItemQty').value) || 0));
+  setQty(key, n);
+  document.querySelectorAll('.item').forEach(el => {
+    if (el.dataset.key === key) {
+      const inp = el.querySelector('.qty-input');
+      if (inp) inp.value = n || '';
+      updateItemHighlight(el, key);
+    }
+  });
+  updateSummary();
+  closeItemDetail();
+  showToast(n > 0 ? ('✓ ' + n + ' 담음 / added') : '비움 / cleared');
 }
 
 function updateItemHighlight(el, key) {

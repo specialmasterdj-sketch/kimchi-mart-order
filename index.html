@@ -2120,7 +2120,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 45;
+const SW_VERSION = 46;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');
@@ -2360,7 +2360,10 @@ window.cloudPushOrders = function(branchId, userKey, orders){
     const entries = Object.entries(items).filter(([, q]) => q > 0);
     if (entries.length) clean[v] = Object.fromEntries(entries);
   }
-  set(ref(db, branchPath(branchId, userKey)), clean).catch(e => console.warn('cloud push failed', e));
+  set(ref(db, branchPath(branchId, userKey)), clean).catch(e => {
+    console.warn('cloud push failed', e);
+    if (typeof showToast === 'function') showToast('⚠️ 클라우드 저장 실패 — 로그인/승인 확인 (주문은 이 기기에 저장됨)');
+  });
 };
 
 function subscribeBranch(branchId, userKey){
@@ -2384,6 +2387,15 @@ function subscribeBranch(branchId, userKey){
       // Skip re-render if remote matches local (echo from our own write).
       const prev = JSON.stringify(window.KM.state.orders || {});
       const incoming = JSON.stringify(next);
+      // 🆕 2026-06-18 데이터 손실 방지: 빈 클라우드(저장 실패/미인증 시)가 입력한 주문을
+      //   덮어써 사라지게 하던 버그 차단. remote 가 비었는데 로컬에 주문이 있으면 덮어쓰지
+      //   말고 로컬을 클라우드로 다시 올린다(저장 복구). 로그인/승인되면 실제 저장됨.
+      const _remoteHasItems = Object.values(next).some(v => v && Object.keys(v).length);
+      const _localHasItems  = Object.values(window.KM.state.orders || {}).some(v => v && Object.keys(v).length);
+      if (!_remoteHasItems && _localHasItems) {
+        try { window.cloudPushOrders(branchId, userKey, window.KM.state.orders); } catch(_){}
+        return;  // 로컬 주문 유지 — 화면·기기에서 안 지움
+      }
       window.KM.state.orders = next;
       if (prev === incoming) return;
       // Remote actually differs. On browse page, avoid a full rebuild; just

@@ -216,6 +216,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="recommend.js?v=20260609a"></script>
+<script src="product-images.js?v=20260628b"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
 let REC_FILTER_ON = false;
@@ -533,12 +534,14 @@ function render(){
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     // 🎯 발주 가이드 배너 — 케이스 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
     const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+p.detailId+"',{q})") : '';
+    const _vimg = (window.kmImg ? (window.kmImg.get('wismettac', p.id) || '') : '') || p.image;
+    const _ibtn = window.kmImg ? window.kmImg.btnHtml('wismettac', p.id, !!_vimg) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
-        (p.image
-          ? '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f4f4f4\'">'
-          : '<div class="pimg" style="display:flex;align-items:center;justify-content:center;background:#f4f4f4;font-size:30px">&#128230;</div>') +
+        (_vimg
+          ? '<img class="pimg" src="' + esc(_vimg) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f4f4f4\'">'
+          : '<div class="pimg" style="display:flex;align-items:center;justify-content:center;background:#f4f4f4;font-size:30px">&#128230;</div>') + _ibtn +
         '<div class="pbody">' +
           '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + recBadges + '</div>' +
           recTools +
@@ -838,6 +841,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -888,6 +892,13 @@ if (window.kmRecs){
     branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
   });
   window.kmRecs.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+
+// 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.
+if (window.kmImg){
+  const storage = getStorage(app);
+  window.kmImg.init({ db, ref, set, onValue, remove, storage, sRef, uploadBytes, getDownloadURL });
+  window.kmImg.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
 }
 
 let applyingRemote = false;

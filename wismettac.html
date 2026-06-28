@@ -811,33 +811,49 @@ function fallbackCopy(txt){
   document.body.removeChild(ta);
 }
 
-// 📧 주문을 info@miamikimchi.com 계정 Gmail 작성창으로 → namhyun.kim@wismettacusa.com 수신.
-//   to/제목/본문 자동 채움. 본문 길어 잘릴 때 대비 클립보드에도 복사. 팝업 차단 시 mailto 폴백.
+// 📧 Apps Script 백엔드(info@miamikimchi.com 계정) 웹앱 URL. 배포 후 여기에 붙여넣으면
+//   버튼 한 번에 자동 발송(엑셀 CSV 첨부). 비어있으면 Gmail 작성창(수동)으로 폴백.
+const ORDER_EMAIL_ENDPOINT = '';
+
+// 📧 위스메텍 주문을 info@miamikimchi.com → namhyun.kim@wismettacusa.com 으로 발송.
 function emailOrder(){
-  const txt = buildOrderText();
-  if (!txt){ toast(t('noCart')); return; }
+  const entries = Object.entries(CART);
+  if (!entries.length){ toast(t('noCart')); return; }
   const today = new Date().toISOString().slice(0,10);
   const to = 'namhyun.kim@wismettacusa.com';
-  const from = 'info@miamikimchi.com';
   const subject = 'Kimchi Mart Order - Wismettac Orlando - ' + today;
-  // 항상 클립보드에 복사 (본문 길면 붙여넣기용).
+  const txt = buildOrderText();
+
+  // ── 자동 발송 (Apps Script 설정됨) ──
+  if (ORDER_EMAIL_ENDPOINT){
+    const items = [];
+    entries.forEach(([id, qty]) => {
+      const ea = isEaId(id);
+      const p = BY_ID[ea ? baseIdOf(id) : id];
+      if (p) items.push({ unit: ea?'PC':'CS', id: p.id, qty: qty, name: p.name, pack: p.packSize||'' });
+    });
+    const units = entries.reduce((s,[,q])=>s+q,0);
+    if (!confirm('위스메텍에 주문 이메일을 보낼까요?\n\n받는사람: ' + to + '\n품목: ' + items.length + '종 / ' + units + '개\n(엑셀 첨부 자동 발송)')) return;
+    toast('📧 발송 중…');
+    fetch(ORDER_EMAIL_ENDPOINT, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ to, subject, body: txt, items, filename: 'KimchiMart_Wismettac_' + today })
+    }).then(() => toast('✅ 발송 완료 — info@ 보낸편지함에서 확인하세요'))
+      .catch(e => toast('발송 실패: ' + (e.message||e)));
+    return;
+  }
+
+  // ── 폴백: Gmail 작성창 + 클립보드 (백엔드 미설정 시) ──
   let copied = false;
   try { if (navigator.clipboard) { navigator.clipboard.writeText(txt); copied = true; } } catch(e){}
   if (!copied) fallbackCopy(txt);
-  // Gmail 작성창. 계정 선택은 authuser=이메일. 본문은 URL 이 길면 Gmail 이 400(Request too long)
-  //   → 짧은 주문만 body 자동삽입, 길면 받는사람·제목만 열고 본문은 Ctrl+V.
-  // authuser=이메일 은 Gmail 이 400 → 제거. 현재 활성 계정(info@ 인박스 열려있음)으로 작성창 열림.
-  const base = 'https://mail.google.com/mail/?view=cm&fs=1'
-    + '&to=' + encodeURIComponent(to)
-    + '&su=' + encodeURIComponent(subject);
+  const base = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject);
   const withBody = base + '&body=' + encodeURIComponent(txt);
-  const useBody = withBody.length < 1900;
-  const url = useBody ? withBody : base;
+  const url = withBody.length < 1900 ? withBody : base;
   const w = window.open(url, '_blank');
   if (!w){ location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject); }
-  toast(useBody
-    ? '📧 Gmail 작성창 열림 — 확인 후 보내기'
-    : '📋 주문 복사됨 — 작성창 본문에 Ctrl+V 붙여넣고 보내기');
+  toast(url === withBody ? '📧 Gmail 작성창 열림 — 확인 후 보내기' : '📋 주문 복사됨 — 본문에 Ctrl+V 후 보내기');
 }
 
 function exportOrder(){

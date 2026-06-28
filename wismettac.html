@@ -208,6 +208,7 @@
         <button class="gray" onclick="clearCart()">🗑 비우기</button>
         <button class="outline" onclick="exportOrder()">📥 엑셀</button>
         <button class="primary" onclick="copyOrderText()">📋 복사</button>
+        <button class="primary" style="background:#1a73e8" onclick="emailOrder()">📧 이메일</button>
       </div>
     </div>
   </div>
@@ -808,6 +809,27 @@ function fallbackCopy(txt){
   try { document.execCommand('copy'); toast(t('copied')); }
   catch(e){ toast('복사 실패'); }
   document.body.removeChild(ta);
+}
+
+// 📧 주문을 info@miamikimchi.com 계정 Gmail 작성창으로 → namhyun.kim@wismettacusa.com 수신.
+//   to/제목/본문 자동 채움. 본문 길어 잘릴 때 대비 클립보드에도 복사. 팝업 차단 시 mailto 폴백.
+function emailOrder(){
+  const txt = buildOrderText();
+  if (!txt){ toast(t('noCart')); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const to = 'namhyun.kim@wismettacusa.com';
+  const from = 'info@miamikimchi.com';
+  const subject = 'Kimchi Mart Order - Wismettac Orlando - ' + today;
+  try { if (navigator.clipboard) navigator.clipboard.writeText(txt); } catch(e){}
+  const gmail = 'https://mail.google.com/mail/u/' + encodeURIComponent(from) + '/?view=cm&fs=1'
+    + '&to=' + encodeURIComponent(to)
+    + '&su=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(txt);
+  const w = window.open(gmail, '_blank');
+  if (!w){ // 팝업 차단 → 기본 메일앱
+    location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(txt);
+  }
+  toast('📧 Gmail 작성창 열림 — 확인 후 보내기 (주문도 복사됨)');
 }
 
 function exportOrder(){

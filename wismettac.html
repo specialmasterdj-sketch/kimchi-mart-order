@@ -821,7 +821,9 @@ function emailOrder(){
   const from = 'info@miamikimchi.com';
   const subject = 'Kimchi Mart Order - Wismettac Orlando - ' + today;
   try { if (navigator.clipboard) navigator.clipboard.writeText(txt); } catch(e){}
-  const gmail = 'https://mail.google.com/mail/u/' + encodeURIComponent(from) + '/?view=cm&fs=1'
+  // Gmail 작성창. 계정 선택은 authuser=이메일 (경로 /u/<숫자> 만 허용 → 이메일 넣으면 400).
+  const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
+    + '&authuser=' + encodeURIComponent(from)
     + '&to=' + encodeURIComponent(to)
     + '&su=' + encodeURIComponent(subject)
     + '&body=' + encodeURIComponent(txt);

@@ -163,9 +163,9 @@
     const style = document.createElement('style');
     style.textContent = [
       '.kmimg-btn{position:absolute;top:4px;right:4px;z-index:6;width:30px;height:30px;border-radius:8px;border:none;',
-        'background:rgba(26,92,58,.92);color:#fff;font-size:15px;line-height:30px;text-align:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}',
-      '.kmimg-btn.has{background:rgba(0,0,0,.55)}',
-      '.kmimg-btn:hover{transform:scale(1.08)}',
+        'background:transparent;color:#fff;font-size:18px;line-height:30px;text-align:center;cursor:pointer;padding:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}',
+      '.kmimg-btn.has{background:transparent}',
+      '.kmimg-btn:hover{transform:scale(1.18)}',
       '.kmimg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}',
       '.kmimg-box{background:#fff;border-radius:14px;max-width:380px;width:100%;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.3);font-family:inherit}',
       '.kmimg-title{font-size:17px;font-weight:800;color:#111;margin-bottom:2px}',

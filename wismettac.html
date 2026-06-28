@@ -820,18 +820,24 @@ function emailOrder(){
   const to = 'namhyun.kim@wismettacusa.com';
   const from = 'info@miamikimchi.com';
   const subject = 'Kimchi Mart Order - Wismettac Orlando - ' + today;
-  try { if (navigator.clipboard) navigator.clipboard.writeText(txt); } catch(e){}
-  // Gmail 작성창. 계정 선택은 authuser=이메일 (경로 /u/<숫자> 만 허용 → 이메일 넣으면 400).
-  const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
+  // 항상 클립보드에 복사 (본문 길면 붙여넣기용).
+  let copied = false;
+  try { if (navigator.clipboard) { navigator.clipboard.writeText(txt); copied = true; } } catch(e){}
+  if (!copied) fallbackCopy(txt);
+  // Gmail 작성창. 계정 선택은 authuser=이메일. 본문은 URL 이 길면 Gmail 이 400(Request too long)
+  //   → 짧은 주문만 body 자동삽입, 길면 받는사람·제목만 열고 본문은 Ctrl+V.
+  const base = 'https://mail.google.com/mail/?view=cm&fs=1'
     + '&authuser=' + encodeURIComponent(from)
     + '&to=' + encodeURIComponent(to)
-    + '&su=' + encodeURIComponent(subject)
-    + '&body=' + encodeURIComponent(txt);
-  const w = window.open(gmail, '_blank');
-  if (!w){ // 팝업 차단 → 기본 메일앱
-    location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(txt);
-  }
-  toast('📧 Gmail 작성창 열림 — 확인 후 보내기 (주문도 복사됨)');
+    + '&su=' + encodeURIComponent(subject);
+  const withBody = base + '&body=' + encodeURIComponent(txt);
+  const useBody = withBody.length < 1900;
+  const url = useBody ? withBody : base;
+  const w = window.open(url, '_blank');
+  if (!w){ location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject); }
+  toast(useBody
+    ? '📧 Gmail 작성창 열림 — 확인 후 보내기'
+    : '📋 주문 복사됨 — 작성창 본문에 Ctrl+V 붙여넣고 보내기');
 }
 
 function exportOrder(){

@@ -15,6 +15,7 @@
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
 <script src="recommend.js?v=20260609a"></script>
+<script src="product-images.js?v=20260628a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -928,7 +929,7 @@ function openPd(vendorId, productId){
   if (p.price)    rows.push('<tr><td class="label">' + pdLbl('가격','Price','Precio') + '</td><td class="value" style="color:var(--red);font-weight:700">$' + pdEsc(p.price) + '</td></tr>');
   if (p.barcode)  rows.push('<tr><td class="label">' + pdLbl('바코드','Barcode','Cód. barras') + '</td><td class="value barcode">' + pdEsc(p.barcode) + '</td></tr>');
 
-  const imgSrc = p.image || '';
+  const imgSrc = (window.kmImg ? window.kmImg.get(vendorId, p.id) : '') || p.image || '';
   const nameMain = pdEsc(p.name || p.nameKr || '');
   const nameKr   = p.nameKr && p.name ? '<div class="pd-name-kr">' + pdEsc(p.nameKr) + '</div>' : '';
   const newTag   = isNew ? '<span class="pd-new">NEW</span>' : '';
@@ -1309,7 +1310,10 @@ function buildTilesHtml(v, products){
   let tiles = '';
   for (let p of products) {
     const qty = getQty(state.vendor, p.id);
-    const imgHtml = p.image ? `<img src="${p.image}" loading="lazy" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=no-img>&#128230;</div>'">` : '<div class="no-img">&#128230;</div>';
+    const _userImg = (window.kmImg ? window.kmImg.get(state.vendor, p.id) : '') || '';
+    const _effImg = _userImg || p.image;
+    const imgHtml = _effImg ? `<img src="${_effImg}" loading="lazy" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=no-img>&#128230;</div>'">` : '<div class="no-img">&#128230;</div>';
+    const _imgBtn = window.kmImg ? window.kmImg.btnHtml(state.vendor, p.id, !!_effImg) : '';
     const priceHtml = p.price ? `<div class="price">$${p.price.toFixed(2)}</div>` : '';
     const newBadge = p.isNew ? '<span class="new-badge">NEW</span>' : '';
     const brandHtml = p.brand ? `<div class="brand">${p.brand}</div>` : '';
@@ -1376,7 +1380,7 @@ function buildTilesHtml(v, products){
     if (p.catalog || p.category === 'wal-lkk') {
       tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}" onclick="openPd('${state.vendor}','${p.id}')" style="cursor:pointer">
         ${newBadge}
-        <div class="img-wrap">${riskCorner}${imgHtml}</div>
+        <div class="img-wrap">${riskCorner}${imgHtml}${_imgBtn}</div>
         <div class="info">
           ${recTools}
           ${recBadges ? `<div style="text-align:center;margin-bottom:2px">${recBadges}</div>` : ''}
@@ -1396,7 +1400,7 @@ function buildTilesHtml(v, products){
     }
     tiles += `<div class="product-tile ${anyQty?'has-qty':''}${recRing}" onclick="openPd('${state.vendor}','${p.id}')" style="cursor:pointer">
       ${newBadge}
-      <div class="img-wrap">${riskCorner}${imgHtml}</div>
+      <div class="img-wrap">${riskCorner}${imgHtml}${_imgBtn}</div>
       <div class="info">
         <div class="name">${p.name || p.nameKr}${recBadges}</div>
         ${recTools}
@@ -2120,7 +2124,7 @@ function installApp() {
 }
 
 // ===== SERVICE WORKER =====
-const SW_VERSION = 46;
+const SW_VERSION = 47;
 (function initSW() {
   if (!('serviceWorker' in navigator)) return;
   var lastV = parseInt(localStorage.getItem('km_sw_ver') || '0');
@@ -2228,6 +2232,7 @@ viewing Miami sees qty=3 instantly, and either can continue the cart.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -2242,6 +2247,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
+
+// 상품 사진 모듈(window.kmImg) — 직원이 빈 상품에 사진 추가 → 공유.
+if (window.kmImg){
+  window.kmImg.init({
+    db, ref, set, get, onValue, remove,
+    storage, sRef, uploadBytes, getDownloadURL
+  });
+  window.kmImg.subscribe(() => {
+    try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
+  });
+}
 
 // Wire recommend.js with this page's Firebase handle. Vendor is set later
 // by render() as state.vendor changes (deep-link, home grid click).

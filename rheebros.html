@@ -220,6 +220,7 @@
 
 <script src="rheebros_products.js"></script>
 <script src="recommend.js?v=20260609a"></script>
+<script src="product-images.js?v=20260628a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
 let REC_FILTER_ON = false;
@@ -597,10 +598,12 @@ function render(){
     // 🎯 발주 가이드 배너 — 케이스 입력란 바로 위. 매니저가 사장님 OVER 갯수를
     //   명확히 보고 탭하면 그 수량이 케이스 입력란에 자동 입력 (setQty).
     const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+p.detailId+"',{q})") : '';
+    const _vimg = (window.kmImg ? (window.kmImg.get('rhee_full', p.id) || '') : '') || p.image;
+    const _ibtn = window.kmImg ? window.kmImg.btnHtml('rhee_full', p.id, !!_vimg) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.isNew ? '<span class="new-badge">NEW</span>' : '') +
-        '<img class="pimg" src="' + esc(p.image) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' +
+        '<img class="pimg" src="' + esc(_vimg) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' + _ibtn +
         '<div class="pbody">' +
           '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + recBadges + '</div>' +
           recTools +
@@ -930,6 +933,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getDatabase, ref, set, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwL0Wa1Q8aFhZp5hsn9gTw5aZwXUdAVy4",
@@ -979,6 +983,13 @@ if (window.kmRecs){
     branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
   });
   window.kmRecs.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+
+// 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.
+if (window.kmImg){
+  const storage = getStorage(app);
+  window.kmImg.init({ db, ref, set, get, onValue, remove, storage, sRef, uploadBytes, getDownloadURL });
+  window.kmImg.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
 }
 
 let applyingRemote = false;

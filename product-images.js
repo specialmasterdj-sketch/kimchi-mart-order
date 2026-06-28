@@ -162,7 +162,7 @@
     if (modalEl) return;
     const style = document.createElement('style');
     style.textContent = [
-      '.kmimg-btn{position:absolute;top:4px;left:4px;z-index:6;width:30px;height:30px;border-radius:8px;border:none;',
+      '.kmimg-btn{position:absolute;top:4px;right:4px;z-index:6;width:30px;height:30px;border-radius:8px;border:none;',
         'background:rgba(26,92,58,.92);color:#fff;font-size:15px;line-height:30px;text-align:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}',
       '.kmimg-btn.has{background:rgba(0,0,0,.55)}',
       '.kmimg-btn:hover{transform:scale(1.08)}',

@@ -826,8 +826,8 @@ function emailOrder(){
   if (!copied) fallbackCopy(txt);
   // Gmail 작성창. 계정 선택은 authuser=이메일. 본문은 URL 이 길면 Gmail 이 400(Request too long)
   //   → 짧은 주문만 body 자동삽입, 길면 받는사람·제목만 열고 본문은 Ctrl+V.
+  // authuser=이메일 은 Gmail 이 400 → 제거. 현재 활성 계정(info@ 인박스 열려있음)으로 작성창 열림.
   const base = 'https://mail.google.com/mail/?view=cm&fs=1'
-    + '&authuser=' + encodeURIComponent(from)
     + '&to=' + encodeURIComponent(to)
     + '&su=' + encodeURIComponent(subject);
   const withBody = base + '&body=' + encodeURIComponent(txt);

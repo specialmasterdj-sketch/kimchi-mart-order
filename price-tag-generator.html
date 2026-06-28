@@ -2235,6 +2235,30 @@ function compactPages(){
   render();
 }
 
+// 📷 배치된 가격표의 이미지(또는 "No image")를 클릭 → 사진 파일 선택 → 그 태그에 추가/교체.
+let _editImgTargetId = null;
+function editTagImage(id){
+  _editImgTargetId = id;
+  let inp = document.getElementById('tag-img-edit-input');
+  if (!inp){
+    inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.id = 'tag-img-edit-input'; inp.style.display = 'none';
+    inp.addEventListener('change', async function(e){
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!f || _editImgTargetId == null) return;
+      try {
+        const dataUrl = await compressImage(f);
+        const tg = tags.find(t => t.id === _editImgTargetId);
+        if (tg){ tg.img = dataUrl; saveAuto(); render(); toast('✓ 사진 추가됨', 'ok'); }
+      } catch(err){ toast('사진 처리 실패: ' + (err.message||err), 'err'); }
+      _editImgTargetId = null;
+    });
+    document.body.appendChild(inp);
+  }
+  inp.click();
+}
+
 // 🏆 모든 가격표를 BEST 템플릿으로 일괄 변경 (전무님 2026-06-28)
 function allToBest(){
   if (!tags.length){ toast(LANG==='en'?'No tags yet':LANG==='es'?'Sin etiquetas':'가격표가 없습니다', 'err'); return; }
@@ -2275,7 +2299,9 @@ function renderTag(r){
     : (r.id === 'draft'
         ? `<span>📷<br>${imgAddHint}</span>`
         : `<span>📷<br>${imgNoneHint}</span>`);
-  const imgClick = r.id === 'draft' ? `onclick="document.getElementById('f-img-file').click()"` : '';
+  const imgClick = r.id === 'draft'
+    ? `onclick="document.getElementById('f-img-file').click()"`
+    : `onclick="event.stopPropagation();editTagImage(${r.id})" title="📷 사진 추가/교체" style="cursor:pointer"`;
   const imgClass = r.img ? 'img-box has' : 'img-box';
   // 2026-05-20 (4차) 전무님 명시: 템플릿 컨트롤대로 동작 — 일반=현재가만,
   // SALE/MEMBER=이전가+현재가. Antonio 가 이전가 보고싶으면 SALE 템플릿 선택해야.

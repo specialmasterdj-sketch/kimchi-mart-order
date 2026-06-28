@@ -368,7 +368,7 @@
 
   .size-s .tag .img-box{font-size:9pt}
   .size-s .tag .brand{font-size:11pt}
-  .size-s .tag .name{font-size:25pt;-webkit-line-clamp:3;font-weight:800;line-height:1.1}
+  .size-s .tag .name{font-size:30pt;-webkit-line-clamp:3;font-weight:800;line-height:1.08}
   .size-s .tag .name-ko{font-size:10pt}
   .size-s .tag .meta .size-txt{font-size:10pt}
   .size-s .tag .meta .price{font-size:40pt}
@@ -674,6 +674,7 @@
       <button class="print" onclick="downloadPdf()" data-t="pdf_dl" style="background:#1a5c3a;color:#fff;font-weight:700;padding:8px 14px">📥 PDF 다운로드 후 인쇄</button>
       <button onclick="addPage()" data-t="add_page">+ 페이지</button>
       <button class="danger" onclick="if(confirm(t('compact_confirm')))compactPages()" data-t="compact">🧹 압축</button>
+      <button onclick="allToBest()" data-t="all_best" style="background:#fffdf3;border:1.5px solid #ca8a04;color:#a16207;font-weight:700;padding:8px 12px">★ 모두 BEST</button>
       <span class="count" id="count">0개 / 1 페이지</span>
     </div>
     <div style="font-size:11px;color:#374151;background:#dcfce7;border:1px solid #16a34a;border-radius:6px;padding:6px 10px;margin-bottom:10px;line-height:1.45">
@@ -769,6 +770,7 @@ const TR = {
   pdf_dl:           { ko:'📥 PDF 다운로드 후 인쇄', en:'📥 Download PDF → Print', es:'📥 Descargar PDF → Imprimir' },
   add_page:         { ko:'+ 페이지', en:'+ Page', es:'+ Página' },
   compact:          { ko:'🧹 압축', en:'🧹 Compact', es:'🧹 Compactar' },
+  all_best:         { ko:'★ 모두 BEST', en:'★ All to BEST', es:'★ Todo a BEST' },
   compact_confirm:  { ko:'빈 슬롯 정리하고 페이지 압축할까요?', en:'Compact pages by removing empty slots?', es:'¿Compactar páginas?' },
   count_fmt:        { ko:'%d개 / %p 페이지', en:'%d tags / %p pages', es:'%d etiquetas / %p páginas' },
   hint_pdf_title:   { ko:'📥 PDF 다운로드 → PDF 열기 → 인쇄', en:'📥 Download PDF → Open PDF → Print', es:'📥 Descargar PDF → Abrir → Imprimir' },
@@ -2188,6 +2190,14 @@ function compactPages(){
   render();
 }
 
+// 🏆 모든 가격표를 BEST 템플릿으로 일괄 변경 (전무님 2026-06-28)
+function allToBest(){
+  if (!tags.length){ toast(LANG==='en'?'No tags yet':LANG==='es'?'Sin etiquetas':'가격표가 없습니다', 'err'); return; }
+  tags.forEach(tg => { tg.tpl = 'best'; });
+  if (typeof saveLocal === 'function') { try { saveLocal(); } catch(_){} }
+  render();
+  toast(LANG==='en'?'All tags set to ★ BEST':LANG==='es'?'Todo a ★ BEST':'모두 ★ BEST로 변경됨', 'ok');
+}
 // ============ 렌더 ============
 function render(){
   const pagesEl = document.getElementById('pages');

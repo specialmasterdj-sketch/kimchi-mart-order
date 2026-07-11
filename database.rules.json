@@ -94,7 +94,7 @@
         ".write": "auth != null"
       },
       "featured": {
-        ".read":  "auth != null",
+        ".read":  true,
         ".write": "auth != null"
       },
       "recipes": {

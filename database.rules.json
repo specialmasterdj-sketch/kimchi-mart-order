@@ -85,6 +85,18 @@
         ".read":  "auth != null",
         ".write": "auth != null"
       },
+      "ugc": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "showcase": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "notifications": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
       "_healthcheck": {
         ".read":  "auth != null",
         ".write": "auth != null"

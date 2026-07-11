@@ -89,6 +89,18 @@
         ".read":  "auth != null",
         ".write": "auth != null"
       },
+      "checkin_log": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "featured": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
+      "recipes": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      },
       "showcase": {
         ".read":  "auth != null",
         ".write": "auth != null"

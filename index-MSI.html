@@ -1788,7 +1788,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-onAuthStateChanged(auth, (user) => { if (!user) location.replace('index.html'); });
+// 🛑 2026-07-27 no-kick: 이름 등록된 기기(chat.me)는 세션 만료로 강제 이동하지 않음.
+onAuthStateChanged(auth, (user) => {
+  if (user) return;
+  try { const m = JSON.parse(localStorage.getItem('chat.me') || 'null'); if (m && String(m.name || '').trim()) return; } catch(e){}
+  location.replace('index.html');
+});
 
 // Guard so remote updates don't bounce back as local pushes.
 let applyingRemote = false;

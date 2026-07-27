@@ -685,6 +685,54 @@
     );
   }
 
+  // --- 소프트 로그인 게이트 (no-kick) ---------------------------------
+  // 2026-07-27 사장님 리포트: 발주 작업 중 느닷없이 로그인 화면으로 강제 이동.
+  // 원인: Firebase 세션이 만료/복원 실패하면 각 벤더 페이지가 그 즉시
+  // auth.html 로 location.replace — 보던 화면과 진행 중이던 작업 흐름이 끊김.
+  // 해결: 이름이 등록된 기기(chat.me 존재)는 절대 강제 이동하지 않고,
+  // 이 배너로만 재로그인을 안내한다. 화면·카트 입력은 그대로 유지되고,
+  // 저장 동기화만 재로그인 후 다시 붙는다. 강제 이동은 "이 기기에서 한 번도
+  // 로그인한 적 없는" 경우에만 남는다.
+  function _hasLocalMe(){
+    try {
+      const m = JSON.parse(localStorage.getItem('chat.me') || 'null');
+      return !!(m && String(m.name || '').trim());
+    } catch(e){ return false; }
+  }
+  function _showReloginBanner(loginUrl){
+    if (document.getElementById('km-relogin-banner')) return;
+    const bar = document.createElement('div');
+    bar.id = 'km-relogin-banner';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:100001;display:flex;' +
+      'align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:10px 14px;' +
+      'background:linear-gradient(135deg,#b45309,#d97706);color:#fff;font-family:inherit;' +
+      'font-size:13.5px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,.25)';
+    const msg = document.createElement('span');
+    msg.textContent = '⚠️ 로그인 세션이 만료되었습니다 — 별표·카트 저장이 서버에 반영되지 않아요.';
+    const btn = document.createElement('a');
+    btn.textContent = '🔑 다시 로그인';
+    btn.href = loginUrl || 'https://specialmasterdj-sketch.github.io/kfood-guide/auth.html';
+    btn.style.cssText = 'background:#fff;color:#b45309;padding:6px 14px;border-radius:8px;' +
+      'text-decoration:none;font-weight:800;white-space:nowrap';
+    const x = document.createElement('button');
+    x.textContent = '✕';
+    x.title = '닫기 (보기만 계속)';
+    x.style.cssText = 'background:none;border:none;color:#fff;font-size:15px;cursor:pointer;padding:4px 6px;opacity:.8';
+    x.onclick = () => { try { bar.remove(); } catch(e){} };
+    bar.append(msg, btn, x);
+    const attach = () => { try { document.body.appendChild(bar); } catch(e){} };
+    if (document.body) attach(); else document.addEventListener('DOMContentLoaded', attach);
+  }
+  function _hideReloginBanner(){
+    const el = document.getElementById('km-relogin-banner');
+    if (el){ try { el.remove(); } catch(e){} }
+  }
+  window.kmSoftGate = {
+    hasLocalMe: _hasLocalMe,
+    showReloginBanner: _showReloginBanner,
+    hideReloginBanner: _hideReloginBanner,
+  };
+
   // Public API — kept stable so vendor pages don't need to change.
   window.kmRecs = {
     init, setVendor, setBranch, refresh,

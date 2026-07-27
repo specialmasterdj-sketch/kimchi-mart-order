@@ -216,7 +216,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="recommend.js?v=20260726a"></script>
+<script src="recommend.js?v=20260727a"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
@@ -916,17 +916,28 @@ function _bounceToManagerLogin(){
 // timer — Firebase fires it only AFTER restoring the session from IndexedDB,
 // so a slow cold-start no longer triggers a premature bounce → login loop.
 // The timer is just a 10s safety net in case Firebase never initialises.
+// 🛑 2026-07-27 no-kick: 이름 등록된 기기(chat.me)는 세션이 만료돼도 강제
+// 이동하지 않고 상단 배너로만 재로그인 안내 (작업 화면 유지).
+function _softKickW(){
+  if (window.kmSoftGate && window.kmSoftGate.hasLocalMe()){
+    const ret = encodeURIComponent(location.pathname + location.search);
+    window.kmSoftGate.showReloginBanner('https://specialmasterdj-sketch.github.io/kfood-guide/auth.html?return=' + ret);
+    return;
+  }
+  _bounceToManagerLogin();
+}
 let _authGraceTimer = setTimeout(() => {
-  if (!auth.currentUser) _bounceToManagerLogin();
+  if (!auth.currentUser) _softKickW();
 }, 10000);
 onAuthStateChanged(auth, (user) => {
   clearTimeout(_authGraceTimer);
   if (user) {
+    if (window.kmSoftGate) window.kmSoftGate.hideReloginBanner();
     if (window.kmRecs) window.kmRecs.refresh();
     return;
   }
-  // Genuinely signed out (not a race) → go to the Manager Apps login.
-  _bounceToManagerLogin();
+  // Genuinely signed out (not a race) — 등록된 기기는 배너만.
+  _softKickW();
 });
 
 // Wire recommend.js to this page's Firebase handle. Re-render the grid

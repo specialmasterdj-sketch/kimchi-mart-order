@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script src="recommend.js?v=20260726a"></script>
+<script src="recommend.js?v=20260727a"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -2303,19 +2303,46 @@ function redirectToManagerLogin(){
   location.replace(AUTH_LOGIN_URL + '?return=' + ret);
 }
 
+// 🛑 2026-07-27 no-kick 소프트 게이트 — "작업 중 느닷없는 로그인 화면" 수정.
+// 이름이 등록된 기기(chat.me)는 어떤 경우에도 로그인 페이지로 강제 이동하지
+// 않는다. Firebase 세션이 만료되면 상단 배너(kmSoftGate)로 재로그인만 안내 —
+// 보던 화면과 카트 입력은 그대로 유지된다. 강제 이동은 "이 기기에서 한 번도
+// 로그인한 적 없는" 경우에만 남는다.
+function _kmHasMe(){
+  if (window.kmSoftGate) return window.kmSoftGate.hasLocalMe();
+  try { const m = JSON.parse(localStorage.getItem('chat.me') || 'null'); return !!(m && String(m.name || '').trim()); }
+  catch(e){ return false; }
+}
+function unlockApp(){ gate.classList.add('hidden'); appEl.style.display = ''; }
+function softKickOrRedirect(){
+  if (_kmHasMe()){
+    unlockApp();
+    if (window.kmSoftGate){
+      const ret = encodeURIComponent(location.pathname + location.search);
+      window.kmSoftGate.showReloginBanner(AUTH_LOGIN_URL + '?return=' + ret);
+    }
+    return;
+  }
+  redirectToManagerLogin();
+}
+
+// 등록된 기기는 인증 복원을 기다리지 않고 바로 화면을 연다 (남대문 페이지와
+// 동일한 UX). 카트/별표 동기화는 인증이 복원되는 즉시 자동으로 다시 붙는다.
+if (_kmHasMe()) unlockApp();
+
 // Wait for the authoritative onAuthStateChanged signal instead of a short
 // timer — Firebase fires it only AFTER restoring the session from IndexedDB,
 // so a slow cold-start no longer triggers a premature redirect → login loop.
 // The timer is just a 10s safety net in case Firebase never initialises.
 let _authRedirectTimer = setTimeout(() => {
-  if (!auth.currentUser) redirectToManagerLogin();
+  if (!auth.currentUser) softKickOrRedirect();
 }, 10000);
 
 onAuthStateChanged(auth, (user) => {
   clearTimeout(_authRedirectTimer);
   if (user) {
-    gate.classList.add('hidden');
-    appEl.style.display = '';
+    unlockApp();
+    if (window.kmSoftGate) window.kmSoftGate.hideReloginBanner();
     console.info('[Auth] logged in:', user.email);
     if (window.kmRecs) window.kmRecs.refresh();
     if (window._km_needsHubRedirect) {
@@ -2323,10 +2350,8 @@ onAuthStateChanged(auth, (user) => {
       return;
     }
   } else {
-    gate.classList.remove('hidden');
-    appEl.style.display = 'none';
-    // Authoritative sign-out (not a race) → Manager Apps login.
-    redirectToManagerLogin();
+    // Authoritative sign-out — 등록된 기기는 배너만, 미등록 기기만 로그인 이동.
+    softKickOrRedirect();
   }
 });
 

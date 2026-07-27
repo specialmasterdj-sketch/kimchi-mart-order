@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script src="recommend.js?v=20260609a"></script>
-<script src="product-images.js?v=20260628c"></script>
+<script src="recommend.js?v=20260726a"></script>
+<script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -1236,8 +1236,18 @@ function renderHome(app) {
     '</div>';
 }
 
+// Recommended-products filter — same chip as the dedicated vendor pages
+// (hanmi/wismettac/rheebros) so every Order Center app behaves the same.
+let REC_FILTER_ON = false;
+window.addEventListener('km-rec-filter', (e) => {
+  if (e?.detail?.id === 'rec-filter-generic'){ REC_FILTER_ON = !!e.detail.on; render(); }
+});
+
 function filterBrowseProducts(v){
   let products = v.products;
+  if (REC_FILTER_ON && window.kmRecs) {
+    products = products.filter(p => window.kmRecs.isRecommended(p.id));
+  }
   if (state.category !== 'all') {
     products = (state.category === 'wis-new' || state.category === 'new')
       ? products.filter(p => p.isNew)
@@ -1472,6 +1482,8 @@ function renderBrowse(app) {
       '<div class="main-content">' +
         '<div class="cat-tabs">' + tabs + '</div>' +
         '<div class="search-bar"><input type="search" id="search-input-box" placeholder="' + t('search_placeholder') + '" oninput="onSearchInput(this.value, event)" oncompositionend="onSearchInput(this.value)" value="' + state.search + '"></div>' +
+        (window.kmRecs ? '<div style="display:flex;justify-content:flex-end;padding:6px 16px 4px;background:var(--white)">' +
+          window.kmRecs.filterChipHTML('rec-filter-generic', window.kmRecs.filterLabel(currentLang), REC_FILTER_ON) + '</div>' : '') +
         '<div class="product-grid">' + tiles + '</div>' +
       '</div>' +
     '</div>' +
@@ -2359,7 +2371,8 @@ window.clearVendorCartSafely = function(){
     if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
       const ts = String(Date.now());
       set(ref(db, 'orders/' + b + '/_shared_history/' + vendor + '/' + ts), {
-        ts: +ts, by: u || 'unknown', types, units, cart: items
+        ts: +ts, by: u || 'unknown', types, units,
+        cart: Object.fromEntries(Object.entries(items).map(([id, q]) => [fbEncKey(id), q]))
       }).catch(e => console.warn('clear backup failed', e));
     }
   } catch(e){ console.warn('clear backup error', e); }
@@ -2369,13 +2382,25 @@ window.clearVendorCartSafely = function(){
   try { window.KM.toast?.('✓ 비웠음 (백업 보관)'); } catch(_){}
 };
 
+// Firebase RTDB keys may not contain . # $ [ ] / — FAF/AAF product ids like
+// "15.42000" made the shared-cart set() throw before reaching the server, so
+// those vendors' carts never synced across devices. Encode on push, decode on
+// receive. Identity for normal ids, so every other vendor's data is untouched.
+function fbEncKey(k){
+  return String(k).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
+    ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
+}
+function fbDecKey(k){
+  return String(k).replace(/%([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
 window.cloudPushOrders = function(branchId, userKey, orders){
   if (!branchId || !userKey || applyingRemote) return;
   const clean = {};
   for (const v in orders){
     const items = orders[v] || {};
     const entries = Object.entries(items).filter(([, q]) => q > 0);
-    if (entries.length) clean[v] = Object.fromEntries(entries);
+    if (entries.length) clean[v] = Object.fromEntries(entries.map(([id, q]) => [fbEncKey(id), q]));
   }
   set(ref(db, branchPath(branchId, userKey)), clean).catch(e => {
     console.warn('cloud push failed', e);
@@ -2399,7 +2424,7 @@ function subscribeBranch(branchId, userKey){
       const vendors = window.KM?.VENDORS || {};
       const next = {};
       for (const v in vendors){ next[v] = {}; }
-      for (const v in remote){ next[v] = { ...remote[v] }; }
+      for (const v in remote){ next[v] = Object.fromEntries(Object.entries(remote[v] || {}).map(([id, q]) => [fbDecKey(id), q])); }
       if (!window.KM) return;
       // Skip re-render if remote matches local (echo from our own write).
       const prev = JSON.stringify(window.KM.state.orders || {});
@@ -2431,7 +2456,12 @@ function subscribeBranch(branchId, userKey){
   const histRef = query(ref(db, historyPath(branchId, userKey)), orderByChild('ts'), limitToLast(50));
   unsubscribeHistory = onValue(histRef, (snap) => {
     const entries = [];
-    snap.forEach(child => { entries.push(child.val()); });
+    snap.forEach(child => {
+      const e = child.val() || {};
+      // Decode item keys pushed through fbEncKey (FAF/AAF dotted ids).
+      if (e.items) e.items = Object.fromEntries(Object.entries(e.items).map(([id, q]) => [fbDecKey(id), q]));
+      entries.push(e);
+    });
     entries.sort((a, b) => (b.ts || 0) - (a.ts || 0));
     if (window.KM){
       window.KM.state.history = entries;
@@ -2443,7 +2473,11 @@ function subscribeBranch(branchId, userKey){
 // Write: called after a PO is generated.
 window.cloudPushHistory = function(branchId, userKey, entry){
   if (!branchId || !userKey || !entry) return;
-  try { push(ref(db, historyPath(branchId, userKey)), entry); }
+  // entry.items is keyed by product id — encode so FAF/AAF dotted ids don't
+  // make the push throw (same rule as the shared cart above).
+  const safe = { ...entry };
+  if (safe.items) safe.items = Object.fromEntries(Object.entries(safe.items).map(([id, q]) => [fbEncKey(id), q]));
+  try { push(ref(db, historyPath(branchId, userKey)), safe); }
   catch(e){ console.warn('history push failed', e); }
 };
 

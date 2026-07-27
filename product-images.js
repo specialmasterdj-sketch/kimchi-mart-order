@@ -10,7 +10,14 @@
 (function(){
   const PATH = 'productImages';
   let FB = null;          // { db, ref, set, get, onValue, remove, storage, sRef, uploadBytes, getDownloadURL }
-  let MAP = {};           // MAP[vendor][id] = url | dataURL
+  let MAP = {};           // MAP[vendor][fbKey(id)] = url | dataURL
+  // Firebase RTDB keys may not contain . # $ [ ] / — FAF/AAF ids like
+  // "15.42000" would make every photo save throw. Same encoding as
+  // recommend.js fbKey: percent-encode, identity for normal ids, idempotent.
+  function fbKey(id){
+    return String(id).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
+      function(ch){ return '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'); });
+  }
   let onChange = null;
   let cur = { vendor:'', id:'', name:'' };
   let pending = null;     // { kind:'blob'|'url', blob?, dataUrl?, url? }
@@ -30,7 +37,7 @@
   }
 
   function get(vendor, id){
-    try { return (MAP[vendor] && MAP[vendor][id]) || ''; } catch(e){ return ''; }
+    try { return (MAP[vendor] && MAP[vendor][fbKey(id)]) || ''; } catch(e){ return ''; }
   }
 
   /* ---------- card overlay button ---------- */
@@ -117,7 +124,7 @@
         // 1순위 Storage 업로드 → URL
         if (FB && FB.storage && FB.sRef && FB.uploadBytes && FB.getDownloadURL && pending.blob){
           try {
-            const path = 'product-images/' + cur.vendor + '/' + cur.id + '.jpg';
+            const path = 'product-images/' + cur.vendor + '/' + fbKey(cur.id) + '.jpg';
             const r = FB.sRef(FB.storage, path);
             await FB.uploadBytes(r, pending.blob, { contentType:'image/jpeg' });
             finalUrl = await FB.getDownloadURL(r);
@@ -128,10 +135,10 @@
         if (!finalUrl) finalUrl = pending.dataUrl;               // 폴백: base64 RTDB 저장
       }
       if (!finalUrl){ throw new Error('저장할 이미지 없음'); }
-      await FB.set(FB.ref(FB.db, PATH + '/' + cur.vendor + '/' + cur.id), finalUrl);
+      await FB.set(FB.ref(FB.db, PATH + '/' + cur.vendor + '/' + fbKey(cur.id)), finalUrl);
       // 로컬 즉시 반영(스냅샷 도착 전)
       if (!MAP[cur.vendor]) MAP[cur.vendor] = {};
-      MAP[cur.vendor][cur.id] = finalUrl;
+      MAP[cur.vendor][fbKey(cur.id)] = finalUrl;
       if (typeof onChange === 'function') onChange();
       closeModal();
       toast('사진 저장됨 ✓');
@@ -147,8 +154,8 @@
     if (!confirm('이 상품 사진을 삭제할까요?')) return;
     setBusy(true);
     try {
-      await FB.remove(FB.ref(FB.db, PATH + '/' + cur.vendor + '/' + cur.id));
-      if (MAP[cur.vendor]) delete MAP[cur.vendor][cur.id];
+      await FB.remove(FB.ref(FB.db, PATH + '/' + cur.vendor + '/' + fbKey(cur.id)));
+      if (MAP[cur.vendor]) delete MAP[cur.vendor][fbKey(cur.id)];
       if (typeof onChange === 'function') onChange();
       closeModal();
       toast('삭제됨');

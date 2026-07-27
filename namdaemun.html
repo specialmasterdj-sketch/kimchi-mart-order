@@ -366,6 +366,9 @@
     <input type="text" id="search" placeholder="Search items / 품목 검색 (EN · KO · PLU)" autocomplete="off">
     <button class="search-clear" id="searchClear" aria-label="지우기">×</button>
   </div>
+  <!-- 추천만 보기 chip — same kmRecs chip as every other Order Center page.
+       Rendered by JS (renderRecFilterChip) once recommend.js is loaded. -->
+  <div id="recFilterRow" style="display:flex;justify-content:flex-end;margin-top:6px"></div>
   <div class="subcats" id="subcats"></div>
 </div>
 
@@ -435,7 +438,7 @@
 <script src="pulmuone_products.js"></script>
 <script src="chungjungone_products.js"></script>
 <script src="sempio_products.js"></script>
-<script src="recommend.js?v=20260609a"></script>
+<script src="recommend.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -884,7 +887,11 @@ function renderContent() {
       </div>`;
     return;
   }
-  const items = filterItems(sec.items);
+  let items = filterItems(sec.items);
+  // 추천만 보기 — 오너 ⭐/BEST 마크가 있는 품목만. 다른 벤더 페이지와 동일 규칙.
+  if (REC_FILTER_ON && window.kmRecs) {
+    items = items.filter(it => window.kmRecs.isRecommended(itemKey(sec.id, it)));
+  }
   if (items.length === 0) {
     main.innerHTML = sec.items.length === 0
       ? `<div class="empty-state">📋 제품 목록 준비 중 · Coming soon<br><small style="color:#9ca3af;display:block;margin-top:6px">이 벤더 제품 목록(엑셀·사진)을 추가하면 바로 발주 가능합니다</small></div>`
@@ -1265,10 +1272,23 @@ document.getElementById("branchModal").addEventListener("click", e => {
   if (e.target.id === "branchModal") closeBranchModal();
 });
 
+// ===== 추천만 보기 (kmRecs chip — 전 벤더 페이지 공통 UI) =====
+// 페이지에 언어 스위처가 없으므로 라벨은 이 페이지의 기존 스타일대로 KO·EN 병기.
+let REC_FILTER_ON = false;
+window.addEventListener('km-rec-filter', (e) => {
+  if (e?.detail?.id === 'rec-filter-ndm'){ REC_FILTER_ON = !!e.detail.on; renderContent(); }
+});
+function renderRecFilterChip() {
+  const row = document.getElementById('recFilterRow');
+  if (!row || !window.kmRecs) return;
+  row.innerHTML = window.kmRecs.filterChipHTML('rec-filter-ndm', '추천만 보기 · Top Picks', REC_FILTER_ON);
+}
+
 function renderAll() {
   renderTabs();
   renderSubcats();
   renderContent();
+  renderRecFilterChip();
   updateSummary();
   updatePriceHeader();
   updateBranchUI();

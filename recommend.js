@@ -28,6 +28,17 @@
   function me(){
     try { return JSON.parse(localStorage.getItem('chat.me') || 'null'); } catch(e){ return null; }
   }
+  // Firebase RTDB keys may not contain . # $ [ ] / — FAF/AAF catalog ids like
+  // "15.42000" made every star/BEST/memo write throw before reaching the
+  // server (the mark looked ON, nothing was saved, and a reload wiped it).
+  // Percent-encode those chars so any catalog id becomes a legal key.
+  // Identity for normal ids (hanmi, rhee, ...), so existing marks keep
+  // matching. Idempotent: an already-encoded "%2E" is left alone, so values
+  // can safely pass through twice (e.g. localStorage-restored note keys).
+  function fbKey(id){
+    return String(id).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
+      ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
+  }
   function normName(n){ return (n || '').replace(/\s+/g,'').toUpperCase(); }
   function role(){ return ((me() || {}).role || '').trim().toUpperCase(); }
 
@@ -178,9 +189,9 @@
     if (state.fbOps && state.vendor){ subscribeGlobal(); subscribeNotes(); }
   }
 
-  function isGlobal(productId){ return state.globalIds.has(String(productId)); }
-  function isBest(productId){ return state.bestIds.has(String(productId)); }
-  function getNote(productId){ return state.notes[String(productId)] || ''; }
+  function isGlobal(productId){ return state.globalIds.has(fbKey(productId)); }
+  function isBest(productId){ return state.bestIds.has(fbKey(productId)); }
+  function getNote(productId){ return state.notes[fbKey(productId)] || ''; }
 
   // Owner-only — prompts for a short note (e.g. "3cs over available") and
   // stores it under recs_notes/<vendor>/<id>. Empty input clears the note.
@@ -196,7 +207,7 @@
       _recToast('⚠ 메모 기능 초기화 안 됨');
       return;
     }
-    const id = String(productId);
+    const id = fbKey(productId);
     const current = state.notes[id] || '';
     const next = await _recPromptModal(
       'OVER 수량 입력',
@@ -240,7 +251,14 @@
   // is offline. Keyed per vendor so wang notes don't collide with rhee_full.
   function _localKey(){ return 'kmrecs_local_notes_' + (state.vendor || ''); }
   function _loadLocalNotes(){
-    try { return JSON.parse(localStorage.getItem(_localKey()) || '{}') || {}; } catch(e){ return {}; }
+    try {
+      const raw = JSON.parse(localStorage.getItem(_localKey()) || '{}') || {};
+      // Re-key through fbKey so notes saved before the encoding fix (raw
+      // dotted ids) still line up with the encoded Firebase keys.
+      const out = {};
+      for (const k in raw) out[fbKey(k)] = raw[k];
+      return out;
+    } catch(e){ return {}; }
   }
   function _saveLocalNote(id, text){
     try {
@@ -266,7 +284,7 @@
       console.warn('[kmRecs] toggle blocked — fbOps/vendor missing', !!state.fbOps, state.vendor);
       return;
     }
-    const id = String(productId);
+    const id = fbKey(productId);
     const basePath = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
     const wasOn = state.globalIds.has(id);
@@ -284,13 +302,18 @@
     };
     // Write/remove only the ts+by child paths so an existing note attached
     // to the same product is preserved when toggling the star on/off.
-    if (wasOn){
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/ts')).catch(onErr);
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/by')).catch(() => {});
-    } else {
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/ts'), Date.now()).catch(onErr);
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/by'), m.name || 'unknown').catch(() => {});
-    }
+    // try/catch: ref()/set() can ALSO throw synchronously (e.g. an invalid
+    // path) — without it the failure was silent and the mark just vanished
+    // on reload. Route every failure through onErr so a toast always shows.
+    try {
+      if (wasOn){
+        state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/ts')).catch(onErr);
+        state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/by')).catch(() => {});
+      } else {
+        state.fbOps.set(state.fbOps.ref(state.db, basePath + '/ts'), Date.now()).catch(onErr);
+        state.fbOps.set(state.fbOps.ref(state.db, basePath + '/by'), m.name || 'unknown').catch(() => {});
+      }
+    } catch(e){ onErr(e); }
   }
 
   // BEST ITEM — a SEPARATE mark from the star, stored at
@@ -305,7 +328,7 @@
       _recToast('⚠ 기능 초기화 안 됨 (새로고침 해보세요)');
       return;
     }
-    const id = String(productId);
+    const id = fbKey(productId);
     const basePath = 'recs_global/' + state.vendor + '/' + id;
     const m = me() || {};
     const wasOn = state.bestIds.has(id);
@@ -317,13 +340,15 @@
       notify();
       _recToast('⚠ BEST ITEM 저장 실패: ' + ((e && e.message) || e) + ' — 권한/규칙 확인');
     };
-    if (wasOn){
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/best')).catch(onErr);
-      state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/bestBy')).catch(() => {});
-    } else {
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/best'), Date.now()).catch(onErr);
-      state.fbOps.set(state.fbOps.ref(state.db, basePath + '/bestBy'), m.name || 'unknown').catch(() => {});
-    }
+    try {
+      if (wasOn){
+        state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/best')).catch(onErr);
+        state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/bestBy')).catch(() => {});
+      } else {
+        state.fbOps.set(state.fbOps.ref(state.db, basePath + '/best'), Date.now()).catch(onErr);
+        state.fbOps.set(state.fbOps.ref(state.db, basePath + '/bestBy'), m.name || 'unknown').catch(() => {});
+      }
+    } catch(e){ onErr(e); }
   }
 
   // In-page prompt modal — replaces window.prompt() so Chrome's silent
@@ -638,10 +663,23 @@
     document.head.appendChild(css);
   }
 
-  function filterChipHTML(id, label){
+  // "추천만 보기" chip label per UI language — every vendor page passes its
+  // own current language (ko/en/es) so the chip follows the page's switcher.
+  const FILTER_LABELS = {
+    ko: '추천만 보기',
+    en: 'Top Picks Only',
+    es: 'Solo recomendados',
+  };
+  function filterLabel(lang){
+    return FILTER_LABELS[String(lang || '').toLowerCase()] || FILTER_LABELS.ko;
+  }
+
+  // `on` renders the chip pre-checked/active — pages that rebuild the chip on
+  // every render() pass their filter state so the toggle survives the rewrite.
+  function filterChipHTML(id, label, on){
     return (
-      '<label class="km-rec-filter" for="' + id + '" id="' + id + '_lbl">' +
-        '<input type="checkbox" id="' + id + '" onchange="this.parentElement.classList.toggle(\'active\', this.checked);window.dispatchEvent(new CustomEvent(\'km-rec-filter\',{detail:{id:this.id,on:this.checked}}))">' +
+      '<label class="km-rec-filter' + (on ? ' active' : '') + '" for="' + id + '" id="' + id + '_lbl">' +
+        '<input type="checkbox" id="' + id + '"' + (on ? ' checked' : '') + ' onchange="this.parentElement.classList.toggle(\'active\', this.checked);window.dispatchEvent(new CustomEvent(\'km-rec-filter\',{detail:{id:this.id,on:this.checked}}))">' +
         '<span>⭐ ' + (label || 'TOP PICK만 보기') + '</span>' +
       '</label>'
     );
@@ -653,7 +691,7 @@
     isGlobal, isBest, isBranch, isRecommended,
     toggleGlobal, toggleBest, toggleBranch,
     subscribe,
-    badgeHTML, toggleHTML, filterChipHTML, cardClass,
+    badgeHTML, toggleHTML, filterChipHTML, filterLabel, cardClass,
     noteHTML, editNote, getNote, defaultUnit,
     getOverQty, overLabel, orderGuideHTML,
     canMark,

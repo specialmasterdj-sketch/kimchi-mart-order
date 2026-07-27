@@ -216,8 +216,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="recommend.js?v=20260609a"></script>
-<script src="product-images.js?v=20260628c"></script>
+<script src="recommend.js?v=20260726a"></script>
+<script src="product-images.js?v=20260726a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
 let REC_FILTER_ON = false;
@@ -493,7 +493,7 @@ function render(){
   });
 
   const hasFilter = CUR_GROUP || CUR_CAT || q;
-  const recChip = (window.kmRecs ? window.kmRecs.filterChipHTML('rec-filter-wism', '추천만 보기') : '');
+  const recChip = (window.kmRecs ? window.kmRecs.filterChipHTML('rec-filter-wism', window.kmRecs.filterLabel(LANG), REC_FILTER_ON) : '');
   $('stats').innerHTML =
     '<span>' + t('items', {n: filtered.length}) + '</span>' +
     recChip +

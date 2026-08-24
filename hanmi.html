@@ -969,6 +969,7 @@ function setBrand(b){
   if (b !== 'hanmi' && b !== 'cj') return;
   CUR_BRAND = b;
   try { localStorage.setItem('wang-brand', b); } catch(e){}
+  location.reload(); return;
   // Reset category so we don't land on a section from the other brand.
   CUR_CAT = '';
   applyBrandUI();

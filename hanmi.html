@@ -336,8 +336,7 @@ function _userForCartKey(){
     return raw.replace(/[.#$\[\]\/\s]/g, '_').slice(0, 40);
   } catch(e){ return 'UNASSIGNED'; }
 }
-function _cartKey(){ return 'hanmi-cart-v1-' + _branchForCartKey() + '-' + _userForCartKey(); }
-
+function _cartKey(){ var _b=''; try{ _b=localStorage.getItem('wang-brand')||''; }catch(e){} return 'hanmi-cart-v1-' + (_b||'hanmi') + '-' + _branchForCartKey() + '-' + _userForCartKey(); }
 try {
   const saved = localStorage.getItem(_cartKey());
   if (saved) Object.assign(CART, JSON.parse(saved));
@@ -1087,8 +1086,7 @@ function getUser(){
 // Path is per branch × per user — each person's in-progress order is
 // isolated. No handoff between people.
 // 🆕 2026-06-08 사장님 지시: 모든 지점 공유 카트. 지점별 한 카트에 협업.
-function path(b, u){ return 'carts/hanmi/' + b + '/_shared'; }
-
+function path(b, u){ var _b=''; try{ _b=localStorage.getItem('wang-brand')||''; }catch(e){} return 'carts/' + (_b||'hanmi') + '/' + b + '/_shared'; }
 window.cloudPushCart = function(cart){
   if (applyingRemote) return;
   const b = getBranch(), u = getUser();

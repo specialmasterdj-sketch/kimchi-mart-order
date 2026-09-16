@@ -877,8 +877,14 @@ function filterItems(items) {
   return filtered;
 }
 
-// ⭐ 정렬 스냅샷 — 같은 화면에서 별표를 토글하는 동안 카드가 튀지 않게 순서를 고정.
-let recOrder = { sig: '', rank: null };
+// ⭐ 정렬 스냅샷.
+//   frozen=false → 렌더할 때마다 ⭐ 최상단으로 다시 정렬한다. 별표 데이터는 Firebase
+//     에서 늦게 도착하므로(첫 렌더 때는 아직 비어있음) 도착 시점에 반드시 다시
+//     정렬돼야 노랑 박스가 위로 올라온다.
+//   frozen=true  → 사장님이 이 화면에서 별표를 직접 누른 뒤. 누른 카드가 발밑에서
+//     맨 위로 튀어 다음 탭이 엉뚱한 제품에 들어가는 걸 막으려고 순서를 그대로 둔다.
+//     탭·검색·추천필터가 바뀌면 sig 가 달라져 다시 풀리고 ⭐ 최상단으로 재정렬된다.
+let recOrder = { sig: '', rank: null, frozen: false };
 
 function renderContent() {
   const sec = activeSection();
@@ -907,7 +913,8 @@ function renderContent() {
   if (window.kmRecs) {
     const keyOf = it => itemKey(sec.id, it);
     const sortSig = sec.id + '' + state.search.trim() + '' + (REC_FILTER_ON ? '1' : '0');
-    if (recOrder.sig !== sortSig || !recOrder.rank) {
+    if (recOrder.sig !== sortSig) recOrder = { sig: sortSig, rank: null, frozen: false };
+    if (!recOrder.frozen || !recOrder.rank) {
       items = items
         .map((it, i) => [it, i])
         .sort((a, b) => {
@@ -918,7 +925,7 @@ function renderContent() {
         .map(pair => pair[0]);
       const rank = new Map();
       items.forEach((it, i) => rank.set(keyOf(it), i));
-      recOrder = { sig: sortSig, rank };
+      recOrder = { sig: sortSig, rank, frozen: recOrder.frozen };
     } else {
       const rank = recOrder.rank;
       const at = it => rank.has(keyOf(it)) ? rank.get(keyOf(it)) : Number.MAX_SAFE_INTEGER;
@@ -1362,6 +1369,18 @@ if (window.kmRecs){
     db, ref, set, onValue, remove,
     vendor: 'namdaemun',
     branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
+  });
+  // 사장님이 이 화면에서 ⭐/BEST 를 직접 누른 경우에만 현재 순서를 잠근다.
+  // (누른 카드가 곧장 맨 위로 튀어 그리드가 밀리면 다음 탭이 엉뚱한 제품에 들어감)
+  // 서버에서 별표 데이터가 도착해서 나는 재렌더는 잠그지 않으므로, 노랑 박스는
+  // 데이터가 오는 즉시 맨 위로 올라온다. 탭·검색·필터를 바꾸면 잠금이 풀린다.
+  ['toggleGlobal', 'toggleBest'].forEach(fn => {
+    const orig = window.kmRecs[fn];
+    if (typeof orig !== 'function') return;
+    window.kmRecs[fn] = function () {
+      if (typeof recOrder !== 'undefined' && recOrder.rank) recOrder.frozen = true;
+      return orig.apply(window.kmRecs, arguments);
+    };
   });
   window.kmRecs.subscribe(() => {
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}

@@ -877,6 +877,9 @@ function filterItems(items) {
   return filtered;
 }
 
+// ⭐ 정렬 스냅샷 — 같은 화면에서 별표를 토글하는 동안 카드가 튀지 않게 순서를 고정.
+let recOrder = { sig: '', rank: null };
+
 function renderContent() {
   const sec = activeSection();
   const main = document.getElementById("content");
@@ -896,15 +899,34 @@ function renderContent() {
   }
   // 2026-09-15 사장님 지시: ⭐ TOP PICK(빨강·금색 박스) 품목을 항상 목록 맨 위로,
   // 표시 없는 품목은 아래로. 중요한 것부터 바로 발주하도록. 전 벤더 탭 공통.
+  //
+  // 2026-09-16 버그수정: 별표를 누르면 kmRecs.notify → renderContent 가 즉시 돌아
+  // 방금 누른 카드가 맨 위로 튀고 그리드 전체가 밀려서, 다음 탭이 엉뚱한 제품에
+  // 들어갔음. → 순서는 "화면에 들어올 때 한 번"만 계산하고, 같은 화면에서 별표만
+  // 토글하는 동안에는 그 순서를 그대로 유지한다. 탭/검색/추천필터가 바뀌면 재계산.
   if (window.kmRecs) {
-    items = items
-      .map((it, i) => [it, i])
-      .sort((a, b) => {
-        const ra = window.kmRecs.isRecommended(itemKey(sec.id, a[0])) ? 0 : 1;
-        const rb = window.kmRecs.isRecommended(itemKey(sec.id, b[0])) ? 0 : 1;
-        return ra - rb || a[1] - b[1];
-      })
-      .map(pair => pair[0]);
+    const keyOf = it => itemKey(sec.id, it);
+    const sortSig = sec.id + '' + state.search.trim() + '' + (REC_FILTER_ON ? '1' : '0');
+    if (recOrder.sig !== sortSig || !recOrder.rank) {
+      items = items
+        .map((it, i) => [it, i])
+        .sort((a, b) => {
+          const ra = window.kmRecs.isRecommended(keyOf(a[0])) ? 0 : 1;
+          const rb = window.kmRecs.isRecommended(keyOf(b[0])) ? 0 : 1;
+          return ra - rb || a[1] - b[1];
+        })
+        .map(pair => pair[0]);
+      const rank = new Map();
+      items.forEach((it, i) => rank.set(keyOf(it), i));
+      recOrder = { sig: sortSig, rank };
+    } else {
+      const rank = recOrder.rank;
+      const at = it => rank.has(keyOf(it)) ? rank.get(keyOf(it)) : Number.MAX_SAFE_INTEGER;
+      items = items
+        .map((it, i) => [it, i])
+        .sort((a, b) => at(a[0]) - at(b[0]) || a[1] - b[1])
+        .map(pair => pair[0]);
+    }
   }
   if (items.length === 0) {
     main.innerHTML = sec.items.length === 0

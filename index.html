@@ -15,6 +15,8 @@
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
 <script src="recommend.js?v=20260727a"></script>
+<!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
+<script src="hub.js?v=20260919a"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -832,6 +834,8 @@ function getOrderTotal(vendorId) {
 }
 
 function setQty(vendorId, productId, qty) {
+  // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다 (공동 오더 앱으로 안내)
+  if (window.kmHub && window.kmHub.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
   if (!state.orders[vendorId]) state.orders[vendorId] = {};
   state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
   if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
@@ -1346,6 +1350,9 @@ function buildTilesHtml(v, products){
     const plQty = getQty(state.vendor, plIdOf(p.id));
     const anyQty = qty > 0 || eaQty > 0 || plQty > 0;
     const safeName = (p.name||p.nameKr||'').replace(/'/g,'');
+    // 🏬 헐리우드 경유 — 표시·지정 버튼, 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
+    const hubBlocked = window.kmHub ? window.kmHub.blocked(state.vendor, p.id) : false;
+    const hubMark = window.kmHub ? (window.kmHub.badgeHTML(state.vendor, p.id) + window.kmHub.toggleHTML(state.vendor, p.id)) : '';
     // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
     //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
     const eaLabel = (showEA && pack)
@@ -1396,6 +1403,8 @@ function buildTilesHtml(v, products){
           ${recBadges ? `<div style="text-align:center;margin-bottom:2px">${recBadges}</div>` : ''}
           ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
           ${overGuide}
+          ${hubMark}
+          ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
           <div class="qty-row">
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
             <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
@@ -1403,7 +1412,7 @@ function buildTilesHtml(v, products){
           </div>
           <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
           ${eaRow}
-          ${plRow}
+          ${plRow}`}
         </div>
       </div>`;
       continue;
@@ -1421,6 +1430,8 @@ function buildTilesHtml(v, products){
         ${priceHtml}
         ${stockBadge ? `<div style="margin:2px 0 4px">${stockBadge}</div>` : ''}
         ${overGuide}
+        ${hubMark}
+        ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
@@ -1428,7 +1439,7 @@ function buildTilesHtml(v, products){
         </div>
         <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
         ${eaRow}
-        ${plRow}
+        ${plRow}`}
       </div>
     </div>`;
   }
@@ -2281,6 +2292,13 @@ if (window.kmRecs){
     branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
   });
   window.kmRecs.subscribe(() => {
+    try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
+  });
+}
+// 🏬 헐리우드 경유 품목 — 지정이 바뀌면 바로 다시 그린다
+if (window.kmHub){
+  window.kmHub.init({ db, ref, set, onValue });
+  window.kmHub.subscribe(() => {
     try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
   });
 }

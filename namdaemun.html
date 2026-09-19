@@ -439,6 +439,8 @@
 <script src="chungjungone_products.js"></script>
 <script src="sempio_products.js"></script>
 <script src="recommend.js?v=20260727a"></script>
+<!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
+<script src="hub.js?v=20260919b"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -963,6 +965,9 @@ function itemHtml(secId, it) {
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
   // 🎯 발주 가이드 배너 — 수량 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
   const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(key, 'cs', "kmApplyOver('"+key+"',{q})") : '';
+  // 🏬 헐리우드 경유 — 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청] (수량칸은 숨겨서 남김: bindItemEvents 가 찾음)
+  const hubBlocked = window.kmHub ? window.kmHub.blocked('namdaemun', key) : false;
+  const hubMark = window.kmHub ? (window.kmHub.badgeHTML('namdaemun', key) + window.kmHub.toggleHTML('namdaemun', key)) : '';
   return `
     <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">
       ${imgStr}
@@ -974,7 +979,9 @@ function itemHtml(secId, it) {
       ${recTools}
       ${foot}
       ${overGuide}
-      <div class="qty-control">
+      ${hubMark}
+      ${hubBlocked ? window.kmHub.requestHTML('namdaemun', key) : ''}
+      <div class="qty-control"${hubBlocked ? ' style="display:none"' : ''}>
         <button class="qty-btn" data-act="dec">−</button>
         <input class="qty-input" type="number" min="0" step="1" value="${qty || ''}" placeholder="0">
         <button class="qty-btn" data-act="inc">+</button>
@@ -1112,6 +1119,8 @@ function updateItemHighlight(el, key) {
 }
 
 function setQty(key, v) {
+  // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
+  if (window.kmHub && window.kmHub.guard('namdaemun', key, Math.max(0, v || 0), state.qty[key] || 0)) return;
   if (v > 0) state.qty[key] = v;
   else delete state.qty[key];
   saveState();
@@ -1385,6 +1394,12 @@ if (window.kmRecs){
   window.kmRecs.subscribe(() => {
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
   });
+}
+// 🏬 헐리우드 경유 품목
+if (window.kmHub){
+  window.kmHub.init({ db, ref, set, onValue });
+  window.kmHub.config({ vendorName: 'Namdaemun', vendorNameKr: '남대문', lookup: (v, key) => { const r = findItemByKey(key); if (!r) return null; const it = r.item; return { name: it.en || it.ko, nameKr: it.ko || '', unit: it.unit || '', barcode: it.barcode || '', image: it.image || '' }; } });
+  window.kmHub.subscribe(() => { try { if (typeof renderContent === 'function') renderContent(); } catch(e){} });
 }
 // Re-subscribe once the user's auth token is restored from IndexedDB —
 // otherwise the very first read can race ahead of auth and silently fail.

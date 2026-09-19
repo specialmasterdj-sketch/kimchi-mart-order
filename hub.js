@@ -20,7 +20,7 @@
   const HUB_APP = 'https://specialmasterdj-sketch.github.io/kfood-guide/share-order.html';
   const ORDER_APP = 'https://specialmasterdj-sketch.github.io/kimchi-mart-order/';
   const HUB_BRANCH = 'HOLLYWOOD';
-  const S = { items: {}, listeners: [], fb: null };
+  const S = { items: {}, listeners: [], fb: null, lookup: null, vendorName: '', vendorNameKr: '' };
 
   function fbKey(id){
     return String(id).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
@@ -94,9 +94,12 @@
       }
       const V = window.VENDORS || (typeof VENDORS !== 'undefined' ? VENDORS : {});
       const vend = V[vendor] || {};
-      const p = (vend.products || []).find(x => String(x.id) === String(id)) || {};
+      let p = null;
+      try { if (S.lookup) p = S.lookup(vendor, id); } catch(e){}
+      p = p || (vend.products || []).find(x => String(x.id) === String(id)) || {};
+      const size = p.size || p.packSize || p.unit || '';
       let guess = '';
-      try { const m = String(p.size || '').match(/(\d+)\s*[xX×]/); if (m) guess = m[1]; } catch(e){}
+      try { const m = String(size).match(/^\s*(\d+)\s*\//) || String(size).match(/(\d+)\s*[xX×]/); if (m) guess = m[1]; } catch(e){}
       const ans = prompt(T('🏬 헐리우드 경유로 지정합니다.\n' + (p.name || p.nameKr || id) + '\n\n1박스에 몇 개 들어있나요? (지점들이 개수로 요청합니다)',
                           'Route via Hollywood:\n' + (p.name || id) + '\n\nUnits per case?',
                           'Vía Hollywood:\n' + (p.name || id) + '\n\n¿Unidades por caja?'), guess);
@@ -105,9 +108,9 @@
       let img = p.image || '';
       if (img && !/^(https?:|data:)/.test(img)) img = ORDER_APP + img.replace(/^\.?\//, '');
       await S.fb.set(ref, {
-        vendor: vendor, vendorName: vend.name || vendor, vendorNameKr: vend.nameKr || '',
+        vendor: vendor, vendorName: vend.name || S.vendorName || vendor, vendorNameKr: vend.nameKr || S.vendorNameKr || '',
         pid: String(id), name: p.name || p.nameKr || String(id), nameKr: p.nameKr || '',
-        size: p.size || '', brand: p.brand || '', barcode: p.barcode || '', price: p.price || 0,
+        size: size, brand: p.brand || '', barcode: p.barcode || '', price: p.price || 0,
         image: img, caseSize: cs, active: true,
         by: me().name || '', ts: Date.now()
       });
@@ -116,6 +119,8 @@
     }
   }
   function subscribe(fn){ S.listeners.push(fn); }
+  // 벤더 전용 페이지(한미·이브라더스·위스메탁·남대문)는 VENDORS 가 없어서 상품 찾는 법을 알려준다
+  function config(o){ o = o || {}; if (o.lookup) S.lookup = o.lookup; if (o.vendorName) S.vendorName = o.vendorName; if (o.vendorNameKr) S.vendorNameKr = o.vendorNameKr; }
   function count(){ return Object.keys(S.items).filter(k => S.items[k] && S.items[k].active !== false).length; }
 
   // 스타일 — 페이지 CSS 를 건드리지 않게 여기서 넣는다
@@ -130,5 +135,5 @@
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 
-  window.kmHub = { init, isHub, blocked, badgeHTML, toggleHTML, requestHTML, guard, toggle, subscribe, count, key };
+  window.kmHub = { init, isHub, blocked, badgeHTML, toggleHTML, requestHTML, guard, toggle, subscribe, config, count, key };
 })();

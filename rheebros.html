@@ -220,6 +220,8 @@
 
 <script src="rheebros_products.js"></script>
 <script src="recommend.js?v=20260727a"></script>
+<!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
+<script src="hub.js?v=20260919b"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* 🆕 2026-08-02 RHEE BROS 신제품 57개 추가 (포털 order.rhorder.online/new) — 사진 포함. rheebros_products.js 로드 직후 append. */
@@ -610,6 +612,9 @@ function render(){
     // 🎯 발주 가이드 배너 — 케이스 입력란 바로 위. 매니저가 사장님 OVER 갯수를
     //   명확히 보고 탭하면 그 수량이 케이스 입력란에 자동 입력 (setQty).
     const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+p.detailId+"',{q})") : '';
+    // 🏬 헐리우드 경유 — 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
+    const _hubBlocked = window.kmHub ? window.kmHub.blocked('rhee_full', p.id) : false;
+    const _hubMark = window.kmHub ? (window.kmHub.badgeHTML('rhee_full', p.id) + window.kmHub.toggleHTML('rhee_full', p.id)) : '';
     const _vimg = (window.kmImg ? (window.kmImg.get('rhee_full', p.id) || '') : '') || p.image;
     const _ibtn = window.kmImg ? window.kmImg.btnHtml('rhee_full', p.id, !!_vimg) : '';
     return (
@@ -624,6 +629,8 @@ function render(){
           (p.brand ? '<div class="pbrand">' + esc(p.brand) + '</div>' : '') +
           ((typeof VelaStock !== 'undefined' && VelaStock.badgeHtml(p)) ? '<div style="margin:2px 0 4px">' + VelaStock.badgeHtml(p) + '</div>' : '') +
           overGuide +
+          _hubMark +
+          (_hubBlocked ? window.kmHub.requestHTML('rhee_full', p.id) : (
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
             '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
@@ -632,6 +639,7 @@ function render(){
           '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>' +
           eaRow +
           plRow +
+          '')) +
         '</div>' +
       '</div>'
     );
@@ -651,8 +659,12 @@ function openQtyInput(id, current){
   const n = parseInt(v, 10);
   if (!isNaN(n) && n >= 0) setQty(id, n);
 }
+// 🏬 장바구니 키(detailId, __EA/__PL 붙음) → 상품 품번(id). 경유 지정은 품번 기준
+function _hubPid(id){ const b = String(id).replace(/__(EA|PL)$/, ''); return (BY_ID[b] && BY_ID[b].id) || b; }
 function bumpQty(id, delta){
   const cur = CART[id] || 0;
+  // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
+  if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
   if (next === 0) delete CART[id];
   else CART[id] = next;
@@ -666,6 +678,7 @@ function bumpQty(id, delta){
 }
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
+  if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
   if (v === 0) delete CART[id];
   else CART[id] = v;
   saveCart();
@@ -1006,6 +1019,12 @@ if (window.kmRecs){
     branch: (function(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } })()
   });
   window.kmRecs.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+// 🏬 헐리우드 경유 품목 — 지정이 바뀌면 다시 그린다
+if (window.kmHub){
+  window.kmHub.init({ db, ref, set, onValue });
+  window.kmHub.config({ vendorName: 'Rhee Bros', vendorNameKr: '이브라더스', lookup: (v, id) => PRODUCTS.find(p => String(p.id) === String(id)) || null });
+  window.kmHub.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
 }
 
 // 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.

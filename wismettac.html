@@ -659,19 +659,20 @@ function openPd(detailId){
         (p.barcode ? '<tr><td class="label">' + t('barcode') + '</td><td class="value barcode">' + esc(p.barcode) + '</td></tr>' : '') +
       '</table>' +
     '</div>' +
-    '<div class="pd-qty-section">' +
+    ((window.kmHub && window.kmHub.blocked('wismettac', p.id)) ? '<div class="pd-qty-section">' + window.kmHub.requestHTML('wismettac', p.id) + '</div>' : '') +
+    ((window.kmHub && window.kmHub.blocked('wismettac', p.id)) ? '' : '<div class="pd-qty-section">' +
       '<div class="pd-qty-label">' + t('orderQty') + '</div>' +
       '<div class="pd-qty-row">' +
         '<button onclick="pdBump(-1)">−</button>' +
         '<input type="number" min="0" max="999" id="pd-qty-input" value="' + curQty + '" onchange="pdSetQty(this.value)">' +
         '<button onclick="pdBump(1)">+</button>' +
       '</div>' +
-    '</div>' +
+    '</div>') +
     '<div class="pd-foot">' +
       '<button class="outline" onclick="closePd()">' + (LANG==='ko'?'닫기':'Close') + '</button>' +
       (curQty > 0
         ? '<button class="primary" onclick="pdRemove()">' + t('removeCart') + '</button>'
-        : '<button class="primary" onclick="pdAddToCart()">+ ' + t('addCart') + '</button>'
+        : ((window.kmHub && window.kmHub.blocked('wismettac', p.id)) ? '' : '<button class="primary" onclick="pdAddToCart()">+ ' + t('addCart') + '</button>')
       ) +
     '</div>';
 
@@ -698,8 +699,10 @@ function pdSetQty(v){
 }
 function pdAddToCart(){
   const input = $('pd-qty-input');
-  let n = parseInt(input.value, 10) || 0;
+  let n = parseInt(input ? input.value : '', 10) || 0;
   if (n <= 0) n = 1;
+  // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 담을 수 없다
+  if (window.kmHub && window.kmHub.guard('wismettac', _hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;
   CART[CURRENT_PD_ID] = n;
   saveCart();
   render();

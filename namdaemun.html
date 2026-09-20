@@ -947,6 +947,31 @@ function _userKey() {
 //   (namdaemun 은 localStorage 기반이라 동일 디바이스 내에서만 공유.)
 const cartKey = (branchId, userKey) => `ndm_cart_v1__${branchId || ''}___shared`;
 
+// 🔁 상품 이름·탭을 바꾸면 장바구니 키(섹션:상품명)가 달라져 담아둔 수량이 화면에서 사라진다.
+//   2026-09-20 실제 발생(배 선물 9P→8PC, 연겨자·계란·밥솥·땡큐백 이동). 옛 키를 새 키로 잇는다.
+//   ⚠️ 앞으로 en(이름)이나 탭(cat)을 바꿀 때는 반드시 여기에 한 줄 추가할 것.
+const KEY_ALIASES = {
+  'veg:KOREAN PEAR GIFT 9P'                  : 'veg:KOREAN PEAR GIFT 8PC',
+  'ndmgro:PREPARED MUSTARD'                  : 'ndmgro:OTG PREPARED MUSTARD 24/100G',
+  'ndmgro:SOY SAUCE FOR EGG DISHES 200 ML/12': 'ndmgro:SP SOY SAUCE FOR EGG DISHES 200ML/12',
+  'ndmsupply:SUPPLY MEAT PAD *** return'     : 'ndmsupply:SUPPLY MEAT PAD 4000EA',
+  'ndmgro:CR-3032 (VIOLET + STS) RICE COOKER': 'ndmsupply:CR-3032 (VIOLET + STS) RICE COOKER',
+  'ndmgro:THANK YOU BAG'                     : 'ndmsupply:THANK YOU BAG',
+  'ndmgro:EGG JUMBO CT 12DZ'                 : 'meat:EGG JUMBO CT 12DZ',
+  'ndmgro:EGG XL 30DZ'                       : 'meat:EGG XL 30DZ',
+  'ndmgro:QUAIL EGG CAN'                     : 'meat:QUAIL EGG 24PC/20',
+};
+function migrateQty(q){
+  var out = {}, moved = 0;
+  Object.keys(q || {}).forEach(function(k){
+    var nk = KEY_ALIASES[k] || k;
+    if (nk !== k) moved++;
+    out[nk] = (out[nk] || 0) + (+q[k] || 0);
+  });
+  if (moved) console.info('[ndm] 장바구니 옛 이름 ' + moved + '건 이어받음');
+  return out;
+}
+
 // ============ STATE ============
 // Shared (not per-branch): prices, priceDate, activeSection/sub (UI navigation)
 // Per-branch × per-user (isolated): qty
@@ -961,7 +986,7 @@ function loadState() {
   try { shared = JSON.parse(localStorage.getItem(SHARED_KEY)) || {}; } catch {}
   let qty = {};
   if (branchId) {
-    try { qty = JSON.parse(localStorage.getItem(cartKey(branchId, _userKey()))) || {}; } catch {}
+    try { qty = migrateQty(JSON.parse(localStorage.getItem(cartKey(branchId, _userKey()))) || {}); } catch {}
   }
   return {
     activeSection: shared.activeSection || "veg",
@@ -999,7 +1024,7 @@ function setBranch(newId) {
   try { localStorage.setItem(BRANCH_KEY, newId); } catch {}
   // Load incoming branch×user qty
   try {
-    state.qty = JSON.parse(localStorage.getItem(cartKey(newId, user))) || {};
+    state.qty = migrateQty(JSON.parse(localStorage.getItem(cartKey(newId, user))) || {});
   } catch {
     state.qty = {};
   }
@@ -1705,6 +1730,7 @@ if (window.kmRecs){
   function applyRemote(remote){
     var next = {};
     Object.keys(remote || {}).forEach(function(k){ var v = +remote[k] || 0; if (v > 0) next[decK(k)] = v; });
+    next = migrateQty(next);   // 옛 이름으로 저장된 수량도 이어받는다
     var localN = Object.keys(state.qty || {}).length, remoteN = Object.keys(next).length;
     // 🛡 빈 클라우드가 로컬을 지우지 않게 — 오히려 내 것을 올린다 (2026-06-18 사고 재발 방지)
     if (!remoteN && localN){ window.__ndmPushCart(state.qty); return; }

@@ -439,6 +439,8 @@
 <script src="chungjungone_products.js"></script>
 <script src="sempio_products.js"></script>
 <script src="recommend.js?v=20260727a"></script>
+<!-- 📷 상품 사진 — 촬영·파일·URL·붙여넣기 (2026-09-20 전무님: 모든 품목에 사진) -->
+<script src="product-images.js?v=20260726a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20260919b"></script>
 <script>
@@ -777,6 +779,7 @@ const NDM_GROCERY = [
   {code:"NDM-G-025", plu:"", en:"OTG COOKED RICE", ko:"오뚜기밥", unit:"210G/12", price: 13.5, cat:"b_otg"},
   {code:"NDM-G-033", plu:"", en:"OTG CORN SYRUP 2.45KG/6 61-161", ko:"옛날 물엿", unit:"2.45KG", price: 49.9, cat:"b_otg"},
   {code:"NDM-G-031", plu:"", en:"OTG HONEY MUSTARD SAUCE 265G/12", ko:"허니머스타드", unit:"", price: 37.5, cat:"b_otg"},
+  {code:"NDM-G-022", plu:"", en:"OTG PREPARED MUSTARD 24/100G", ko:"오뚜기 연겨자", unit:"24/100G", price: 96.9, cat:"b_otg"},
   {code:"NDM-G-088", plu:"", en:"OTG JIN RAMEN BOWL SPICY 6/110G", ko:"진라면", unit:"6/110G", price: 8.5, cat:"b_otg"},
   {code:"NDM-G-087", plu:"", en:"OTG JIN RAMEN BOWL/MILD 6/110G", ko:"진라면", unit:"6/110G", price: 8.5, cat:"b_otg"},
   {code:"NDM-G-035", plu:"", en:"OTG KORAN RICE SYRUP 2.5KG/6 61-261", ko:"조청쌀엿", unit:"2.5KG", price: 81, cat:"b_otg"},
@@ -848,7 +851,7 @@ const NDM_GROCERY = [
   {code:"NDM-G-039", plu:"", en:"FRYING OIL", ko:"튀김기름", unit:"", price: 45, cat:"t_sauce"},
   {code:"NDM-G-021", plu:"", en:"LT MIRIN COOKING SAUCE", ko:"미림 (맛술)", unit:"6/1.8L", price: 49, cat:"t_sauce"},
   {code:"NDM-G-045", plu:"", en:"MUSTARD POWDER OTG 300G/12CT (Return)", ko:"겨자가루", unit:"12CT", price: 45, cat:"t_sauce"},
-  {code:"NDM-G-022", plu:"", en:"PREPARED MUSTARD", ko:"연겨자", unit:"24/100G", price: 96.9, cat:"t_sauce"},
+
   {code:"NDM-G-041", plu:"", en:"WATER *35", ko:"생수", unit:"*35", price: 4.9, cat:"t_drink"},
   {code:"NDM-G-055", plu:"", en:"CR-3032 (VIOLET + STS) RICE COOKER", ko:"밥솥", unit:"", price: 220, cat:"t_other"},
   {code:"NDM-G-048", plu:"", en:"EGG JUMBO CT 12DZ", ko:"계란", unit:"12DZ", price: 23.9, cat:"t_other"},
@@ -1220,7 +1223,14 @@ function itemHtml(secId, it) {
   const edited = state.prices[key] !== undefined;
   const unitStr = it.unit ? escapeHtml(it.unit) : '';
   const pluStr = it.plu ? `<span class="plu">#${it.plu}</span>` : (it.code ? `<span class="plu ndmcode">${it.code}</span>` : '');
-  const imgStr = it.image ? `<div class="item-thumb"><img src="${escapeHtml(it.image)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
+  // 📷 직원이 올린 사진이 있으면 그것을 먼저 (productImages/namdaemun/{키}), 없으면 원래 이미지
+  const imgKey = it.code || key;
+  const upImg  = window.kmImg ? (window.kmImg.get('namdaemun', imgKey) || '') : '';
+  const shownImg = upImg || it.image || '';
+  const imgBtn = window.kmImg ? window.kmImg.btnHtml('namdaemun', imgKey, !!shownImg) : '';
+  const imgStr = shownImg
+    ? `<div class="item-thumb"><img src="${escapeHtml(shownImg)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    : '';
   const hasBarcode = !!it.barcode;
   // 2026-06-10 사장님 지시: 가격 표시 제거 (가격 데이터는 유지, 화면에서만 숨김).
   const foot = `<div class="item-foot"><span class="unit">${unitStr}</span></div>` + (hasBarcode ? `<div class="barcode">${escapeHtml(it.barcode)}</div>` : '');
@@ -1233,8 +1243,8 @@ function itemHtml(secId, it) {
   const hubBlocked = window.kmHub ? window.kmHub.blocked('namdaemun', key) : false;
   const hubMark = window.kmHub ? (window.kmHub.badgeHTML('namdaemun', key) + window.kmHub.toggleHTML('namdaemun', key)) : '';
   return `
-    <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}">
-      ${imgStr}
+    <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}" style="position:relative">
+      ${imgStr}${imgBtn}
       <div class="item-head">
         <div class="name-en">${escapeHtml(it.en)}${recBadge}</div>
         ${pluStr}
@@ -1621,7 +1631,8 @@ if (!state.branchId) {
      all staff devices, same as hanmi/wismettac/rheebros. -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, get, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -1658,6 +1669,12 @@ if (window.kmRecs){
   window.kmRecs.subscribe(() => {
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
   });
+}
+// 📷 상품 사진 — 올리면 5개 지점이 같이 본다
+if (window.kmImg){
+  const storage = getStorage(app, 'gs://kimchi-mart-order.firebasestorage.app');
+  window.kmImg.init({ db, ref, set, get, onValue, remove, storage, sRef, uploadBytes, getDownloadURL });
+  window.kmImg.subscribe(() => { try { if (typeof renderContent === 'function') renderContent(); } catch(e){} });
 }
 // 🏬 헐리우드 경유 품목
 if (window.kmHub){

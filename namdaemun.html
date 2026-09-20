@@ -412,6 +412,7 @@
         <span class="total" id="modalTotal">0 items · 0 units</span>
       </div>
       <button class="btn danger" id="clearBtn"><span class="icon">🗑️</span>Clear 비우기</button>
+      <button class="btn" id="printBtn"><span class="icon">🖨</span>Print 인쇄</button>
       <button class="btn" id="excelBtn"><span class="icon">📊</span>Excel 엑셀</button>
       <button class="btn" id="emailBtn"><span class="icon">✉️</span>Email 이메일</button>
       <button class="btn primary" id="copyBtn"><span class="icon">📋</span>Copy 복사</button>
@@ -1659,6 +1660,51 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
     showToast(msg);
   }
 });
+// 🖨 주문서 인쇄 — 창을 하나 띄워 표로 그리고 바로 인쇄. 팝업이 막히면 알려준다.
+function printOrder(){
+  const lines = getOrderLines();
+  if (!lines.length){ alert('주문할 품목이 없습니다 / No items'); return; }
+  const today = new Date();
+  const d = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const b = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
+  const branch = b ? (b.ko + ' / ' + b.en) : '';
+  const who = (function(){ try { return (JSON.parse(localStorage.getItem('chat.me')||'null')||{}).name || ''; } catch(e){ return ''; } })();
+  const units = lines.reduce((a,l)=>a+l.qty,0);
+  const esc = escapeHtml;
+  const rows = lines.map((l,i) => '<tr>' +
+      '<td class="n">' + (i+1) + '</td>' +
+      '<td>' + esc(l.item.plu || l.item.code || '') + '</td>' +
+      '<td><b>' + esc(l.item.en) + '</b><div class="ko">' + esc(l.item.ko || '') + '</div></td>' +
+      '<td>' + esc(l.item.unit || '') + '</td>' +
+      '<td class="q">' + l.qty + '</td>' +
+      '<td class="chk"></td></tr>').join('');
+  const html = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>남대문 주문서 ' + d + '</title><style>' +
+    '@page{size:A4;margin:12mm}' +
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic",Arial,sans-serif;color:#111;margin:0}' +
+    'h1{font-size:18px;margin:0 0 2px}.sub{font-size:12px;color:#555;margin-bottom:10px}' +
+    'table{width:100%;border-collapse:collapse;font-size:12px}' +
+    'th,td{border:1px solid #999;padding:5px 6px;vertical-align:top}' +
+    'th{background:#f1f1f1;font-size:11px}' +
+    'td.n{width:26px;text-align:center;color:#666}td.q{width:46px;text-align:center;font-weight:800;font-size:14px}' +
+    'td.chk{width:34px}.ko{color:#555;font-size:11px;margin-top:1px}' +
+    '.foot{margin-top:10px;font-size:12px;display:flex;justify-content:space-between}' +
+    'tr{break-inside:avoid}' +
+    '</style></head><body>' +
+    '<h1>남대문 주문서 / Namdaemun Order</h1>' +
+    '<div class="sub">' + esc(branch) + ' · ' + d + (who ? ' · ' + esc(who) : '') + ' · ' + lines.length + '종 / ' + units + '개</div>' +
+    '<table><thead><tr><th>#</th><th>품번<br>Item #</th><th>상품명 / Item</th><th>규격<br>Spec</th><th>수량<br>Qty</th><th>확인<br>✓</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="foot"><span>주문자 / Ordered by: ' + esc(who || '______') + '</span><span>확인 / Checked: ____________</span></div>' +
+    '</body></html>';
+  const w = window.open('', '_blank');
+  if (!w){ alert('팝업이 막혀 있습니다. 주소창 옆에서 팝업 허용을 켜주세요.\nPlease allow pop-ups to print.'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ try { w.print(); } catch(e){} }, 350);
+}
+document.getElementById("printBtn").addEventListener("click", printOrder);
+
 document.getElementById("excelBtn").addEventListener("click", () => {
   downloadCSV();
   showToast("CSV downloaded / CSV 다운로드 완료");

@@ -145,7 +145,11 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   }
   .plu { font-family: "SF Mono", Menlo, Consolas, monospace; color: #9ca3af; font-size: 11px; flex-shrink: 0; white-space: nowrap; }
-  .item-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: auto; padding-top: 4px; }
+  .item-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: auto; padding-top: 4px; }
+  /* 📷 사진 버튼 — 기본(절대 위치)이면 NDM 코드 배지와 겹쳐서, 이 앱에서는 규격 줄 오른쪽에 둔다 */
+  .item .kmimg-btn { position: static; width: 24px; height: 24px; font-size: 13px; line-height: 1; flex: none;
+    background: #f3f4f6; border-radius: 6px; box-shadow: none; }
+  .item .kmimg-btn.has { background: #ecfdf5; }
   .unit { color: #6b7280; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .barcode { font-family: "SF Mono", Menlo, Consolas, monospace; color: #6b7280; font-size: 10px; letter-spacing: 0.3px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .price { font-weight: 800; color: #059669; font-size: 13px; flex-shrink: 0; display: inline-flex; align-items: baseline; }
@@ -1233,7 +1237,7 @@ function itemHtml(secId, it) {
     : '';
   const hasBarcode = !!it.barcode;
   // 2026-06-10 사장님 지시: 가격 표시 제거 (가격 데이터는 유지, 화면에서만 숨김).
-  const foot = `<div class="item-foot"><span class="unit">${unitStr}</span></div>` + (hasBarcode ? `<div class="barcode">${escapeHtml(it.barcode)}</div>` : '');
+  const foot = `<div class="item-foot"><span class="unit">${unitStr}</span>${imgBtn}</div>` + (hasBarcode ? `<div class="barcode">${escapeHtml(it.barcode)}</div>` : '');
   const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(key) : '';
   const recBadge  = window.kmRecs ? (window.kmRecs.badgeHTML(key) + window.kmRecs.noteHTML(key))  : '';
   const recRing   = window.kmRecs ? window.kmRecs.cardClass(key)  : '';
@@ -1244,7 +1248,7 @@ function itemHtml(secId, it) {
   const hubMark = window.kmHub ? (window.kmHub.badgeHTML('namdaemun', key) + window.kmHub.toggleHTML('namdaemun', key)) : '';
   return `
     <div class="item ${qty>0?'has-qty':''}${recRing}" data-key="${key}" style="position:relative">
-      ${imgStr}${imgBtn}
+      ${imgStr}
       <div class="item-head">
         <div class="name-en">${escapeHtml(it.en)}${recBadge}</div>
         ${pluStr}

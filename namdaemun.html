@@ -630,6 +630,9 @@ const VEGETABLES = [
   {code:"NDM-V-172", plu:"", en:"LIONS MANE MUSHROOM LB 1C/S", ko:"노루궁뎅이버섯", unit:"1C/S", price: 44, cat:"버섯"},
   {code:"NDM-V-173", plu:"", en:"FRESH GINSENG 4OZ/12", ko:"수삼", unit:"4OZ", price: 199, cat:"뿌리"},
   {code:"NDM-V-174", plu:"", en:"JUJUBE 40LB", ko:"대추", unit:"40LB", price: 64, cat:"과일"},
+  {code:"NDM-V-175", plu:"", en:"MEX ZUCCHINI 20LB", ko:"주키니", unit:"20LB", price: 22, cat:"열매"},
+  {code:"NDM-V-176", plu:"", en:"THAI CHILI RED 1C/S", ko:"태국 홍고추", unit:"1C/S", price: 139, cat:"허브"},
+  {code:"NDM-V-177", plu:"", en:"SSUK GOT (TONG HO) 20lb", ko:"쑥갓", unit:"20LB", price: 37, cat:"잎"},
 ];
 
 const SUBCAT_ORDER = [
@@ -727,6 +730,9 @@ const MEAT = [
   {code:"NDM-M-020", plu:"", en:"FZ CUTTLEFISH CLEANED U-1 22LBS", ko:"갑오징어", unit:"", price: 105, cat:"seafood"},
   {code:"NDM-M-021", plu:"", en:"TUBE SQUID U5 22LB", ko:"오징어 몸통", unit:"22LB", price: 59, cat:"seafood"},
   {code:"NDM-M-022", plu:"", en:"FRESH WATER SHRIMP 6-8 2LB/12PK", ko:"민물새우", unit:"2LB12PK", price: 205, cat:"seafood"},
+  {code:"NDM-M-023", plu:"", en:"BELT FISH 10KG", ko:"갈치", unit:"10KG", price: 85, cat:"seafood"},
+  {code:"NDM-M-024", plu:"", en:"CHICKEN FEET", ko:"닭발", unit:"", price: 2.09, cat:"고기"},
+  {code:"NDM-M-025", plu:"", en:"OX TAIL IBP 15LB 4C/S", ko:"소꼬리", unit:"15LB4C/S", price: 6.99, cat:"고기"},
 ];
 
 const NDM_ETC = [
@@ -841,6 +847,34 @@ const NDM_GROCERY = [
   {code:"NDM-G-049", plu:"", en:"EGG XL 30DZ", ko:"계란", unit:"30DZ", price: 39, cat:"t_other"},
   {code:"NDM-G-028", plu:"", en:"QUAIL EGG CAN", ko:"메추리알 통조림", unit:"24PC/20", price: 82, cat:"t_other"},
   {code:"NDM-G-029", plu:"", en:"THANK YOU BAG", ko:"봉투 (땡큐백)", unit:"", price: 24, cat:"t_other"},
+  {code:"NDM-G-109", plu:"", en:"yeast *20PK", ko:"이스트", unit:"20PK", price: 39.5, cat:"t_sauce"},
+  {code:"NDM-G-110", plu:"", en:"YUM YUM SAUCE *spicy 16 OZ/6", ko:"염념 소스", unit:"16OZ", price: 22.5, cat:"t_sauce"},
+  {code:"NDM-G-111", plu:"", en:"YUM YUM SAUCE ORI 16 OZ/6", ko:"염념 소스", unit:"16OZ", price: 22.5, cat:"t_sauce"},
+  {code:"NDM-G-112", plu:"", en:"SY HOT CHICKEN RAMYUN (CARBONA)5*/8", ko:"불닭볶음면", unit:"", price: 45, cat:"b_samyang"},
+  {code:"NDM-G-113", plu:"", en:"SY HOT CHICKEN TOMYUM STEW *5/8", ko:"똠념", unit:"5/8", price: 45, cat:"b_samyang"},
+  {code:"NDM-G-114", plu:"", en:"MUNG BEAN NOODLE 24/300G", ko:"녹두 당면", unit:"24/300G", price: 49.5, cat:"t_ramen"},
+  {code:"NDM-G-115", plu:"", en:"JY SYRUP 5/3KG", ko:"프리미엄 골드 조청물엿", unit:"5/3KG", price: 48, cat:"t_sauce"},
+  {code:"NDM-G-116", plu:"", en:"SP TOJANG SOYBEAN PASTE 450G/8", ko:"토장 찌게양념", unit:"", price: 47, cat:"b_sempio"},
+  {code:"NDM-G-117", plu:"", en:"SPAM CLASSIC", ko:"스팸", unit:"", price: 4.4, cat:"b_spam"},
+  {code:"NDM-G-118", plu:"", en:"SPAM TOCINO", ko:"스팸", unit:"", price: 4.4, cat:"b_spam"},
+  {code:"NDM-G-119", plu:"", en:"PMO PAD THAI 344G/12", ko:"팟타이", unit:"", price: 69, cat:"b_pmo"},
+  {code:"NDM-G-120", plu:"", en:"PMO TERIYAKI FRY UDON 12.1OZ/12 130436", ko:"데리야끼 볶음우동", unit:"12.1OZ", price: 66, cat:"b_pmo"},
+  {code:"NDM-G-121", plu:"", en:"MIWON 3KG", ko:"미원", unit:"3KG", price: 20, cat:"t_sauce"},
+  {code:"NDM-G-122", plu:"", en:"SEASONING SALT 2KG/6", ko:"맛소금", unit:"2KG", price: 39, cat:"t_sauce"},
+  {code:"NDM-G-123", plu:"", en:"PMO EXTRA SOFT TOFU 10OZ/30", ko:"순두부", unit:"10OZ", price: 49, cat:"b_pmo"},
+  {code:"NDM-G-124", plu:"", en:"PMO FIRM TOFU 16OZ/12", ko:"부침두부", unit:"16OZ", price: 20, cat:"b_pmo"},
+  {code:"NDM-G-125", plu:"", en:"PMO SOFT TOFU (ORGANIC) 15OZ/12", ko:"두부", unit:"15OZ", price: 27, cat:"b_pmo"},
+  {code:"NDM-G-126", plu:"", en:"DS COOKING SYRUP 6/2.45KG", ko:"요리당", unit:"6/2.45KG", price: 43.9, cat:"b_etc"},
+  {code:"NDM-G-127", plu:"", en:"SP SOY SAUCE JIN -S 1.7L/6", ko:"간장", unit:"1.7L", price: 40.5, cat:"b_sempio"},
+  {code:"NDM-G-128", plu:"", en:"SP SOY SAUCE JIN-GOLD S 1.7L/6", ko:"간장", unit:"1.7L", price: 39, cat:"b_sempio"},
+  {code:"NDM-G-129", plu:"", en:"SP SOY SAUCE GOLD F3 1.7L/6 *****", ko:"간장", unit:"1.7L", price: 41, cat:"b_sempio"},
+  {code:"NDM-G-130", plu:"", en:"SOY SAUCE FOR EGG DISHES 200 ML/12", ko:"계란이 맛있어지는 간장", unit:"200ML", price: 49.5, cat:"t_sauce"},
+  {code:"NDM-G-131", plu:"", en:"SP soy sauce for dumpling 12/200ML", ko:"만두 간장", unit:"12/200ML", price: 52.5, cat:"b_sempio"},
+  {code:"NDM-G-132", plu:"", en:"SP YONDU 500ML*6", ko:"연두진", unit:"500ML", price: 54.5, cat:"b_sempio"},
+  {code:"NDM-G-133", plu:"", en:"SHIN RAMYUN KIMCHI 8/4PK/120G", ko:"라면", unit:"8/4PK", price: 44, cat:"b_nongshim"},
+  {code:"NDM-G-134", plu:"", en:"NS BLACK SHIN - 4PK /4", ko:"블랙신", unit:"4PK", price: 29, cat:"b_nongshim"},
+  {code:"NDM-G-135", plu:"", en:"SHIN VEGAN CUP 6/1/75G", ko:"신라면 베지", unit:"6/1", price: 7.5, cat:"t_ramen"},
+  {code:"NDM-G-136", plu:"", en:"OTG JIN RAMYUN *4/8 *MILD", ko:"라면", unit:"4/8", price: 32, cat:"b_otg"},
 ];
 
 const NDM_SUPPLY = [
@@ -853,6 +887,10 @@ const NDM_SUPPLY = [
   {code:"NDM-S-007", plu:"", en:"PLASTIC TRAY 8P RED 300/CS", ko:"플라스틱 트레이", unit:"", price: 56, cat:"container"},
   {code:"NDM-S-008", plu:"", en:"PLASTIC TRAY 20K BLACK 200/CS", ko:"플라스틱 트레이", unit:"", price: 60, cat:"container"},
   {code:"NDM-S-009", plu:"", en:"PLASTIC TRAY 4D BLACK 400/CS", ko:"플라스틱 트레이", unit:"", price: 62, cat:"container"},
+  {code:"NDM-S-010", plu:"", en:"EMPTY BOTTLE 1GL/4 (W/LID)", ko:"빈병", unit:"1GL", price: 14.9, cat:"container"},
+  {code:"NDM-S-011", plu:"", en:"MEAT FILM (17MIC/450M)", ko:"고기 랩 필름", unit:"", price: 91.5, cat:"supply"},
+  {code:"NDM-S-012", plu:"", en:"SL-T16 16OZ CONTAINER *300", ko:"용기", unit:"16OZ", price: 59, cat:"container"},
+  {code:"NDM-S-013", plu:"", en:"SUPPLY MEAT PAD *** return", ko:"고기 패드", unit:"", price: 95, cat:"supply"},
 ];
 
 const SECTIONS = [  { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },

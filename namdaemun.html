@@ -266,7 +266,13 @@
   .order-line:last-child { border-bottom: none; }
   .ol-name { font-weight: 600; }
   .ol-detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .ol-qty { font-weight: 700; text-align: right; }
+  .ol-qty { font-weight: 700; text-align: center; min-width: 24px; }
+  .ol-ctl { display: flex; align-items: center; gap: 6px; }
+  .ol-btn { width: 28px; height: 28px; border: 1px solid #d1d5db; background: #fff; border-radius: 6px;
+    font-size: 16px; line-height: 1; cursor: pointer; color: #374151; }
+  .ol-btn:active { background: #f3f4f6; }
+  .ol-del { width: 28px; height: 28px; border: 1px solid #fecaca; background: #fff; color: #dc2626;
+    border-radius: 6px; font-size: 13px; line-height: 1; cursor: pointer; margin-left: 2px; }
   .ol-sub { font-size: 12px; color: #6b7280; text-align: right; margin-top: 2px; }
   .modal-footer {
     padding: 14px 18px; border-top: 1px solid #e5e7eb;
@@ -393,6 +399,10 @@
   <div class="modal">
     <div class="modal-header">
       <h2>Order / 주문 내역</h2>
+      <div id="ndmUndoBar" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px;display:none;align-items:center;gap:8px">
+        <span class="txt" style="flex:1;color:#92400e"></span>
+        <button type="button" onclick="ndmOrderUndo()" style="border:1px solid #d97706;background:#fff;color:#b45309;border-radius:6px;padding:4px 10px;font-weight:700;cursor:pointer">↩ 되돌리기</button>
+      </div>
       <button class="close-btn" id="closeModal">×</button>
     </div>
     <div class="modal-body" id="orderList"></div>
@@ -1461,7 +1471,7 @@ function getOrderLines() {
     for (const it of sec.items) {
       const key = itemKey(sec.id, it);
       const q = state.qty[key];
-      if (q && q > 0) lines.push({ section: sec.label, item: it, qty: q });
+      if (q && q > 0) lines.push({ section: sec.label, item: it, qty: q, key: key });
     }
   }
   return lines;
@@ -1479,21 +1489,70 @@ function updateSummary() {
 function openOrderModal() {
   const lines = getOrderLines();
   const body = document.getElementById("orderList");
+  if (!lines.length){
+    body.innerHTML = '<div style="padding:24px 8px;text-align:center;color:#9ca3af;font-size:14px">' +
+      '주문할 품목이 없습니다 / No items</div>';
+  } else {
   body.innerHTML = lines.map(l => `
     <div class="order-line">
       <div>
         <div class="ol-name">${escapeHtml(l.item.en)}</div>
         <div class="ol-detail">${l.item.plu ? `#${l.item.plu} · ` : ''}${escapeHtml(l.item.ko)}${l.item.unit ? ' · ' + escapeHtml(l.item.unit) : ''}</div>
       </div>
-      <div>
-        <div class="ol-qty">× ${l.qty}</div>
+      <div class="ol-ctl">
+        <button type="button" class="ol-btn" onclick="ndmOrderBump('${escapeHtml(l.key).replace(/'/g, "\\'")}',-1)">−</button>
+        <span class="ol-qty">${l.qty}</span>
+        <button type="button" class="ol-btn" onclick="ndmOrderBump('${escapeHtml(l.key).replace(/'/g, "\\'")}',1)">+</button>
+        <button type="button" class="ol-del" title="취소 / Remove" onclick="ndmOrderRemove('${escapeHtml(l.key).replace(/'/g, "\\'")}')">✕</button>
       </div>
     </div>
   `).join("");
+  }
   const units = lines.reduce((a,l)=>a+l.qty,0);
   document.getElementById("modalTotal").textContent = `${lines.length} items · ${units} units`;
+  const _ub = document.getElementById('ndmUndoBar');
+  if (_ub && !__ndmUndo) _ub.style.display = 'none';
   document.getElementById("modal").classList.add("show");
 }
+
+// 🗑 주문 내역에서 바로 수량 조절·취소 (전무님 요청 2026-09-20)
+//   주문서를 보다가 "이건 빼자" 를 화면을 옮기지 않고 처리한다.
+let __ndmUndo = null;     // { key, qty } — 방금 취소한 것 되돌리기
+function ndmOrderBump(key, d){
+  const cur = +state.qty[key] || 0;
+  const next = Math.max(0, Math.min(999, cur + d));
+  if (next === cur) return;
+  if (next === 0) delete state.qty[key]; else state.qty[key] = next;
+  saveState();
+  openOrderModal();
+  if (typeof renderContent === 'function') renderContent();
+  if (typeof updateSummary === 'function') updateSummary();
+}
+function ndmOrderRemove(key){
+  const cur = +state.qty[key] || 0;
+  if (!cur) return;
+  const label = key.split(':').slice(1).join(':');
+  if (!confirm('주문에서 빼시겠어요?\nRemove from the order?\n\n' + label + ' × ' + cur)) return;
+  __ndmUndo = { key: key, qty: cur };
+  delete state.qty[key];
+  saveState();
+  openOrderModal();
+  if (typeof renderContent === 'function') renderContent();
+  if (typeof updateSummary === 'function') updateSummary();
+  const u = document.getElementById('ndmUndoBar');
+  if (u){ u.style.display = ''; u.querySelector('.txt').textContent = label + ' × ' + cur + ' 취소함'; }
+}
+function ndmOrderUndo(){
+  if (!__ndmUndo) return;
+  state.qty[__ndmUndo.key] = (+state.qty[__ndmUndo.key] || 0) + __ndmUndo.qty;
+  __ndmUndo = null;
+  saveState();
+  openOrderModal();
+  if (typeof renderContent === 'function') renderContent();
+  if (typeof updateSummary === 'function') updateSummary();
+  const u = document.getElementById('ndmUndoBar'); if (u) u.style.display = 'none';
+}
+window.ndmOrderBump = ndmOrderBump; window.ndmOrderRemove = ndmOrderRemove; window.ndmOrderUndo = ndmOrderUndo;
 
 function closeOrderModal() {
   document.getElementById("modal").classList.remove("show");

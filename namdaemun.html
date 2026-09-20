@@ -1047,12 +1047,36 @@ function activeSection() {
   return SECTIONS.find(s => s.id === state.activeSection);
 }
 
+// 2026-06-09 사장님 지시: produce(야채)는 세부 카테고리로 나누지 말고 하나의 목록으로.
+// 2026-09-20 전무님 지시: 김치·반찬 / 부자재 탭은 품목이 많아 상표·품목 칩으로 걸러볼 수 있게.
+const CHIP_SECTIONS = ["ndmetc", "ndmsupply"];
 function renderSubcats() {
-  // 2026-06-09 사장님 지시: produce 를 세부 카테고리(잎/뿌리/열매…)로 나누지 말고
-  // 하나의 목록으로 통일. 카테고리 칩 미표시, 항상 전체(activeSub='all').
-  state.activeSub = "all";
   const el = document.getElementById("subcats");
-  if (el) el.innerHTML = "";
+  if (!el) return;
+  const sec = activeSection();
+  if (!sec || !CHIP_SECTIONS.includes(sec.id) || !sec.enabled) {
+    state.activeSub = "all";
+    el.innerHTML = "";
+    return;
+  }
+  const counts = { all: sec.items.length };
+  for (const it of sec.items) counts[it.cat] = (counts[it.cat] || 0) + 1;
+  if (!counts[state.activeSub]) state.activeSub = "all";
+  const chips = [`<button class="chip ${state.activeSub==='all'?'active':''}" data-sub="all">전체 All<span class="count">${counts.all}</span></button>`];
+  for (const c of SUBCAT_ORDER) {
+    if (!counts[c]) continue;
+    chips.push(`<button class="chip ${state.activeSub===c?'active':''}" data-sub="${c}">${SUBCAT_LABEL[c] || c}<span class="count">${counts[c]}</span></button>`);
+  }
+  if (chips.length <= 2) { state.activeSub = "all"; el.innerHTML = ""; return; }   // 분류가 하나뿐이면 칩 감춤
+  el.innerHTML = chips.join("");
+  el.querySelectorAll(".chip").forEach(c => {
+    c.addEventListener("click", () => {
+      state.activeSub = c.dataset.sub;
+      saveState();
+      renderSubcats();
+      renderContent();
+    });
+  });
 }
 
 function filterItems(items) {

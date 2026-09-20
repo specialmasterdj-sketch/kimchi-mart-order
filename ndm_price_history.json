@@ -1,0 +1,231 @@
+{
+ "286140": {
+  "date": "2026-09-14",
+  "lines": [
+   {
+    "code": "NDM-V-030",
+    "desc": "FRESH GARLIC"
+   },
+   {
+    "code": "NDM-V-036",
+    "desc": "NAPA 배추"
+   },
+   {
+    "code": "NDM-V-084",
+    "desc": "POTATO 감자"
+   },
+   {
+    "code": "NDM-V-091",
+    "desc": "TAIWAN SPINACH"
+   },
+   {
+    "code": "NDM-V-147",
+    "desc": "PERSIMMON 25LB"
+   },
+   {
+    "code": "NDM-V-148",
+    "desc": "HACHIYA 24CT 홍시"
+   },
+   {
+    "code": "NDM-V-057",
+    "desc": "QUAIL EGG 24PC/20"
+   },
+   {
+    "code": "NDM-V-156",
+    "desc": "MAITAKE MUSHROOM ORG."
+   },
+   {
+    "code": "NDM-V-157",
+    "desc": "BABY RADISH *"
+   },
+   {
+    "code": "NDM-V-158",
+    "desc": "YOUNG RADISH *"
+   },
+   {
+    "code": "NDM-V-159",
+    "desc": "BABY NAPA 풋배추"
+   },
+   {
+    "code": "NDM-V-160",
+    "desc": "TWIST PEPPER 꽈리고추 20LB"
+   },
+   {
+    "code": "NDM-V-161",
+    "desc": "SESAME LEAVES *100"
+   },
+   {
+    "code": "NDM-V-162",
+    "desc": "KOREAN PEAR 8\""
+   },
+   {
+    "code": "NDM-V-163",
+    "desc": "KOREAN PEAR 3CT/8"
+   },
+   {
+    "code": "NDM-V-164",
+    "desc": "FUJI APPLE L\""
+   },
+   {
+    "code": "NDM-V-165",
+    "desc": "CHEST NUT 25LB"
+   },
+   {
+    "code": "NDM-V-166",
+    "desc": "SOY BEAN SPROUT 10lb"
+   },
+   {
+    "code": "NDM-V-167",
+    "desc": "ORGINIC SOY BEAN SPROUT 1.5lb"
+   },
+   {
+    "code": "NDM-M-003",
+    "desc": "WHOLE RIBEYE ROLL 2C/S"
+   },
+   {
+    "code": "NDM-M-004",
+    "desc": "BEEF SOUP BONE IBP사골 1C/S"
+   },
+   {
+    "code": "NDM-M-005",
+    "desc": "IBP SHORT RIB A\" LA"
+   },
+   {
+    "code": "NDM-M-006",
+    "desc": "BELLIES (CHILEAN) 4C/S"
+   },
+   {
+    "code": "NDM-M-007",
+    "desc": "ANCHOVY S\" 3.3LB 지리멸치"
+   },
+   {
+    "code": "NDM-M-008",
+    "desc": "BIG BYE HERRING (DIPORI)10LB"
+   },
+   {
+    "code": "NDM-M-009",
+    "desc": "GOLDEN POMFRET 600/800 40LB"
+   },
+   {
+    "code": "NDM-M-010",
+    "desc": "MACKEREL 400/600 고등어 44lb"
+   },
+   {
+    "code": "NDM-G-001",
+    "desc": "JONGGA KIMCHI 묵은지 5/1KG"
+   },
+   {
+    "code": "NDM-G-002",
+    "desc": "JONGGA YOUNG RADISH 500 G/10 총각김치"
+   },
+   {
+    "code": "NDM-G-003",
+    "desc": "MAT KIMCHI 1kg/5"
+   },
+   {
+    "code": "NDM-G-004",
+    "desc": "JONGGA CUT RADISH KIMCHI 10/500G 깍두기"
+   },
+   {
+    "code": "NDM-G-005",
+    "desc": "JONGGA BABY RADISH KIMCHI 10/500G 열무김치"
+   },
+   {
+    "code": "NDM-G-006",
+    "desc": "WHOLE CABBAGE KIMCHI 500G/10"
+   },
+   {
+    "code": "NDM-G-007",
+    "desc": "GREEN ONION KIMCHI(300G*10) 파김치"
+   },
+   {
+    "code": "NDM-G-008",
+    "desc": "DONGCHIMI 5GL 동치미"
+   },
+   {
+    "code": "NDM-G-009",
+    "desc": "CUT RADISH KIMCHI 5GL *깍두기"
+   },
+   {
+    "code": "NDM-G-010",
+    "desc": "WHOLE RADISH KIMCHI 5GL 석박지"
+   },
+   {
+    "code": "NDM-G-011",
+    "desc": "KIMCHI WHOLE NAPA *WHITE 5GL 백김치"
+   },
+   {
+    "code": "NDM-G-012",
+    "desc": "SEASONED PEPPER 22LB 고추무침 #430613"
+   },
+   {
+    "code": "NDM-G-013",
+    "desc": "SEASONED POLLACK GUTS창란젓 22LB #300302"
+   },
+   {
+    "code": "NDM-G-014",
+    "desc": "SEASONED SMALL CRAB 방게무침 10KG #430625"
+   },
+   {
+    "code": "NDM-G-015",
+    "desc": "SALTED SHRIMP 20kg 새우젓"
+   },
+   {
+    "code": "NDM-G-016",
+    "desc": "SALTED SQUID 오징어 젓 #436111"
+   },
+   {
+    "code": "NDM-G-017",
+    "desc": "SINSONG SOY BEAN PASTE 14KG 신송된장"
+   },
+   {
+    "code": "NDM-G-018",
+    "desc": "TOJANG SOY BEAN PASTE 450 G/8 시골집 토장"
+   },
+   {
+    "code": "NDM-G-019",
+    "desc": "OTG APPLE CIDER VINEGAR 6/1.8L 사과 식초 20-251"
+   },
+   {
+    "code": "NDM-G-020",
+    "desc": "OTG BREWING VINEGAR 1.8L/6 양조식초"
+   },
+   {
+    "code": "NDM-G-021",
+    "desc": "LT MIRIN (COOKING SAUCE ) 6/1.8L"
+   },
+   {
+    "code": "NDM-G-022",
+    "desc": "PREPARED MUSTARD 24/100G 연겨자 45-146"
+   },
+   {
+    "code": "NDM-G-023",
+    "desc": "OTG SARI MYUN 110G/48 사리면"
+   },
+   {
+    "code": "NDM-G-024",
+    "desc": "OTG CHEESE RAMEN IN SOUP CUP 90 G/6"
+   },
+   {
+    "code": "NDM-G-025",
+    "desc": "OTG COOKED RICE 210G/12"
+   },
+   {
+    "code": "NDM-G-026",
+    "desc": "CR FIVE GRAIN COOKIE 12/288G 크라운 오곡쿠키"
+   },
+   {
+    "code": "NDM-G-027",
+    "desc": "CR BUTTER WAFFLE 316 G/10 버터와플"
+   },
+   {
+    "code": "NDM-G-028",
+    "desc": "QUAIL EGG 24PC/20"
+   },
+   {
+    "code": "NDM-G-029",
+    "desc": "THANK YOU BAG"
+   }
+  ]
+ }
+}

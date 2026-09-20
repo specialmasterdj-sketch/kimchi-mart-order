@@ -2687,6 +2687,366 @@
    "note": ""
   },
   {
+   "code": "NDM-G-009",
+   "en": "CUT RADISH KIMCHI 5GL",
+   "ko": "깍두기 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 110,
+   "aliases": [
+    "CUT RADISH KIMCHI 5GL *깍두기"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-007",
+   "en": "GREEN ONION KIMCHI",
+   "ko": "파김치",
+   "unit": "300G*10",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 75,
+   "aliases": [
+    "GREEN ONION KIMCHI(300G*10) 파김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-001",
+   "en": "JONGGA AGED KIMCHI",
+   "ko": "종가 묵은지",
+   "unit": "5/1KG",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 56,
+   "aliases": [
+    "JONGGA KIMCHI 묵은지 5/1KG"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-005",
+   "en": "JONGGA BABY RADISH KIMCHI",
+   "ko": "종가 열무김치",
+   "unit": "10/500G",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 61.5,
+   "aliases": [
+    "JONGGA BABY RADISH KIMCHI 10/500G 열무김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-004",
+   "en": "JONGGA CUT RADISH KIMCHI",
+   "ko": "종가 깍두기",
+   "unit": "10/500G",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 54,
+   "aliases": [
+    "JONGGA CUT RADISH KIMCHI 10/500G 깍두기"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-002",
+   "en": "JONGGA YOUNG RADISH KIMCHI",
+   "ko": "종가 총각김치",
+   "unit": "500G/10",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 69,
+   "aliases": [
+    "JONGGA YOUNG RADISH 500 G/10 총각김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-051",
+   "en": "JY KIMCHI MILD 6/400G",
+   "ko": "김치",
+   "unit": "6/400G",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 24.9,
+   "aliases": [
+    "JY KIMCHI MILD 6/400G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-050",
+   "en": "JY KIMCHI SPICY 6/400G",
+   "ko": "김치",
+   "unit": "6/400G",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 24.9,
+   "aliases": [
+    "JY KIMCHI SPICY 6/400G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-052",
+   "en": "KIMCHI 1.75LB/12",
+   "ko": "김치",
+   "unit": "1.75LB",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 75,
+   "aliases": [
+    "KIMCHI 1.75LB/12"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-003",
+   "en": "MAT KIMCHI",
+   "ko": "맛김치",
+   "unit": "1KG/5",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 51,
+   "aliases": [
+    "MAT KIMCHI 1kg/5"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-099",
+   "en": "NONG SHIM SOON KIMCHI CUP 6/1/75G",
+   "ko": "순한맛 라면",
+   "unit": "6/1",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 7.9,
+   "aliases": [
+    "NONG SHIM SOON KIMCHI CUP 6/1/75G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-101",
+   "en": "NS BOWL NOODLE 12/3.03OZ KIMCHI",
+   "ko": "사발면",
+   "unit": "12/3.03OZ",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 11.9,
+   "aliases": [
+    "NS BOWL NOODLE 12/3.03OZ KIMCHI"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-011",
+   "en": "WHITE NAPA KIMCHI 5GL",
+   "ko": "백김치 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 123,
+   "aliases": [
+    "KIMCHI WHOLE NAPA *WHITE 5GL 백김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-006",
+   "en": "WHOLE CABBAGE KIMCHI",
+   "ko": "포기김치",
+   "unit": "500G/10",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 57,
+   "aliases": [
+    "WHOLE CABBAGE KIMCHI 500G/10"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-010",
+   "en": "WHOLE RADISH KIMCHI 5GL",
+   "ko": "석박지 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 122,
+   "aliases": [
+    "WHOLE RADISH KIMCHI 5GL 석박지"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-008",
+   "en": "DONGCHIMI 5GL",
+   "ko": "동치미 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 119,
+   "aliases": [
+    "DONGCHIMI 5GL 동치미"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-047",
+   "en": "SALT AM 50LB",
+   "ko": "소금",
+   "unit": "50LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 11,
+   "aliases": [
+    "SALT AM 50LB"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-015",
+   "en": "SALTED SHRIMP 20KG",
+   "ko": "새우젓 20KG",
+   "unit": "20KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 119,
+   "aliases": [
+    "SALTED SHRIMP 20kg 새우젓"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-012",
+   "en": "SEASONED PEPPER 22LB",
+   "ko": "고추무침 22LB",
+   "unit": "22LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 79,
+   "aliases": [
+    "SEASONED PEPPER 22LB 고추무침 #430613"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-013",
+   "en": "SEASONED POLLACK GUTS 22LB",
+   "ko": "창란젓 22LB",
+   "unit": "22LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 199,
+   "aliases": [
+    "SEASONED POLLACK GUTS창란젓 22LB #300302"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-014",
+   "en": "SEASONED SMALL CRAB 10KG",
+   "ko": "방게무침 10KG",
+   "unit": "10KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 99,
+   "aliases": [
+    "SEASONED SMALL CRAB 방게무침 10KG #430625"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-017",
+   "en": "SINSONG SOY BEAN PASTE 14KG",
+   "ko": "신송 된장 14KG",
+   "unit": "14KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 27,
+   "aliases": [
+    "SINSONG SOY BEAN PASTE 14KG 신송된장"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-046",
+   "en": "SUGAR 50LB",
+   "ko": "설탕",
+   "unit": "50LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 39,
+   "aliases": [
+    "SUGAR 50LB"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-016",
+   "en": "SALTED SQUID",
+   "ko": "오징어젓",
+   "unit": "",
+   "plu": "",
+   "cat": "t_jeotgal",
+   "price": 89,
+   "aliases": [
+    "SALTED SQUID 오징어 젓 #436111"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
    "code": "NDM-G-019",
    "en": "OTG APPLE CIDER VINEGAR",
    "ko": "오뚜기 사과식초",
@@ -2957,36 +3317,6 @@
    "note": ""
   },
   {
-   "code": "NDM-G-051",
-   "en": "JY KIMCHI MILD 6/400G",
-   "ko": "김치",
-   "unit": "6/400G",
-   "plu": "",
-   "cat": "b_jayone",
-   "price": 24.9,
-   "aliases": [
-    "JY KIMCHI MILD 6/400G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-050",
-   "en": "JY KIMCHI SPICY 6/400G",
-   "ko": "김치",
-   "unit": "6/400G",
-   "plu": "",
-   "cat": "b_jayone",
-   "price": 24.9,
-   "aliases": [
-    "JY KIMCHI SPICY 6/400G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
    "code": "NDM-G-096",
    "en": "NONG SHIM SOON CUP 6PK 6/2.64OZ",
    "ko": "순한맛 라면",
@@ -2996,21 +3326,6 @@
    "price": 7.9,
    "aliases": [
     "NONG SHIM SOON CUP 6PK 6/2.64OZ"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-099",
-   "en": "NONG SHIM SOON KIMCHI CUP 6/1/75G",
-   "ko": "순한맛 라면",
-   "unit": "6/1",
-   "plu": "",
-   "cat": "b_nongshim",
-   "price": 7.9,
-   "aliases": [
-    "NONG SHIM SOON KIMCHI CUP 6/1/75G"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3086,21 +3401,6 @@
    "price": 11.9,
    "aliases": [
     "NS BOWL NOODLE 12/3.03OZ HOT&SPICY"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-101",
-   "en": "NS BOWL NOODLE 12/3.03OZ KIMCHI",
-   "ko": "사발면",
-   "unit": "12/3.03OZ",
-   "plu": "",
-   "cat": "b_nongshim",
-   "price": 11.9,
-   "aliases": [
-    "NS BOWL NOODLE 12/3.03OZ KIMCHI"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3341,66 +3641,6 @@
    "price": 27,
    "aliases": [
     "PMO FIRM TOFU (ORGANIC) 15.02/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-001",
-   "en": "JONGGA AGED KIMCHI",
-   "ko": "종가 묵은지",
-   "unit": "5/1KG",
-   "plu": "",
-   "cat": "b_jongga",
-   "price": 56,
-   "aliases": [
-    "JONGGA KIMCHI 묵은지 5/1KG"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-005",
-   "en": "JONGGA BABY RADISH KIMCHI",
-   "ko": "종가 열무김치",
-   "unit": "10/500G",
-   "plu": "",
-   "cat": "b_jongga",
-   "price": 61.5,
-   "aliases": [
-    "JONGGA BABY RADISH KIMCHI 10/500G 열무김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-004",
-   "en": "JONGGA CUT RADISH KIMCHI",
-   "ko": "종가 깍두기",
-   "unit": "10/500G",
-   "plu": "",
-   "cat": "b_jongga",
-   "price": 54,
-   "aliases": [
-    "JONGGA CUT RADISH KIMCHI 10/500G 깍두기"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-002",
-   "en": "JONGGA YOUNG RADISH KIMCHI",
-   "ko": "종가 총각김치",
-   "unit": "500G/10",
-   "plu": "",
-   "cat": "b_jongga",
-   "price": 69,
-   "aliases": [
-    "JONGGA YOUNG RADISH 500 G/10 총각김치"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3722,231 +3962,6 @@
    "note": ""
   },
   {
-   "code": "NDM-G-009",
-   "en": "CUT RADISH KIMCHI 5GL",
-   "ko": "깍두기 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 110,
-   "aliases": [
-    "CUT RADISH KIMCHI 5GL *깍두기"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-007",
-   "en": "GREEN ONION KIMCHI",
-   "ko": "파김치",
-   "unit": "300G*10",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 75,
-   "aliases": [
-    "GREEN ONION KIMCHI(300G*10) 파김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-052",
-   "en": "KIMCHI 1.75LB/12",
-   "ko": "김치",
-   "unit": "1.75LB",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 75,
-   "aliases": [
-    "KIMCHI 1.75LB/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-003",
-   "en": "MAT KIMCHI",
-   "ko": "맛김치",
-   "unit": "1KG/5",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 51,
-   "aliases": [
-    "MAT KIMCHI 1kg/5"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-011",
-   "en": "WHITE NAPA KIMCHI 5GL",
-   "ko": "백김치 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 123,
-   "aliases": [
-    "KIMCHI WHOLE NAPA *WHITE 5GL 백김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-006",
-   "en": "WHOLE CABBAGE KIMCHI",
-   "ko": "포기김치",
-   "unit": "500G/10",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 57,
-   "aliases": [
-    "WHOLE CABBAGE KIMCHI 500G/10"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-010",
-   "en": "WHOLE RADISH KIMCHI 5GL",
-   "ko": "석박지 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "t_kimchi",
-   "price": 122,
-   "aliases": [
-    "WHOLE RADISH KIMCHI 5GL 석박지"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-008",
-   "en": "DONGCHIMI 5GL",
-   "ko": "동치미 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 119,
-   "aliases": [
-    "DONGCHIMI 5GL 동치미"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-047",
-   "en": "SALT AM 50LB",
-   "ko": "소금",
-   "unit": "50LB",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 11,
-   "aliases": [
-    "SALT AM 50LB"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-015",
-   "en": "SALTED SHRIMP 20KG",
-   "ko": "새우젓 20KG",
-   "unit": "20KG",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 119,
-   "aliases": [
-    "SALTED SHRIMP 20kg 새우젓"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-012",
-   "en": "SEASONED PEPPER 22LB",
-   "ko": "고추무침 22LB",
-   "unit": "22LB",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 79,
-   "aliases": [
-    "SEASONED PEPPER 22LB 고추무침 #430613"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-013",
-   "en": "SEASONED POLLACK GUTS 22LB",
-   "ko": "창란젓 22LB",
-   "unit": "22LB",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 199,
-   "aliases": [
-    "SEASONED POLLACK GUTS창란젓 22LB #300302"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-014",
-   "en": "SEASONED SMALL CRAB 10KG",
-   "ko": "방게무침 10KG",
-   "unit": "10KG",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 99,
-   "aliases": [
-    "SEASONED SMALL CRAB 방게무침 10KG #430625"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-017",
-   "en": "SINSONG SOY BEAN PASTE 14KG",
-   "ko": "신송 된장 14KG",
-   "unit": "14KG",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 27,
-   "aliases": [
-    "SINSONG SOY BEAN PASTE 14KG 신송된장"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-046",
-   "en": "SUGAR 50LB",
-   "ko": "설탕",
-   "unit": "50LB",
-   "plu": "",
-   "cat": "t_bulk",
-   "price": 39,
-   "aliases": [
-    "SUGAR 50LB"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
    "code": "NDM-G-076",
    "en": "GREEN TEA ROASTED SEAWEED *16PK",
    "ko": "구운김",
@@ -4106,21 +4121,6 @@
    "price": 43.5,
    "aliases": [
     "ROASTED SEAWEED OLIVE OIL 8/*16"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-016",
-   "en": "SALTED SQUID",
-   "ko": "오징어젓",
-   "unit": "",
-   "plu": "",
-   "cat": "t_jeotgal",
-   "price": 89,
-   "aliases": [
-    "SALTED SQUID 오징어 젓 #436111"
    ],
    "posBarcode": "",
    "packOut": "",

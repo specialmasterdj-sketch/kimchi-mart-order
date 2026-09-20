@@ -976,6 +976,8 @@ function loadState() {
   };
 }
 function saveState() {
+  // 🛒 폰↔PC 공유 — 로컬 저장은 그대로 두고, 수량만 클라우드에도 올린다
+  try { if (typeof window.__ndmPushCart === 'function') window.__ndmPushCart(state.qty); } catch(e){}
   localStorage.setItem(SHARED_KEY, JSON.stringify({
     activeSection: state.activeSection, activeSub: state.activeSub,
     prices: state.prices, priceDate: state.priceDate,
@@ -1003,6 +1005,8 @@ function setBranch(newId) {
   updateBranchUI();
   renderContent();
   updateSummary();
+  // 🛒 지점이 바뀌면 그 지점 공유 카트로 다시 연결
+  try { if (typeof window.__ndmCartResub === 'function') window.__ndmCartResub(); } catch(e){}
 }
 
 function updateBranchUI() {
@@ -1674,6 +1678,57 @@ if (window.kmRecs){
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
   });
 }
+// 🛒 주문 수량 폰↔PC 공유 (2026-09-20 전무님 요청)
+//   같은 지점이면 폰에서 담은 수량이 PC 에도, PC 에서 담은 것이 폰에도 보인다.
+//   한미·이브라더스와 같은 경로 방식: carts/{벤더}/{지점}/_shared.
+//   키에 . # $ [ ] / 가 들어갈 수 있어(영문 상품명) %XX 로 인코딩해 저장한다.
+(function(){
+  var unsubCart = null, applyingRemote = false, pushTimer = null;
+  function encK(k){ return String(k).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
+    function(ch){ return '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'); }); }
+  function decK(k){ try { return decodeURIComponent(k); } catch(e){ return k; } }
+  function branchNow(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
+  function cartPath(b){ return 'carts/namdaemun/' + b + '/_shared'; }
+
+  window.__ndmPushCart = function(qty){
+    if (applyingRemote) return;                       // 클라우드에서 받은 것을 도로 올리지 않는다
+    var b = branchNow(); if (!b) return;
+    var clean = {};
+    Object.keys(qty || {}).forEach(function(k){ var v = +qty[k] || 0; if (v > 0) clean[encK(k)] = v; });
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){                // 연타(+ 버튼)는 모아서 한 번만
+      set(ref(db, cartPath(b)), clean).catch(function(e){ console.warn('[ndm-cart] push', e && e.message); });
+    }, 400);
+  };
+
+  function applyRemote(remote){
+    var next = {};
+    Object.keys(remote || {}).forEach(function(k){ var v = +remote[k] || 0; if (v > 0) next[decK(k)] = v; });
+    var localN = Object.keys(state.qty || {}).length, remoteN = Object.keys(next).length;
+    // 🛡 빈 클라우드가 로컬을 지우지 않게 — 오히려 내 것을 올린다 (2026-06-18 사고 재발 방지)
+    if (!remoteN && localN){ window.__ndmPushCart(state.qty); return; }
+    if (JSON.stringify(next) === JSON.stringify(state.qty)) return;
+    applyingRemote = true;
+    try {
+      state.qty = next;
+      try { localStorage.setItem(cartKey(state.branchId, _userKey()), JSON.stringify(state.qty)); } catch(e){}
+      if (typeof renderContent === 'function') renderContent();
+      if (typeof updateSummary === 'function') updateSummary();
+    } finally { applyingRemote = false; }
+  }
+
+  function subscribeCart(){
+    if (unsubCart){ try { unsubCart(); } catch(e){} unsubCart = null; }
+    var b = branchNow(); if (!b) return;
+    unsubCart = onValue(ref(db, cartPath(b)), function(snap){ applyRemote(snap.val() || {}); },
+      function(err){ console.warn('[ndm-cart] read', err && err.message); });
+  }
+  window.__ndmCartResub = subscribeCart;
+  subscribeCart();
+  window.addEventListener('storage', function(e){ if (e.key === 'km_branch') subscribeCart(); });
+  onAuthStateChanged(auth, function(u){ if (u) subscribeCart(); });   // 로그인 토큰이 늦게 오면 다시
+})();
+
 // 📷 상품 사진 — 올리면 5개 지점이 같이 본다
 if (window.kmImg){
   const storage = getStorage(app, 'gs://kimchi-mart-order.firebasestorage.app');

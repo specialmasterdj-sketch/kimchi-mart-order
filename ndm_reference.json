@@ -2687,282 +2687,12 @@
    "note": ""
   },
   {
-   "code": "NDM-G-001",
-   "en": "JONGGA AGED KIMCHI",
-   "ko": "종가 묵은지",
-   "unit": "5/1KG",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 56,
-   "aliases": [
-    "JONGGA KIMCHI 묵은지 5/1KG"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-002",
-   "en": "JONGGA YOUNG RADISH KIMCHI",
-   "ko": "종가 총각김치",
-   "unit": "500G/10",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 69,
-   "aliases": [
-    "JONGGA YOUNG RADISH 500 G/10 총각김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-003",
-   "en": "MAT KIMCHI",
-   "ko": "맛김치",
-   "unit": "1KG/5",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 51,
-   "aliases": [
-    "MAT KIMCHI 1kg/5"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-004",
-   "en": "JONGGA CUT RADISH KIMCHI",
-   "ko": "종가 깍두기",
-   "unit": "10/500G",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 54,
-   "aliases": [
-    "JONGGA CUT RADISH KIMCHI 10/500G 깍두기"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-005",
-   "en": "JONGGA BABY RADISH KIMCHI",
-   "ko": "종가 열무김치",
-   "unit": "10/500G",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 61.5,
-   "aliases": [
-    "JONGGA BABY RADISH KIMCHI 10/500G 열무김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-006",
-   "en": "WHOLE CABBAGE KIMCHI",
-   "ko": "포기김치",
-   "unit": "500G/10",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 57,
-   "aliases": [
-    "WHOLE CABBAGE KIMCHI 500G/10"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-007",
-   "en": "GREEN ONION KIMCHI",
-   "ko": "파김치",
-   "unit": "300G*10",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 75,
-   "aliases": [
-    "GREEN ONION KIMCHI(300G*10) 파김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-008",
-   "en": "DONGCHIMI 5GL",
-   "ko": "동치미 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 119,
-   "aliases": [
-    "DONGCHIMI 5GL 동치미"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-009",
-   "en": "CUT RADISH KIMCHI 5GL",
-   "ko": "깍두기 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 110,
-   "aliases": [
-    "CUT RADISH KIMCHI 5GL *깍두기"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-010",
-   "en": "WHOLE RADISH KIMCHI 5GL",
-   "ko": "석박지 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 122,
-   "aliases": [
-    "WHOLE RADISH KIMCHI 5GL 석박지"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-011",
-   "en": "WHITE NAPA KIMCHI 5GL",
-   "ko": "백김치 (5갤런)",
-   "unit": "5GL",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 123,
-   "aliases": [
-    "KIMCHI WHOLE NAPA *WHITE 5GL 백김치"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-012",
-   "en": "SEASONED PEPPER 22LB",
-   "ko": "고추무침 22LB",
-   "unit": "22LB",
-   "plu": "",
-   "cat": "banchan",
-   "price": 79,
-   "aliases": [
-    "SEASONED PEPPER 22LB 고추무침 #430613"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-013",
-   "en": "SEASONED POLLACK GUTS 22LB",
-   "ko": "창란젓 22LB",
-   "unit": "22LB",
-   "plu": "",
-   "cat": "jeotgal",
-   "price": 199,
-   "aliases": [
-    "SEASONED POLLACK GUTS창란젓 22LB #300302"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-014",
-   "en": "SEASONED SMALL CRAB 10KG",
-   "ko": "방게무침 10KG",
-   "unit": "10KG",
-   "plu": "",
-   "cat": "jeotgal",
-   "price": 99,
-   "aliases": [
-    "SEASONED SMALL CRAB 방게무침 10KG #430625"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-015",
-   "en": "SALTED SHRIMP 20KG",
-   "ko": "새우젓 20KG",
-   "unit": "20KG",
-   "plu": "",
-   "cat": "jeotgal",
-   "price": 119,
-   "aliases": [
-    "SALTED SHRIMP 20kg 새우젓"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-016",
-   "en": "SALTED SQUID",
-   "ko": "오징어젓",
-   "unit": "",
-   "plu": "",
-   "cat": "jeotgal",
-   "price": 89,
-   "aliases": [
-    "SALTED SQUID 오징어 젓 #436111"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-017",
-   "en": "SINSONG SOY BEAN PASTE 14KG",
-   "ko": "신송 된장 14KG",
-   "unit": "14KG",
-   "plu": "",
-   "cat": "paste",
-   "price": 27,
-   "aliases": [
-    "SINSONG SOY BEAN PASTE 14KG 신송된장"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-018",
-   "en": "TOJANG SOY BEAN PASTE",
-   "ko": "시골집 토장",
-   "unit": "450G/8",
-   "plu": "",
-   "cat": "paste",
-   "price": 53.5,
-   "aliases": [
-    "TOJANG SOY BEAN PASTE 450 G/8 시골집 토장"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
    "code": "NDM-G-019",
    "en": "OTG APPLE CIDER VINEGAR",
    "ko": "오뚜기 사과식초",
    "unit": "6/1.8L",
    "plu": "",
-   "cat": "sauce",
+   "cat": "b_otg",
    "price": 27,
    "aliases": [
     "OTG APPLE CIDER VINEGAR 6/1.8L 사과 식초 20-251"
@@ -2977,55 +2707,10 @@
    "ko": "오뚜기 양조식초",
    "unit": "1.8L/6",
    "plu": "",
-   "cat": "sauce",
+   "cat": "b_otg",
    "price": 22,
    "aliases": [
     "OTG BREWING VINEGAR 1.8L/6 양조식초"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-021",
-   "en": "LT MIRIN COOKING SAUCE",
-   "ko": "미림 (맛술)",
-   "unit": "6/1.8L",
-   "plu": "",
-   "cat": "sauce",
-   "price": 49,
-   "aliases": [
-    "LT MIRIN (COOKING SAUCE ) 6/1.8L"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-022",
-   "en": "PREPARED MUSTARD",
-   "ko": "연겨자",
-   "unit": "24/100G",
-   "plu": "",
-   "cat": "sauce",
-   "price": 96.9,
-   "aliases": [
-    "PREPARED MUSTARD 24/100G 연겨자 45-146"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-023",
-   "en": "OTG SARI MYUN",
-   "ko": "오뚜기 사리면",
-   "unit": "110G/48",
-   "plu": "",
-   "cat": "ramen",
-   "price": 26,
-   "aliases": [
-    "OTG SARI MYUN 110G/48 사리면"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3037,7 +2722,7 @@
    "ko": "오뚜기 치즈라면 컵",
    "unit": "90G/6",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_otg",
    "price": 13.9,
    "aliases": [
     "OTG CHEESE RAMEN IN SOUP CUP 90 G/6"
@@ -3052,115 +2737,10 @@
    "ko": "오뚜기밥",
    "unit": "210G/12",
    "plu": "",
-   "cat": "rice",
+   "cat": "b_otg",
    "price": 13.5,
    "aliases": [
     "OTG COOKED RICE 210G/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-026",
-   "en": "CR FIVE GRAIN COOKIE",
-   "ko": "크라운 오곡쿠키",
-   "unit": "12/288G",
-   "plu": "",
-   "cat": "snack",
-   "price": 52.5,
-   "aliases": [
-    "CR FIVE GRAIN COOKIE 12/288G 크라운 오곡쿠키"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-027",
-   "en": "CR BUTTER WAFFLE",
-   "ko": "크라운 버터와플",
-   "unit": "316G/10",
-   "plu": "",
-   "cat": "snack",
-   "price": 41.5,
-   "aliases": [
-    "CR BUTTER WAFFLE 316 G/10 버터와플"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-028",
-   "en": "QUAIL EGG CAN",
-   "ko": "메추리알 통조림",
-   "unit": "24PC/20",
-   "plu": "",
-   "cat": "other",
-   "price": 82,
-   "aliases": [
-    "QUAIL EGG 24PC/20"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-029",
-   "en": "THANK YOU BAG",
-   "ko": "봉투 (땡큐백)",
-   "unit": "",
-   "plu": "",
-   "cat": "hardware",
-   "price": 24,
-   "aliases": [
-    "THANK YOU BAG"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-030",
-   "en": "CJ GOLD RICE 40LB",
-   "ko": "쌀",
-   "unit": "40LB",
-   "plu": "",
-   "cat": "rice",
-   "price": 25,
-   "aliases": [
-    "CJ GOLD RICE 40LB"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-031",
-   "en": "OTG HONEY MUSTARD SAUCE 265G/12",
-   "ko": "허니머스타드",
-   "unit": "",
-   "plu": "",
-   "cat": "sauce",
-   "price": 37.5,
-   "aliases": [
-    "OTG HONEY MUSTARD SAUCE 265G/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-032",
-   "en": "OTG SESAME OIL 15/80ML",
-   "ko": "참기름",
-   "unit": "15/80ML",
-   "plu": "",
-   "cat": "sauce",
-   "price": 46.9,
-   "aliases": [
-    "OTG SESAME OIL 15/80ML"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3172,7 +2752,7 @@
    "ko": "옛날 물엿",
    "unit": "2.45KG",
    "plu": "",
-   "cat": "sauce",
+   "cat": "b_otg",
    "price": 49.9,
    "aliases": [
     "OTG CORN SYRUP 2.45KG/6 옛날 물엿 61-161"
@@ -3182,15 +2762,45 @@
    "note": ""
   },
   {
-   "code": "NDM-G-034",
-   "en": "OTG RICE SYRUP 12/1.2KG",
-   "ko": "조청쌀엿",
-   "unit": "12/1.2KG",
+   "code": "NDM-G-031",
+   "en": "OTG HONEY MUSTARD SAUCE 265G/12",
+   "ko": "허니머스타드",
+   "unit": "",
    "plu": "",
-   "cat": "sauce",
-   "price": 76.5,
+   "cat": "b_otg",
+   "price": 37.5,
    "aliases": [
-    "OTG RICE SYRUP 12/1.2KG 조청쌀엿"
+    "OTG HONEY MUSTARD SAUCE 265G/12"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-088",
+   "en": "OTG JIN RAMEN BOWL SPICY 6/110G",
+   "ko": "진라면",
+   "unit": "6/110G",
+   "plu": "",
+   "cat": "b_otg",
+   "price": 8.5,
+   "aliases": [
+    "OTG JIN RAMEN BOWL SPICY 6/110G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-087",
+   "en": "OTG JIN RAMEN BOWL/MILD 6/110G",
+   "ko": "진라면",
+   "unit": "6/110G",
+   "plu": "",
+   "cat": "b_otg",
+   "price": 8.5,
+   "aliases": [
+    "OTG JIN RAMEN BOWL/MILD 6/110G"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3202,7 +2812,7 @@
    "ko": "조청쌀엿",
    "unit": "2.5KG",
    "plu": "",
-   "cat": "sauce",
+   "cat": "b_otg",
    "price": 81,
    "aliases": [
     "OTG KORAN RICE SYRUP 2.5KG/6 조청쌀엿 61-261"
@@ -3217,7 +2827,7 @@
    "ko": "매실청",
    "unit": "",
    "plu": "",
-   "cat": "sauce",
+   "cat": "b_otg",
    "price": 79,
    "aliases": [
     "OTG PLUM EXTRACT 660G/12 매실청 61-001"
@@ -3227,45 +2837,45 @@
    "note": ""
   },
   {
-   "code": "NDM-G-037",
-   "en": "SP NEW YONDU 275ML*12",
-   "ko": "연두 진",
-   "unit": "275ML*12",
+   "code": "NDM-G-034",
+   "en": "OTG RICE SYRUP 12/1.2KG",
+   "ko": "조청쌀엿",
+   "unit": "12/1.2KG",
    "plu": "",
-   "cat": "sauce",
-   "price": 70.9,
+   "cat": "b_otg",
+   "price": 76.5,
    "aliases": [
-    "SP NEW YONDU 275ML*12 연두 진"
+    "OTG RICE SYRUP 12/1.2KG 조청쌀엿"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-038",
-   "en": "SP 6MON MATURED SOY BEAN PASTE 12/900G",
-   "ko": "토굴된장",
-   "unit": "12/900G",
+   "code": "NDM-G-023",
+   "en": "OTG SARI MYUN",
+   "ko": "오뚜기 사리면",
+   "unit": "110G/48",
    "plu": "",
-   "cat": "paste",
-   "price": 127,
+   "cat": "b_otg",
+   "price": 26,
    "aliases": [
-    "SP 6MON MATURED SOY BEAN PASTE 12/900G 토굴된장"
+    "OTG SARI MYUN 110G/48 사리면"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-039",
-   "en": "FRYING OIL",
-   "ko": "튀김기름",
-   "unit": "",
+   "code": "NDM-G-032",
+   "en": "OTG SESAME OIL 15/80ML",
+   "ko": "참기름",
+   "unit": "15/80ML",
    "plu": "",
-   "cat": "sauce",
-   "price": 45,
+   "cat": "b_otg",
+   "price": 46.9,
    "aliases": [
-    "FRYING OIL"
+    "OTG SESAME OIL 15/80ML"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3277,235 +2887,10 @@
    "ko": "소면",
    "unit": "2.5KG",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_otg",
    "price": 32.5,
    "aliases": [
     "OTG SO MYUN 2.5KG/4 #028"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-041",
-   "en": "WATER *35",
-   "ko": "생수",
-   "unit": "*35",
-   "plu": "",
-   "cat": "beverage",
-   "price": 4.9,
-   "aliases": [
-    "WATER *35"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-042",
-   "en": "PMO FIRM TOFU (ORGANIC) 15.02/12",
-   "ko": "두부",
-   "unit": "02/12",
-   "plu": "",
-   "cat": "other",
-   "price": 27,
-   "aliases": [
-    "PMO FIRM TOFU (ORGANIC) 15.02/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-043",
-   "en": "HSJ ANCHOVY SAUCE 3KG/6",
-   "ko": "멸치액젓",
-   "unit": "3KG",
-   "plu": "",
-   "cat": "sauce",
-   "price": 64,
-   "aliases": [
-    "HSJ ANCHOVY SAUCE 3KG/6"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-044",
-   "en": "SP YUNDOO SOON (LIQUID SEASONING) 12/275ML",
-   "ko": "연두",
-   "unit": "12/275ML",
-   "plu": "",
-   "cat": "sauce",
-   "price": 70,
-   "aliases": [
-    "SP YUNDOO SOON (LIQUID SEASONING) 12/275ML"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-045",
-   "en": "MUSTARD POWDER OTG 300G/12CT (Return)",
-   "ko": "겨자가루",
-   "unit": "12CT",
-   "plu": "",
-   "cat": "sauce",
-   "price": 45,
-   "aliases": [
-    "MUSTARD POWDER OTG 300G/12CT (Return)"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-046",
-   "en": "SUGAR 50LB",
-   "ko": "설탕",
-   "unit": "50LB",
-   "plu": "",
-   "cat": "other",
-   "price": 39,
-   "aliases": [
-    "SUGAR 50LB"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-047",
-   "en": "SALT AM 50LB",
-   "ko": "소금",
-   "unit": "50LB",
-   "plu": "",
-   "cat": "other",
-   "price": 11,
-   "aliases": [
-    "SALT AM 50LB"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-048",
-   "en": "EGG JUMBO CT 12DZ",
-   "ko": "계란",
-   "unit": "12DZ",
-   "plu": "",
-   "cat": "other",
-   "price": 23.9,
-   "aliases": [
-    "EGG JUMBO CT 12DZ"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-049",
-   "en": "EGG XL 30DZ",
-   "ko": "계란",
-   "unit": "30DZ",
-   "plu": "",
-   "cat": "other",
-   "price": 39,
-   "aliases": [
-    "EGG XL 30DZ"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-050",
-   "en": "JY KIMCHI SPICY 6/400G",
-   "ko": "김치",
-   "unit": "6/400G",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 24.9,
-   "aliases": [
-    "JY KIMCHI SPICY 6/400G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-051",
-   "en": "JY KIMCHI MILD 6/400G",
-   "ko": "김치",
-   "unit": "6/400G",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 24.9,
-   "aliases": [
-    "JY KIMCHI MILD 6/400G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-052",
-   "en": "KIMCHI 1.75LB/12",
-   "ko": "김치",
-   "unit": "1.75LB",
-   "plu": "",
-   "cat": "kimchi",
-   "price": 75,
-   "aliases": [
-    "KIMCHI 1.75LB/12"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-053",
-   "en": "BITTER MELON EXTRACT 5/30/80ML",
-   "ko": "여주즙",
-   "unit": "5/3080ML",
-   "plu": "",
-   "cat": "sauce",
-   "price": 92,
-   "aliases": [
-    "BITTER MELON EXTRACT 5/30/80ML"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-054",
-   "en": "SFC SPARKLING FRUIT JUICE 6/4 MANGO",
-   "ko": "탄산음료",
-   "unit": "6/4",
-   "plu": "",
-   "cat": "beverage",
-   "price": 19,
-   "aliases": [
-    "SFC SPARKLING FRUIT JUICE 6/4 MANGO"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-055",
-   "en": "CR-3032 (VIOLET + STS) RICE COOKER",
-   "ko": "밥솥",
-   "unit": "",
-   "plu": "",
-   "cat": "hardware",
-   "price": 220,
-   "aliases": [
-    "CR-3032 (VIOLET + STS) RICE COOKER"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -3517,7 +2902,7 @@
    "ko": "된장",
    "unit": "",
    "plu": "",
-   "cat": "paste",
+   "cat": "b_sempio",
    "price": 74.5,
    "aliases": [
     "SEMPIO SOYBEAN PASTE TOJANG 900G/8"
@@ -3527,525 +2912,105 @@
    "note": ""
   },
   {
-   "code": "NDM-G-057",
-   "en": "SPAM ORIGINAL",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-038",
+   "en": "SP 6MON MATURED SOY BEAN PASTE 12/900G",
+   "ko": "토굴된장",
+   "unit": "12/900G",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_sempio",
+   "price": 127,
    "aliases": [
-    "SPAM ORIGINAL"
+    "SP 6MON MATURED SOY BEAN PASTE 12/900G 토굴된장"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-058",
-   "en": "SPAM 25% LESS SODIUM",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-037",
+   "en": "SP NEW YONDU 275ML*12",
+   "ko": "연두 진",
+   "unit": "275ML*12",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_sempio",
+   "price": 70.9,
    "aliases": [
-    "SPAM 25% LESS SODIUM"
+    "SP NEW YONDU 275ML*12 연두 진"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-059",
-   "en": "SPAM LITE",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-044",
+   "en": "SP YUNDOO SOON (LIQUID SEASONING) 12/275ML",
+   "ko": "연두",
+   "unit": "12/275ML",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_sempio",
+   "price": 70,
    "aliases": [
-    "SPAM LITE"
+    "SP YUNDOO SOON (LIQUID SEASONING) 12/275ML"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-060",
-   "en": "SPAM BACON",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-051",
+   "en": "JY KIMCHI MILD 6/400G",
+   "ko": "김치",
+   "unit": "6/400G",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_jayone",
+   "price": 24.9,
    "aliases": [
-    "SPAM BACON"
+    "JY KIMCHI MILD 6/400G"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-061",
-   "en": "SPAM TURKEY",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-050",
+   "en": "JY KIMCHI SPICY 6/400G",
+   "ko": "김치",
+   "unit": "6/400G",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_jayone",
+   "price": 24.9,
    "aliases": [
-    "SPAM TURKEY"
+    "JY KIMCHI SPICY 6/400G"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-062",
-   "en": "SPAM TERIYAKI",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-096",
+   "en": "NONG SHIM SOON CUP 6PK 6/2.64OZ",
+   "ko": "순한맛 라면",
+   "unit": "6PK6/2.64OZ",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_nongshim",
+   "price": 7.9,
    "aliases": [
-    "SPAM TERIYAKI"
+    "NONG SHIM SOON CUP 6PK 6/2.64OZ"
    ],
    "posBarcode": "",
    "packOut": "",
    "note": ""
   },
   {
-   "code": "NDM-G-063",
-   "en": "SPAM JALAPENO",
-   "ko": "스팸",
-   "unit": "",
+   "code": "NDM-G-099",
+   "en": "NONG SHIM SOON KIMCHI CUP 6/1/75G",
+   "ko": "순한맛 라면",
+   "unit": "6/1",
    "plu": "",
-   "cat": "other",
-   "price": 4.4,
+   "cat": "b_nongshim",
+   "price": 7.9,
    "aliases": [
-    "SPAM JALAPENO"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-064",
-   "en": "DS SEASONING SALT 5KG/4",
-   "ko": "맛소금",
-   "unit": "5KG",
-   "plu": "",
-   "cat": "sauce",
-   "price": 50.9,
-   "aliases": [
-    "DS SEASONING SALT 5KG/4"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-065",
-   "en": "WE CHUNG SU 10/10",
-   "ko": "청수",
-   "unit": "10/10",
-   "plu": "",
-   "cat": "sauce",
-   "price": 69,
-   "aliases": [
-    "WE CHUNG SU 10/10"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-066",
-   "en": "HCD HOT PEPPER PASTE 14KG RED",
-   "ko": "고추장",
-   "unit": "14KG",
-   "plu": "",
-   "cat": "paste",
-   "price": 45,
-   "aliases": [
-    "HCD HOT PEPPER PASTE 14KG RED"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-067",
-   "en": "SKY SEASONED SEAWEED (PARAE) 14/3PK",
-   "ko": "조미김",
-   "unit": "14/3PK",
-   "plu": "",
-   "cat": "nori",
-   "price": 52,
-   "aliases": [
-    "SKY SEASONED SEAWEED (PARAE) 14/3PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-068",
-   "en": "ORGANIC ROASTED SEASONED SEAWEED 12/8PK",
-   "ko": "조미김",
-   "unit": "12/8PK",
-   "plu": "",
-   "cat": "nori",
-   "price": 56,
-   "aliases": [
-    "ORGANIC ROASTED SEASONED SEAWEED 12/8PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-069",
-   "en": "SKY A+ PREM SSND SEAWEED GOPCHANG 12/8PK",
-   "ko": "조미김",
-   "unit": "12/8PK",
-   "plu": "",
-   "cat": "nori",
-   "price": 52,
-   "aliases": [
-    "SKY A+ PREM SSND SEAWEED GOPCHANG 12/8PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-070",
-   "en": "ROASTED SEAWEED OLIVE OIL 8/*16",
-   "ko": "구운김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 43.5,
-   "aliases": [
-    "ROASTED SEAWEED OLIVE OIL 8/*16"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-071",
-   "en": "PERILLA-OIL ROASTED SEASONED SEAWEED 10/*3PK",
-   "ko": "조미김",
-   "unit": "*3",
-   "plu": "",
-   "cat": "nori",
-   "price": 40,
-   "aliases": [
-    "PERILLA-OIL ROASTED SEASONED SEAWEED 10/*3PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-072",
-   "en": "ORGANIC ROASTED SEASONED SEAWEED A+ 10/*3PK",
-   "ko": "조미김",
-   "unit": "*3",
-   "plu": "",
-   "cat": "nori",
-   "price": 54,
-   "aliases": [
-    "ORGANIC ROASTED SEASONED SEAWEED A+ 10/*3PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-073",
-   "en": "ROASTED SEASONED SEAWEED 6/*24",
-   "ko": "조미김",
-   "unit": "*24",
-   "plu": "",
-   "cat": "nori",
-   "price": 52,
-   "aliases": [
-    "ROASTED SEASONED SEAWEED 6/*24"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-074",
-   "en": "MINI ROASTED SEASONED SEAWEED 8/*32",
-   "ko": "조미김",
-   "unit": "*32",
-   "plu": "",
-   "cat": "nori",
-   "price": 49,
-   "aliases": [
-    "MINI ROASTED SEASONED SEAWEED 8/*32"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-075",
-   "en": "PREMIUM ROASTED SEASONED SEAWEED A+ 24PK/6",
-   "ko": "조미김",
-   "unit": "24PK",
-   "plu": "",
-   "cat": "nori",
-   "price": 55.5,
-   "aliases": [
-    "PREMIUM ROASTED SEASONED SEAWEED A+ 24PK/6"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-076",
-   "en": "GREEN TEA ROASTED SEAWEED *16PK",
-   "ko": "구운김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 42,
-   "aliases": [
-    "GREEN TEA ROASTED SEAWEED *16PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-077",
-   "en": "ROASTED SEAWEED A+ 3PK/10",
-   "ko": "구운김",
-   "unit": "3PK",
-   "plu": "",
-   "cat": "nori",
-   "price": 40,
-   "aliases": [
-    "ROASTED SEAWEED A+ 3PK/10 #440830"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-078",
-   "en": "ROASTED LAVER KC *3/24 (DOSHirak)",
-   "ko": "구운김",
-   "unit": "*3",
-   "plu": "",
-   "cat": "nori",
-   "price": 26,
-   "aliases": [
-    "ROASTED LAVER KC *3/24 (DOSHirak) #450392"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-079",
-   "en": "ROASTED SEAWEED KC *3/14 (JUNJANG)",
-   "ko": "구운김",
-   "unit": "*3",
-   "plu": "",
-   "cat": "nori",
-   "price": 52,
-   "aliases": [
-    "ROASTED SEAWEED KC *3/14 (JUNJANG) #450393"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-080",
-   "en": "SKY ROASTED SEAWEED *8/12",
-   "ko": "구운김",
-   "unit": "*8",
-   "plu": "",
-   "cat": "nori",
-   "price": 37,
-   "aliases": [
-    "SKY ROASTED SEAWEED *8/12 #450396"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-081",
-   "en": "SG ROASTED SEASONED SEAWEED *16/8",
-   "ko": "조미김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 42,
-   "aliases": [
-    "SG ROASTED SEASONED SEAWEED *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-082",
-   "en": "SG IT'S GIMSEA SALT ROASTED SEASONED SEA *16/8",
-   "ko": "조미김 (소금)",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 49,
-   "aliases": [
-    "SG IT'S GIMSEA SALT ROASTED SEASONED SEA *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-083",
-   "en": "SG OLIVE & GREEN TEA ROASTED SEASONED SEAWEED *16/8",
-   "ko": "조미김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 49,
-   "aliases": [
-    "SG OLIVE & GREEN TEA ROASTED SEASONED SEAWEED *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-084",
-   "en": "SG AVOCADO ROASTED SEASONED SEAWEED *16/8",
-   "ko": "조미김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 49,
-   "aliases": [
-    "SG AVOCADO ROASTED SEASONED SEAWEED *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-085",
-   "en": "SG PERILLA OIL ROASTED SEASONED SEAWEED *16/8",
-   "ko": "조미김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 49,
-   "aliases": [
-    "SG PERILLA OIL ROASTED SEASONED SEAWEED *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-086",
-   "en": "SG GREEN TEA ROASTED SEASONED SEAWEED *16/8",
-   "ko": "조미김",
-   "unit": "*16",
-   "plu": "",
-   "cat": "nori",
-   "price": 54,
-   "aliases": [
-    "SG GREEN TEA ROASTED SEASONED SEAWEED *16/8"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-087",
-   "en": "OTG JIN RAMEN BOWL/MILD 6/110G",
-   "ko": "진라면",
-   "unit": "6/110G",
-   "plu": "",
-   "cat": "ramen",
-   "price": 8.5,
-   "aliases": [
-    "OTG JIN RAMEN BOWL/MILD 6/110G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-088",
-   "en": "OTG JIN RAMEN BOWL SPICY 6/110G",
-   "ko": "진라면",
-   "unit": "6/110G",
-   "plu": "",
-   "cat": "ramen",
-   "price": 8.5,
-   "aliases": [
-    "OTG JIN RAMEN BOWL SPICY 6/110G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-089",
-   "en": "NS SHINRAMYUN *4/4",
-   "ko": "신라면",
-   "unit": "*4",
-   "plu": "",
-   "cat": "ramen",
-   "price": 15.9,
-   "aliases": [
-    "NS SHINRAMYUN *4/4"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-090",
-   "en": "NS CHAPAGETI MULTI *4/4",
-   "ko": "짜파게티",
-   "unit": "*4",
-   "plu": "",
-   "cat": "ramen",
-   "price": 20,
-   "aliases": [
-    "NS CHAPAGETI MULTI *4/4"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-091",
-   "en": "NS ANSUNGTANG MYUN *4/4",
-   "ko": "안성탕면",
-   "unit": "*4",
-   "plu": "",
-   "cat": "ramen",
-   "price": 18,
-   "aliases": [
-    "NS ANSUNGTANG MYUN *4/4"
+    "NONG SHIM SOON KIMCHI CUP 6/1/75G"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -4057,10 +3022,130 @@
    "ko": "순한맛 라면",
    "unit": "8/4PK",
    "plu": "",
-   "cat": "other",
+   "cat": "b_nongshim",
    "price": 34,
    "aliases": [
     "NONG SHIM SOON VEGGIE NDLE 8/4PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-091",
+   "en": "NS ANSUNGTANG MYUN *4/4",
+   "ko": "안성탕면",
+   "unit": "*4",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 18,
+   "aliases": [
+    "NS ANSUNGTANG MYUN *4/4"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-103",
+   "en": "NS BEEF BOWL NOODLES 12/3.3OZ",
+   "ko": "사발면",
+   "unit": "12/3.3OZ",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 11.9,
+   "aliases": [
+    "NS BEEF BOWL NOODLES 12/3.3OZ"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-095",
+   "en": "NS BLACK SHIN CUP 6PK",
+   "ko": "신라면",
+   "unit": "6PK",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 11.9,
+   "aliases": [
+    "NS BLACK SHIN CUP 6PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-102",
+   "en": "NS BOWL NOODLE 12/3.03OZ HOT&SPICY",
+   "ko": "사발면",
+   "unit": "12/3.03OZ",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 11.9,
+   "aliases": [
+    "NS BOWL NOODLE 12/3.03OZ HOT&SPICY"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-101",
+   "en": "NS BOWL NOODLE 12/3.03OZ KIMCHI",
+   "ko": "사발면",
+   "unit": "12/3.03OZ",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 11.9,
+   "aliases": [
+    "NS BOWL NOODLE 12/3.03OZ KIMCHI"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-100",
+   "en": "NS BOWL NOODLE 12/3.03OZ SHIN",
+   "ko": "사발면",
+   "unit": "12/3.03OZ",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 11.9,
+   "aliases": [
+    "NS BOWL NOODLE 12/3.03OZ SHIN"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-090",
+   "en": "NS CHAPAGETI MULTI *4/4",
+   "ko": "짜파게티",
+   "unit": "*4",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 20,
+   "aliases": [
+    "NS CHAPAGETI MULTI *4/4"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-097",
+   "en": "NS NEOGURI 6CUP",
+   "ko": "너구리",
+   "unit": "",
+   "plu": "",
+   "cat": "b_nongshim",
+   "price": 7.9,
+   "aliases": [
+    "NS NEOGURI 6CUP"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -4072,7 +3157,7 @@
    "ko": "너구리",
    "unit": "4/4",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_nongshim",
    "price": 19,
    "aliases": [
     "NS NEOGURI MULTI 4/4"
@@ -4087,7 +3172,7 @@
    "ko": "신라면",
    "unit": "*6",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_nongshim",
    "price": 7.5,
    "aliases": [
     "NS SHIN SMALL CUP *6"
@@ -4097,45 +3182,15 @@
    "note": ""
   },
   {
-   "code": "NDM-G-095",
-   "en": "NS BLACK SHIN CUP 6PK",
+   "code": "NDM-G-089",
+   "en": "NS SHINRAMYUN *4/4",
    "ko": "신라면",
-   "unit": "6PK",
+   "unit": "*4",
    "plu": "",
-   "cat": "ramen",
-   "price": 11.9,
+   "cat": "b_nongshim",
+   "price": 15.9,
    "aliases": [
-    "NS BLACK SHIN CUP 6PK"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-096",
-   "en": "NONG SHIM SOON CUP 6PK 6/2.64OZ",
-   "ko": "순한맛 라면",
-   "unit": "6PK6/2.64OZ",
-   "plu": "",
-   "cat": "ramen",
-   "price": 7.9,
-   "aliases": [
-    "NONG SHIM SOON CUP 6PK 6/2.64OZ"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-097",
-   "en": "NS NEOGURI 6CUP",
-   "ko": "너구리",
-   "unit": "",
-   "plu": "",
-   "cat": "ramen",
-   "price": 7.9,
-   "aliases": [
-    "NS NEOGURI 6CUP"
+    "NS SHINRAMYUN *4/4"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -4147,115 +3202,10 @@
    "ko": "우동",
    "unit": "6/75G",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_nongshim",
    "price": 7.9,
    "aliases": [
     "NS UDONG CUP S 6/75G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-099",
-   "en": "NONG SHIM SOON KIMCHI CUP 6/1/75G",
-   "ko": "순한맛 라면",
-   "unit": "6/1",
-   "plu": "",
-   "cat": "ramen",
-   "price": 7.9,
-   "aliases": [
-    "NONG SHIM SOON KIMCHI CUP 6/1/75G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-100",
-   "en": "NS BOWL NOODLE 12/3.03OZ SHIN",
-   "ko": "사발면",
-   "unit": "12/3.03OZ",
-   "plu": "",
-   "cat": "ramen",
-   "price": 11.9,
-   "aliases": [
-    "NS BOWL NOODLE 12/3.03OZ SHIN"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-101",
-   "en": "NS BOWL NOODLE 12/3.03OZ KIMCHI",
-   "ko": "사발면",
-   "unit": "12/3.03OZ",
-   "plu": "",
-   "cat": "ramen",
-   "price": 11.9,
-   "aliases": [
-    "NS BOWL NOODLE 12/3.03OZ KIMCHI"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-102",
-   "en": "NS BOWL NOODLE 12/3.03OZ HOT&SPICY",
-   "ko": "사발면",
-   "unit": "12/3.03OZ",
-   "plu": "",
-   "cat": "ramen",
-   "price": 11.9,
-   "aliases": [
-    "NS BOWL NOODLE 12/3.03OZ HOT&SPICY"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-103",
-   "en": "NS BEEF BOWL NOODLES 12/3.3OZ",
-   "ko": "사발면",
-   "unit": "12/3.3OZ",
-   "plu": "",
-   "cat": "ramen",
-   "price": 11.9,
-   "aliases": [
-    "NS BEEF BOWL NOODLES 12/3.3OZ"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-104",
-   "en": "SAMYANG SMALL CUP 6/65G",
-   "ko": "삼양 라면",
-   "unit": "6/65G",
-   "plu": "",
-   "cat": "ramen",
-   "price": 7.9,
-   "aliases": [
-    "SAMYANG SMALL CUP 6/65G"
-   ],
-   "posBarcode": "",
-   "packOut": "",
-   "note": ""
-  },
-  {
-   "code": "NDM-G-105",
-   "en": "SAMYANG HOT CHICKEN RAMEN 6/65G",
-   "ko": "불닭볶음면",
-   "unit": "6/65G",
-   "plu": "",
-   "cat": "ramen",
-   "price": 9.9,
-   "aliases": [
-    "SAMYANG HOT CHICKEN RAMEN 6/65G"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -4267,10 +3217,40 @@
    "ko": "불닭볶음면",
    "unit": "6/70G",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_samyang",
    "price": 9.9,
    "aliases": [
     "SAMYANG 2X HOT CHICKEN 6CUP 6/70G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-105",
+   "en": "SAMYANG HOT CHICKEN RAMEN 6/65G",
+   "ko": "불닭볶음면",
+   "unit": "6/65G",
+   "plu": "",
+   "cat": "b_samyang",
+   "price": 9.9,
+   "aliases": [
+    "SAMYANG HOT CHICKEN RAMEN 6/65G"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-104",
+   "en": "SAMYANG SMALL CUP 6/65G",
+   "ko": "삼양 라면",
+   "unit": "6/65G",
+   "plu": "",
+   "cat": "b_samyang",
+   "price": 7.9,
+   "aliases": [
+    "SAMYANG SMALL CUP 6/65G"
    ],
    "posBarcode": "",
    "packOut": "",
@@ -4282,7 +3262,7 @@
    "ko": "불닭볶음면",
    "unit": "6/2.82OZ",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_samyang",
    "price": 9.9,
    "aliases": [
     "SY HOT CHICKEN CARBONARA CUP 6/2.82OZ"
@@ -4297,10 +3277,1030 @@
    "ko": "불닭볶음면",
    "unit": "6/2.47OZ",
    "plu": "",
-   "cat": "ramen",
+   "cat": "b_samyang",
    "price": 9.9,
    "aliases": [
     "SY HOT CHICKEN CHEESE CUP 6/2.47OZ"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-027",
+   "en": "CR BUTTER WAFFLE",
+   "ko": "크라운 버터와플",
+   "unit": "316G/10",
+   "plu": "",
+   "cat": "b_crown",
+   "price": 41.5,
+   "aliases": [
+    "CR BUTTER WAFFLE 316 G/10 버터와플"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-026",
+   "en": "CR FIVE GRAIN COOKIE",
+   "ko": "크라운 오곡쿠키",
+   "unit": "12/288G",
+   "plu": "",
+   "cat": "b_crown",
+   "price": 52.5,
+   "aliases": [
+    "CR FIVE GRAIN COOKIE 12/288G 크라운 오곡쿠키"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-030",
+   "en": "CJ GOLD RICE 40LB",
+   "ko": "쌀",
+   "unit": "40LB",
+   "plu": "",
+   "cat": "b_cj",
+   "price": 25,
+   "aliases": [
+    "CJ GOLD RICE 40LB"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-042",
+   "en": "PMO FIRM TOFU (ORGANIC) 15.02/12",
+   "ko": "두부",
+   "unit": "02/12",
+   "plu": "",
+   "cat": "b_pmo",
+   "price": 27,
+   "aliases": [
+    "PMO FIRM TOFU (ORGANIC) 15.02/12"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-001",
+   "en": "JONGGA AGED KIMCHI",
+   "ko": "종가 묵은지",
+   "unit": "5/1KG",
+   "plu": "",
+   "cat": "b_jongga",
+   "price": 56,
+   "aliases": [
+    "JONGGA KIMCHI 묵은지 5/1KG"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-005",
+   "en": "JONGGA BABY RADISH KIMCHI",
+   "ko": "종가 열무김치",
+   "unit": "10/500G",
+   "plu": "",
+   "cat": "b_jongga",
+   "price": 61.5,
+   "aliases": [
+    "JONGGA BABY RADISH KIMCHI 10/500G 열무김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-004",
+   "en": "JONGGA CUT RADISH KIMCHI",
+   "ko": "종가 깍두기",
+   "unit": "10/500G",
+   "plu": "",
+   "cat": "b_jongga",
+   "price": 54,
+   "aliases": [
+    "JONGGA CUT RADISH KIMCHI 10/500G 깍두기"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-002",
+   "en": "JONGGA YOUNG RADISH KIMCHI",
+   "ko": "종가 총각김치",
+   "unit": "500G/10",
+   "plu": "",
+   "cat": "b_jongga",
+   "price": 69,
+   "aliases": [
+    "JONGGA YOUNG RADISH 500 G/10 총각김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-084",
+   "en": "SG AVOCADO ROASTED SEASONED SEAWEED *16/8",
+   "ko": "조미김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 49,
+   "aliases": [
+    "SG AVOCADO ROASTED SEASONED SEAWEED *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-086",
+   "en": "SG GREEN TEA ROASTED SEASONED SEAWEED *16/8",
+   "ko": "조미김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 54,
+   "aliases": [
+    "SG GREEN TEA ROASTED SEASONED SEAWEED *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-082",
+   "en": "SG IT'S GIMSEA SALT ROASTED SEASONED SEA *16/8",
+   "ko": "조미김 (소금)",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 49,
+   "aliases": [
+    "SG IT'S GIMSEA SALT ROASTED SEASONED SEA *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-083",
+   "en": "SG OLIVE & GREEN TEA ROASTED SEASONED SEAWEED *16/8",
+   "ko": "조미김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 49,
+   "aliases": [
+    "SG OLIVE & GREEN TEA ROASTED SEASONED SEAWEED *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-085",
+   "en": "SG PERILLA OIL ROASTED SEASONED SEAWEED *16/8",
+   "ko": "조미김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 49,
+   "aliases": [
+    "SG PERILLA OIL ROASTED SEASONED SEAWEED *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-081",
+   "en": "SG ROASTED SEASONED SEAWEED *16/8",
+   "ko": "조미김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 42,
+   "aliases": [
+    "SG ROASTED SEASONED SEAWEED *16/8"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-069",
+   "en": "SKY A+ PREM SSND SEAWEED GOPCHANG 12/8PK",
+   "ko": "조미김",
+   "unit": "12/8PK",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 52,
+   "aliases": [
+    "SKY A+ PREM SSND SEAWEED GOPCHANG 12/8PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-080",
+   "en": "SKY ROASTED SEAWEED *8/12",
+   "ko": "구운김",
+   "unit": "*8",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 37,
+   "aliases": [
+    "SKY ROASTED SEAWEED *8/12 #450396"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-067",
+   "en": "SKY SEASONED SEAWEED (PARAE) 14/3PK",
+   "ko": "조미김",
+   "unit": "14/3PK",
+   "plu": "",
+   "cat": "b_sky",
+   "price": 52,
+   "aliases": [
+    "SKY SEASONED SEAWEED (PARAE) 14/3PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-058",
+   "en": "SPAM 25% LESS SODIUM",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM 25% LESS SODIUM"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-060",
+   "en": "SPAM BACON",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM BACON"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-063",
+   "en": "SPAM JALAPENO",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM JALAPENO"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-059",
+   "en": "SPAM LITE",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM LITE"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-057",
+   "en": "SPAM ORIGINAL",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM ORIGINAL"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-062",
+   "en": "SPAM TERIYAKI",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM TERIYAKI"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-061",
+   "en": "SPAM TURKEY",
+   "ko": "스팸",
+   "unit": "",
+   "plu": "",
+   "cat": "b_spam",
+   "price": 4.4,
+   "aliases": [
+    "SPAM TURKEY"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-064",
+   "en": "DS SEASONING SALT 5KG/4",
+   "ko": "맛소금",
+   "unit": "5KG",
+   "plu": "",
+   "cat": "b_etc",
+   "price": 50.9,
+   "aliases": [
+    "DS SEASONING SALT 5KG/4"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-066",
+   "en": "HCD HOT PEPPER PASTE 14KG RED",
+   "ko": "고추장",
+   "unit": "14KG",
+   "plu": "",
+   "cat": "b_etc",
+   "price": 45,
+   "aliases": [
+    "HCD HOT PEPPER PASTE 14KG RED"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-043",
+   "en": "HSJ ANCHOVY SAUCE 3KG/6",
+   "ko": "멸치액젓",
+   "unit": "3KG",
+   "plu": "",
+   "cat": "b_etc",
+   "price": 64,
+   "aliases": [
+    "HSJ ANCHOVY SAUCE 3KG/6"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-054",
+   "en": "SFC SPARKLING FRUIT JUICE 6/4 MANGO",
+   "ko": "탄산음료",
+   "unit": "6/4",
+   "plu": "",
+   "cat": "b_etc",
+   "price": 19,
+   "aliases": [
+    "SFC SPARKLING FRUIT JUICE 6/4 MANGO"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-065",
+   "en": "WE CHUNG SU 10/10",
+   "ko": "청수",
+   "unit": "10/10",
+   "plu": "",
+   "cat": "b_etc",
+   "price": 69,
+   "aliases": [
+    "WE CHUNG SU 10/10"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-009",
+   "en": "CUT RADISH KIMCHI 5GL",
+   "ko": "깍두기 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 110,
+   "aliases": [
+    "CUT RADISH KIMCHI 5GL *깍두기"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-007",
+   "en": "GREEN ONION KIMCHI",
+   "ko": "파김치",
+   "unit": "300G*10",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 75,
+   "aliases": [
+    "GREEN ONION KIMCHI(300G*10) 파김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-052",
+   "en": "KIMCHI 1.75LB/12",
+   "ko": "김치",
+   "unit": "1.75LB",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 75,
+   "aliases": [
+    "KIMCHI 1.75LB/12"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-003",
+   "en": "MAT KIMCHI",
+   "ko": "맛김치",
+   "unit": "1KG/5",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 51,
+   "aliases": [
+    "MAT KIMCHI 1kg/5"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-011",
+   "en": "WHITE NAPA KIMCHI 5GL",
+   "ko": "백김치 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 123,
+   "aliases": [
+    "KIMCHI WHOLE NAPA *WHITE 5GL 백김치"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-006",
+   "en": "WHOLE CABBAGE KIMCHI",
+   "ko": "포기김치",
+   "unit": "500G/10",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 57,
+   "aliases": [
+    "WHOLE CABBAGE KIMCHI 500G/10"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-010",
+   "en": "WHOLE RADISH KIMCHI 5GL",
+   "ko": "석박지 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_kimchi",
+   "price": 122,
+   "aliases": [
+    "WHOLE RADISH KIMCHI 5GL 석박지"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-008",
+   "en": "DONGCHIMI 5GL",
+   "ko": "동치미 (5갤런)",
+   "unit": "5GL",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 119,
+   "aliases": [
+    "DONGCHIMI 5GL 동치미"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-047",
+   "en": "SALT AM 50LB",
+   "ko": "소금",
+   "unit": "50LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 11,
+   "aliases": [
+    "SALT AM 50LB"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-015",
+   "en": "SALTED SHRIMP 20KG",
+   "ko": "새우젓 20KG",
+   "unit": "20KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 119,
+   "aliases": [
+    "SALTED SHRIMP 20kg 새우젓"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-012",
+   "en": "SEASONED PEPPER 22LB",
+   "ko": "고추무침 22LB",
+   "unit": "22LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 79,
+   "aliases": [
+    "SEASONED PEPPER 22LB 고추무침 #430613"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-013",
+   "en": "SEASONED POLLACK GUTS 22LB",
+   "ko": "창란젓 22LB",
+   "unit": "22LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 199,
+   "aliases": [
+    "SEASONED POLLACK GUTS창란젓 22LB #300302"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-014",
+   "en": "SEASONED SMALL CRAB 10KG",
+   "ko": "방게무침 10KG",
+   "unit": "10KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 99,
+   "aliases": [
+    "SEASONED SMALL CRAB 방게무침 10KG #430625"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-017",
+   "en": "SINSONG SOY BEAN PASTE 14KG",
+   "ko": "신송 된장 14KG",
+   "unit": "14KG",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 27,
+   "aliases": [
+    "SINSONG SOY BEAN PASTE 14KG 신송된장"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-046",
+   "en": "SUGAR 50LB",
+   "ko": "설탕",
+   "unit": "50LB",
+   "plu": "",
+   "cat": "t_bulk",
+   "price": 39,
+   "aliases": [
+    "SUGAR 50LB"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-076",
+   "en": "GREEN TEA ROASTED SEAWEED *16PK",
+   "ko": "구운김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 42,
+   "aliases": [
+    "GREEN TEA ROASTED SEAWEED *16PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-074",
+   "en": "MINI ROASTED SEASONED SEAWEED 8/*32",
+   "ko": "조미김",
+   "unit": "*32",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 49,
+   "aliases": [
+    "MINI ROASTED SEASONED SEAWEED 8/*32"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-068",
+   "en": "ORGANIC ROASTED SEASONED SEAWEED 12/8PK",
+   "ko": "조미김",
+   "unit": "12/8PK",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 56,
+   "aliases": [
+    "ORGANIC ROASTED SEASONED SEAWEED 12/8PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-072",
+   "en": "ORGANIC ROASTED SEASONED SEAWEED A+ 10/*3PK",
+   "ko": "조미김",
+   "unit": "*3",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 54,
+   "aliases": [
+    "ORGANIC ROASTED SEASONED SEAWEED A+ 10/*3PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-071",
+   "en": "PERILLA-OIL ROASTED SEASONED SEAWEED 10/*3PK",
+   "ko": "조미김",
+   "unit": "*3",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 40,
+   "aliases": [
+    "PERILLA-OIL ROASTED SEASONED SEAWEED 10/*3PK"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-075",
+   "en": "PREMIUM ROASTED SEASONED SEAWEED A+ 24PK/6",
+   "ko": "조미김",
+   "unit": "24PK",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 55.5,
+   "aliases": [
+    "PREMIUM ROASTED SEASONED SEAWEED A+ 24PK/6"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-078",
+   "en": "ROASTED LAVER KC *3/24 (DOSHirak)",
+   "ko": "구운김",
+   "unit": "*3",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 26,
+   "aliases": [
+    "ROASTED LAVER KC *3/24 (DOSHirak) #450392"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-073",
+   "en": "ROASTED SEASONED SEAWEED 6/*24",
+   "ko": "조미김",
+   "unit": "*24",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 52,
+   "aliases": [
+    "ROASTED SEASONED SEAWEED 6/*24"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-077",
+   "en": "ROASTED SEAWEED A+ 3PK/10",
+   "ko": "구운김",
+   "unit": "3PK",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 40,
+   "aliases": [
+    "ROASTED SEAWEED A+ 3PK/10 #440830"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-079",
+   "en": "ROASTED SEAWEED KC *3/14 (JUNJANG)",
+   "ko": "구운김",
+   "unit": "*3",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 52,
+   "aliases": [
+    "ROASTED SEAWEED KC *3/14 (JUNJANG) #450393"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-070",
+   "en": "ROASTED SEAWEED OLIVE OIL 8/*16",
+   "ko": "구운김",
+   "unit": "*16",
+   "plu": "",
+   "cat": "t_nori",
+   "price": 43.5,
+   "aliases": [
+    "ROASTED SEAWEED OLIVE OIL 8/*16"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-016",
+   "en": "SALTED SQUID",
+   "ko": "오징어젓",
+   "unit": "",
+   "plu": "",
+   "cat": "t_jeotgal",
+   "price": 89,
+   "aliases": [
+    "SALTED SQUID 오징어 젓 #436111"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-018",
+   "en": "TOJANG SOY BEAN PASTE",
+   "ko": "시골집 토장",
+   "unit": "450G/8",
+   "plu": "",
+   "cat": "t_paste",
+   "price": 53.5,
+   "aliases": [
+    "TOJANG SOY BEAN PASTE 450 G/8 시골집 토장"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-053",
+   "en": "BITTER MELON EXTRACT 5/30/80ML",
+   "ko": "여주즙",
+   "unit": "5/3080ML",
+   "plu": "",
+   "cat": "t_sauce",
+   "price": 92,
+   "aliases": [
+    "BITTER MELON EXTRACT 5/30/80ML"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-039",
+   "en": "FRYING OIL",
+   "ko": "튀김기름",
+   "unit": "",
+   "plu": "",
+   "cat": "t_sauce",
+   "price": 45,
+   "aliases": [
+    "FRYING OIL"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-021",
+   "en": "LT MIRIN COOKING SAUCE",
+   "ko": "미림 (맛술)",
+   "unit": "6/1.8L",
+   "plu": "",
+   "cat": "t_sauce",
+   "price": 49,
+   "aliases": [
+    "LT MIRIN (COOKING SAUCE ) 6/1.8L"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-045",
+   "en": "MUSTARD POWDER OTG 300G/12CT (Return)",
+   "ko": "겨자가루",
+   "unit": "12CT",
+   "plu": "",
+   "cat": "t_sauce",
+   "price": 45,
+   "aliases": [
+    "MUSTARD POWDER OTG 300G/12CT (Return)"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-022",
+   "en": "PREPARED MUSTARD",
+   "ko": "연겨자",
+   "unit": "24/100G",
+   "plu": "",
+   "cat": "t_sauce",
+   "price": 96.9,
+   "aliases": [
+    "PREPARED MUSTARD 24/100G 연겨자 45-146"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-041",
+   "en": "WATER *35",
+   "ko": "생수",
+   "unit": "*35",
+   "plu": "",
+   "cat": "t_drink",
+   "price": 4.9,
+   "aliases": [
+    "WATER *35"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-055",
+   "en": "CR-3032 (VIOLET + STS) RICE COOKER",
+   "ko": "밥솥",
+   "unit": "",
+   "plu": "",
+   "cat": "t_other",
+   "price": 220,
+   "aliases": [
+    "CR-3032 (VIOLET + STS) RICE COOKER"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-048",
+   "en": "EGG JUMBO CT 12DZ",
+   "ko": "계란",
+   "unit": "12DZ",
+   "plu": "",
+   "cat": "t_other",
+   "price": 23.9,
+   "aliases": [
+    "EGG JUMBO CT 12DZ"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-049",
+   "en": "EGG XL 30DZ",
+   "ko": "계란",
+   "unit": "30DZ",
+   "plu": "",
+   "cat": "t_other",
+   "price": 39,
+   "aliases": [
+    "EGG XL 30DZ"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-028",
+   "en": "QUAIL EGG CAN",
+   "ko": "메추리알 통조림",
+   "unit": "24PC/20",
+   "plu": "",
+   "cat": "t_other",
+   "price": 82,
+   "aliases": [
+    "QUAIL EGG 24PC/20"
+   ],
+   "posBarcode": "",
+   "packOut": "",
+   "note": ""
+  },
+  {
+   "code": "NDM-G-029",
+   "en": "THANK YOU BAG",
+   "ko": "봉투 (땡큐백)",
+   "unit": "",
+   "plu": "",
+   "cat": "t_other",
+   "price": 24,
+   "aliases": [
+    "THANK YOU BAG"
    ],
    "posBarcode": "",
    "packOut": "",

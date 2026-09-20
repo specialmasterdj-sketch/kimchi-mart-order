@@ -1601,12 +1601,44 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
+// ✉️ 회사 메일로 보내기 — info@miamikimchi.com 으로 로그인된 지메일 작성창을 열고,
+//   받는사람·제목·본문까지 채워 둔다. 전무님은 [보내기]만 누르면 된다(보낸메일함에도 남는다).
+//   받는 사람 주소는 한 번 넣으면 기억하고, 다음부터는 확인만 하면 된다.
+//   ⚠️ 주소창 길이 제한이 있어 본문이 길면 클립보드에 복사해 붙여넣게 안내한다.
+const NDM_MAIL_FROM = 'info@miamikimchi.com';
+const NDM_MAIL_KEY  = 'ndm_order_email_to';
 function sendEmail() {
+  const lines = getOrderLines();
+  if (!lines.length){ alert('주문할 품목이 없습니다 / No items'); return; }
+  let to = '';
+  try { to = localStorage.getItem(NDM_MAIL_KEY) || ''; } catch(e){}
+  const ans = prompt('받는 사람 이메일 (남대문)\nSend order to:', to);
+  if (ans === null) return;
+  to = String(ans).trim();
+  try { localStorage.setItem(NDM_MAIL_KEY, to); } catch(e){}
+
   const today = new Date().toISOString().slice(0,10);
   const branch = state.branchId ? BRANCH_BY_ID[state.branchId] : null;
   const subject = branch ? `[남대문 주문] ${branch.ko} - ${today}` : `[남대문 주문] ${today}`;
   const body = orderAsText();
-  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // 본문이 길면 주소창에 다 못 싣는다 → 클립보드로
+  const longBody = encodeURIComponent(body).length > 1800;
+  if (longBody){
+    try { navigator.clipboard.writeText(body); } catch(e){}
+  }
+  const url = 'https://mail.google.com/mail/?authuser=' + encodeURIComponent(NDM_MAIL_FROM) +
+    '&view=cm&fs=1&tf=1&to=' + encodeURIComponent(to) +
+    '&su=' + encodeURIComponent(subject) +
+    '&body=' + encodeURIComponent(longBody ? '(주문 내용이 길어 클립보드에 복사했습니다. 이 줄을 지우고 Ctrl+V 로 붙여넣어 주세요.)' : body);
+  const w = window.open(url, '_blank');
+  if (!w){
+    // 팝업이 막히면 기존 방식(기본 메일 앱)으로라도 열어 준다
+    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    return;
+  }
+  if (longBody) showToast('주문 내용을 복사했습니다 — 지메일 본문에 Ctrl+V');
+  else showToast('지메일 작성창을 열었습니다 — 보내기만 누르세요');
 }
 
 // ============ UTIL ============

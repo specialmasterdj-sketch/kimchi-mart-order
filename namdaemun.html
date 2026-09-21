@@ -1652,8 +1652,10 @@ function sendEmail() {
     remember('gmail');
     const longBody = encodeURIComponent(body).length > 1800;   // 주소창 길이 한계
     if (longBody){ try { navigator.clipboard.writeText(body); } catch(e){} }
-    const url = 'https://mail.google.com/mail/?authuser=' + encodeURIComponent(NDM_MAIL_FROM) +
-      '&view=cm&fs=1&tf=1&to=' + encodeURIComponent(to) +
+    // /mail/u/{계정주소}/ 형식 — ?authuser= 보다 확실하게 그 계정으로 연다 (2026-09-21: authuser 로는
+    //   구글 첫 화면으로 튕기는 경우가 있었다)
+    const url = 'https://mail.google.com/mail/u/' + NDM_MAIL_FROM + '/?view=cm&fs=1&tf=1' +
+      '&to=' + encodeURIComponent(to) +
       '&su=' + encodeURIComponent(subject) +
       '&body=' + encodeURIComponent(longBody ? '(주문 내용이 길어 클립보드에 복사했습니다. 이 줄을 지우고 Ctrl+V 로 붙여넣어 주세요.)' : body);
     const w = window.open(url, '_blank');

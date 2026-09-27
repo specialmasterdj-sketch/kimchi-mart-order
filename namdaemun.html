@@ -1803,6 +1803,9 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   } catch(e){ console.warn('namdaemun clear backup failed', e); }
   state.qty = {};
   saveState();
+  // 🗑 다른 기기(폰·PC)도 같이 비우도록 '비운 시각'을 클라우드에 남긴다.
+  //    이게 없으면 옛 카트를 들고 있던 기기가 지난주 수량을 도로 올린다.
+  try { if (window.__ndmClearCart) window.__ndmClearCart(); } catch(e){ console.warn('[ndm-cart] clear', e); }
   closeOrderModal();
   renderContent();
   updateSummary();
@@ -1892,31 +1895,69 @@ if (window.kmRecs){
 //   한미·이브라더스와 같은 경로 방식: carts/{벤더}/{지점}/_shared.
 //   키에 . # $ [ ] / 가 들어갈 수 있어(영문 상품명) %XX 로 인코딩해 저장한다.
 (function(){
-  var unsubCart = null, applyingRemote = false, pushTimer = null;
+  var unsubCart = null, applyingRemote = false, pushTimer = null, lastCleared = 0;
   function encK(k){ return String(k).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
     function(ch){ return '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'); }); }
   function decK(k){ try { return decodeURIComponent(k); } catch(e){ return k; } }
   function branchNow(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
-  function cartPath(b){ return 'carts/namdaemun/' + b + '/_shared'; }
+  function cartRoot(b){ return 'carts/namdaemun/' + b; }
+  function cartPath(b){ return cartRoot(b) + '/_shared'; }
+  function metaPath(b){ return cartRoot(b) + '/_meta'; }
+  // 내 카트를 마지막으로 만진 시각 — 클라우드의 '비운 시각' 과 견주어 누가 더 최신인지 가린다
+  function myTsKey(b){ return 'ndm_cart_ts__' + b; }
+  function myTs(b){ try { return +localStorage.getItem(myTsKey(b)) || 0; } catch(e){ return 0; } }
+  function setMyTs(b, v){ try { localStorage.setItem(myTsKey(b), String(v || Date.now())); } catch(e){} }
 
   window.__ndmPushCart = function(qty){
     if (applyingRemote) return;                       // 클라우드에서 받은 것을 도로 올리지 않는다
     var b = branchNow(); if (!b) return;
     var clean = {};
     Object.keys(qty || {}).forEach(function(k){ var v = +qty[k] || 0; if (v > 0) clean[encK(k)] = v; });
+    var now = Date.now();
+    setMyTs(b, now);
     clearTimeout(pushTimer);
     pushTimer = setTimeout(function(){                // 연타(+ 버튼)는 모아서 한 번만
       set(ref(db, cartPath(b)), clean).catch(function(e){ console.warn('[ndm-cart] push', e && e.message); });
+      set(ref(db, metaPath(b) + '/at'), now).catch(function(){});
     }, 400);
   };
 
-  function applyRemote(remote){
+  // 🗑 비우기 — 모든 기기가 따라 비우도록 시각을 남긴다
+  window.__ndmClearCart = function(){
+    var b = branchNow(); if (!b) return;
+    var now = Date.now();
+    setMyTs(b, now);
+    lastCleared = now;                                // 내가 방금 비웠으니 내 것도 최신
+    // ⚠️ 한 번의 쓰기로 비워야 한다. '수량 지우기' 와 '비운 시각 남기기' 를 따로 하면
+    //    그 사이에 다른 기기가 '클라우드가 비었네' 하고 옛 카트를 도로 올린다.
+    set(ref(db, cartRoot(b)), { _meta: { clearedAt: now, at: now } })
+      .catch(function(e){ console.warn('[ndm-cart] clear', e && e.message); });
+  };
+
+  function applyRemote(remote, clearedAt){
     var next = {};
     Object.keys(remote || {}).forEach(function(k){ var v = +remote[k] || 0; if (v > 0) next[decK(k)] = v; });
     next = migrateQty(next);   // 옛 이름으로 저장된 수량도 이어받는다
+    var b = branchNow();
     var localN = Object.keys(state.qty || {}).length, remoteN = Object.keys(next).length;
-    // 🛡 빈 클라우드가 로컬을 지우지 않게 — 오히려 내 것을 올린다 (2026-06-18 사고 재발 방지)
-    if (!remoteN && localN){ window.__ndmPushCart(state.qty); return; }
+    if (!remoteN && localN){
+      // 클라우드가 비었다. 둘 중 하나다:
+      //   ① 누군가 방금 비웠다        → 내 것도 비운다 (내 카트가 그보다 오래됐을 때)
+      //   ② 아직 아무도 안 올렸다     → 내 것을 올린다 (2026-06-18 '주문 사라짐' 재발 방지)
+      if (clearedAt && clearedAt > myTs(b)){
+        applyingRemote = true;
+        try {
+          state.qty = {};
+          try { localStorage.setItem(cartKey(state.branchId, _userKey()), JSON.stringify(state.qty)); } catch(e){}
+          setMyTs(b, clearedAt);
+          if (typeof renderContent === 'function') renderContent();
+          if (typeof updateSummary === 'function') updateSummary();
+          if (typeof showToast === 'function') showToast('🗑 다른 기기에서 주문을 비웠습니다 / Order cleared on another device');
+        } finally { applyingRemote = false; }
+        return;
+      }
+      window.__ndmPushCart(state.qty); return;
+    }
     if (JSON.stringify(next) === JSON.stringify(state.qty)) return;
     applyingRemote = true;
     try {
@@ -1930,8 +1971,13 @@ if (window.kmRecs){
   function subscribeCart(){
     if (unsubCart){ try { unsubCart(); } catch(e){} unsubCart = null; }
     var b = branchNow(); if (!b) return;
-    unsubCart = onValue(ref(db, cartPath(b)), function(snap){ applyRemote(snap.val() || {}); },
-      function(err){ console.warn('[ndm-cart] read', err && err.message); });
+    // _shared 와 _meta 를 같이 보려고 한 단계 위를 구독한다
+    unsubCart = onValue(ref(db, cartRoot(b)), function(snap){
+      var v = snap.val() || {};
+      var cleared = (v._meta && +v._meta.clearedAt) || 0;
+      if (cleared > lastCleared) lastCleared = cleared;
+      applyRemote(v._shared || {}, lastCleared);
+    }, function(err){ console.warn('[ndm-cart] read', err && err.message); });
   }
   window.__ndmCartResub = subscribeCart;
   subscribeCart();

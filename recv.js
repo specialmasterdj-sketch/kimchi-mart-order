@@ -10,7 +10,7 @@
  * 쓰는 쪽은 상품칸에 띠 하나. 수량을 올릴 때만 소리 내어 알린다(담지 않으면 조용).
  */
 (function(){
-  var S = { map: null, branch: '', listeners: [] };
+  var S = { map: null, sales: null, branch: '', listeners: [] };
   var WARN_DAYS = 10;          // 며칠 안에 받았으면 알릴지
 
   function branch(){ try { return (localStorage.getItem('km_branch') || '').toUpperCase(); } catch(e){ return ''; } }
@@ -72,6 +72,21 @@
 
   function count(){ return S.map ? Object.keys(S.map).length : 0; }
 
+  /* 📈 얼마나 팔리는지 — 최근 7일 판매량. 오더할 때 '몇 개 시킬지' 의 근거.
+     2026-10-08 전무님: "일일 판매량을 매일 올리면 판매량으로 오더할 때 도움이 되었으면 해." */
+  function salesHTML(vendor, pid){
+    if (!S.sales) return '';
+    var r = S.sales[key(vendor, pid)];
+    if (!r || !(r.s > 0)) return '';
+    var dd = r.dd || 1;
+    var perDay = r.s / dd;
+    var rate = perDay >= 1 ? (Math.round(perDay * 10) / 10) + T('개/일', '/day', '/día')
+                           : T('가끔', 'slow', 'lento');
+    return '<div class="km-sales" title="' + esc(T('최근 ' + dd + '일 판매', 'last ' + dd + ' days', 'últimos ' + dd + ' días')) + '">📈 ' +
+      esc(T(dd + '일 ' + r.s + '개 팔림', r.s + ' sold / ' + dd + 'd', r.s + ' vendidos / ' + dd + 'd')) +
+      ' · ' + esc(rate) + '</div>';
+  }
+
   function init(fb){
     if (!fb || !fb.db || !fb.ref || !fb.onValue){ console.warn('[kmRecv] init missing args'); return; }
     var br = branch();
@@ -82,6 +97,10 @@
         S.map = snap.val() || {};
         S.listeners.forEach(function(f){ try { f(); } catch(e){} });
       }, function(err){ console.warn('[kmRecv] read', err && err.message); });
+      fb.onValue(fb.ref(fb.db, 'expiry/' + br + '/salesRecent'), function(snap){
+        S.sales = snap.val() || {};
+        S.listeners.forEach(function(f){ try { f(); } catch(e){} });
+      }, function(err){ console.warn('[kmRecv] sales', err && err.message); });
     } catch(e){ console.warn('[kmRecv] init', e); }
   }
   function subscribe(fn){ S.listeners.push(fn); }
@@ -91,9 +110,12 @@
     css.textContent =
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
+      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.km-sales{display:block;margin:3px 0 0;background:#e0f2fe;border:1px solid #7dd3fc;color:#075985;' +
+      'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
       'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 
-  window.kmRecv = { init: init, badgeHTML: badgeHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
+  window.kmRecv = { init: init, badgeHTML: badgeHTML, salesHTML: salesHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
 })();

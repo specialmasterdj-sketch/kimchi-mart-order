@@ -17,6 +17,7 @@
 <script src="recommend.js?v=20260727a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20260919b"></script>
+<script src="recv.js?v=1"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -842,6 +843,8 @@ function getOrderTotal(vendorId) {
 function setQty(vendorId, productId, qty) {
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다 (공동 오더 앱으로 안내)
   if (window.kmHub && window.kmHub.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
+  // 🔁 최근에 받은 상품을 처음 담는 순간 한 번만 묻는다
+  if (window.kmRecv && window.kmRecv.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
   if (!state.orders[vendorId]) state.orders[vendorId] = {};
   state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
   if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
@@ -1359,6 +1362,7 @@ function buildTilesHtml(v, products){
     // 🏬 헐리우드 경유 — 표시·지정 버튼, 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
     const hubBlocked = window.kmHub ? window.kmHub.blocked(state.vendor, p.id) : false;
     const hubMark = window.kmHub ? (window.kmHub.badgeHTML(state.vendor, p.id) + window.kmHub.toggleHTML(state.vendor, p.id)) : '';
+    const recvMark = window.kmRecv ? window.kmRecv.badgeHTML(state.vendor, p.id) : '';
     // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
     //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
     const eaLabel = (showEA && pack)
@@ -1410,6 +1414,7 @@ function buildTilesHtml(v, products){
           ${stockBadge ? `<div style="text-align:center;margin-bottom:4px">${stockBadge}</div>` : ''}
           ${overGuide}
           ${hubMark}
+        ${recvMark}
           ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
           <div class="qty-row">
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
@@ -1437,6 +1442,7 @@ function buildTilesHtml(v, products){
         ${stockBadge ? `<div style="margin:2px 0 4px">${stockBadge}</div>` : ''}
         ${overGuide}
         ${hubMark}
+        ${recvMark}
         ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
         <div class="qty-row">
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
@@ -2305,6 +2311,13 @@ if (window.kmRecs){
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.subscribe(() => {
+    try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
+  });
+}
+// 🔁 중복 오더 경고 — 최근 입고를 읽어 상품칸에 띠로 보여 준다
+if (window.kmRecv) {
+  window.kmRecv.init({ db, ref, onValue });
+  window.kmRecv.subscribe(() => {
     try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
   });
 }

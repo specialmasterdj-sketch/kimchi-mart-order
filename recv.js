@@ -10,7 +10,7 @@
  * 쓰는 쪽은 상품칸에 띠 하나. 수량을 올릴 때만 소리 내어 알린다(담지 않으면 조용).
  */
 (function(){
-  var S = { map: null, sales: null, ord: null, branch: '', listeners: [] };
+  var S = { map: null, sales: null, ord: null, same: null, branch: '', listeners: [] };
   var WARN_DAYS = 10;          // 며칠 안에 받았으면 알릴지
 
   function branch(){ try { return (localStorage.getItem('km_branch') || '').toUpperCase(); } catch(e){ return ''; } }
@@ -72,6 +72,32 @@
 
   function count(){ return S.map ? Object.keys(S.map).length : 0; }
 
+  /* 🔀 같은 물건인데 벤더가 다른 경우 — 2026-10-08 전무님:
+     "오더할 때 '이거 지난주 다른 벤더에 오더했음' 식으로."
+     바코드가 같으면 같은 물건이다. 다른 벤더에 '주문' 한 게 있으면 그것부터, 없으면 '받은' 것을 알린다. */
+  function altHTML(vendor, pid){
+    if (!S.same) return '';
+    var sib = S.same[key(vendor, pid)];
+    if (!sib || !sib.length) return '';
+    var best = null;
+    for (var i = 0; i < sib.length; i++){
+      var x = sib[i];
+      var o = (x.k && S.ord) ? S.ord[x.k] : null;         // 그 벤더에 주문한 적이 있나
+      var cand = o ? { v: x.v, d: o.d, q: o.q, kind: 'ord' }
+                   : { v: x.v, d: x.d, q: x.q, kind: 'recv' };
+      if (!best || cand.d > best.d) best = cand;
+    }
+    if (!best) return '';
+    var ago = daysAgo(best.d);
+    if (ago === null || ago > 30) return '';
+    var when = ago <= 1 ? T('어제', 'yesterday', 'ayer')
+             : ago <= 7 ? T('지난주', 'last week', 'la semana pasada')
+             : T(ago + '일 전', ago + 'd ago', 'hace ' + ago + 'd');
+    var what = best.kind === 'ord' ? T('주문함', 'ordered', 'pedido') : T('받음', 'received', 'recibido');
+    return '<div class="km-alt" title="' + esc(T('같은 물건을 다른 거래처에서', 'same item, other vendor', 'mismo artículo, otro proveedor')) + '">🔀 ' +
+      esc(best.v) + ' ' + esc(when) + ' ' + esc(String(best.q)) + T('개 ', ' ', ' ') + esc(what) + '</div>';
+  }
+
   /* 🛒 언제 몇 개 시켰나 — 2026-10-08 전무님: "이 아이템 언제 몇 개 오더한 기록이 남게."
      아직 안 들어온 주문이면(주문일 > 마지막 입고일) 더 눈에 띄게 알린다. */
   function ordHTML(vendor, pid){
@@ -115,6 +141,10 @@
         S.map = snap.val() || {};
         S.listeners.forEach(function(f){ try { f(); } catch(e){} });
       }, function(err){ console.warn('[kmRecv] read', err && err.message); });
+      fb.onValue(fb.ref(fb.db, 'expiry/' + br + '/sameItem'), function(snap){
+        S.same = snap.val() || {};
+        S.listeners.forEach(function(f){ try { f(); } catch(e){} });
+      }, function(err){ console.warn('[kmRecv] same', err && err.message); });
       fb.onValue(fb.ref(fb.db, 'expiry/' + br + '/ordRecent'), function(snap){
         S.ord = snap.val() || {};
         S.listeners.forEach(function(f){ try { f(); } catch(e){} });
@@ -133,6 +163,9 @@
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
       'white-space:normal;word-break:keep-all}' +
+      '.km-alt{display:block;margin:3px 0 0;background:#fff1f2;border:1px solid #fda4af;color:#9f1239;' +
+      'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
+      'white-space:normal;word-break:keep-all}' +
       '.km-ord{display:block;margin:3px 0 0;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
       'white-space:normal;word-break:keep-all}' +
@@ -143,5 +176,5 @@
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 
-  window.kmRecv = { init: init, badgeHTML: badgeHTML, salesHTML: salesHTML, ordHTML: ordHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
+  window.kmRecv = { init: init, badgeHTML: badgeHTML, salesHTML: salesHTML, ordHTML: ordHTML, altHTML: altHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
 })();

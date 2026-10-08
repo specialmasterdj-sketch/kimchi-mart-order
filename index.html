@@ -17,7 +17,7 @@
 <script src="recommend.js?v=20260727a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20260919b"></script>
-<script src="recv.js?v=4"></script>
+<script src="recv.js?v=5"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -1362,7 +1362,7 @@ function buildTilesHtml(v, products){
     // 🏬 헐리우드 경유 — 표시·지정 버튼, 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
     const hubBlocked = window.kmHub ? window.kmHub.blocked(state.vendor, p.id) : false;
     const hubMark = window.kmHub ? (window.kmHub.badgeHTML(state.vendor, p.id) + window.kmHub.toggleHTML(state.vendor, p.id)) : '';
-    const recvMark = window.kmRecv ? (window.kmRecv.badgeHTML(state.vendor, p.id) + window.kmRecv.ordHTML(state.vendor, p.id) + window.kmRecv.salesHTML(state.vendor, p.id)) : '';
+    const recvMark = window.kmRecv ? (window.kmRecv.badgeHTML(state.vendor, p.id) + window.kmRecv.ordHTML(state.vendor, p.id) + window.kmRecv.altHTML(state.vendor, p.id) + window.kmRecv.salesHTML(state.vendor, p.id)) : '';
     // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
     //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
     const eaLabel = (showEA && pack)

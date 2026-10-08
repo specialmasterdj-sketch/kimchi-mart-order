@@ -2,3 +2,7 @@ node_modules/
 seoul_pdfs/
 products.js.bak
 *.tmp
+
+# 사진 원본 보관 (줄이기 전 파일 · 깃에 올리지 않는다)
+images/_eastland_orig/
+images/_old_photos/

@@ -10,7 +10,7 @@
  * 쓰는 쪽은 상품칸에 띠 하나. 수량을 올릴 때만 소리 내어 알린다(담지 않으면 조용).
  */
 (function(){
-  var S = { map: null, sales: null, branch: '', listeners: [] };
+  var S = { map: null, sales: null, ord: null, branch: '', listeners: [] };
   var WARN_DAYS = 10;          // 며칠 안에 받았으면 알릴지
 
   function branch(){ try { return (localStorage.getItem('km_branch') || '').toUpperCase(); } catch(e){ return ''; } }
@@ -72,6 +72,24 @@
 
   function count(){ return S.map ? Object.keys(S.map).length : 0; }
 
+  /* 🛒 언제 몇 개 시켰나 — 2026-10-08 전무님: "이 아이템 언제 몇 개 오더한 기록이 남게."
+     아직 안 들어온 주문이면(주문일 > 마지막 입고일) 더 눈에 띄게 알린다. */
+  function ordHTML(vendor, pid){
+    if (!S.ord) return '';
+    var o = S.ord[key(vendor, pid)];
+    if (!o || !o.d) return '';
+    var ago = daysAgo(o.d);
+    if (ago === null || ago > 30) return '';
+    var when = ago === 0 ? T('오늘', 'today', 'hoy')
+             : ago === 1 ? T('어제', 'yesterday', 'ayer')
+             : T(ago + '일 전', ago + 'd ago', 'hace ' + ago + 'd');
+    var r = S.map ? S.map[key(vendor, pid)] : null;
+    var waiting = !r || !r.d || o.d > r.d;           // 주문했는데 아직 입고 기록이 없다
+    return '<div class="km-ord' + (waiting ? ' wait' : '') + '">🛒 ' +
+      esc(when) + ' ' + esc(String(o.q)) + T('개 주문', ' ordered', ' pedido') +
+      (waiting ? ' · ' + T('입고 대기', 'awaiting', 'pendiente') : '') + '</div>';
+  }
+
   /* 📈 얼마나 팔리는지 — 최근 7일 판매량. 오더할 때 '몇 개 시킬지' 의 근거.
      2026-10-08 전무님: "일일 판매량을 매일 올리면 판매량으로 오더할 때 도움이 되었으면 해." */
   function salesHTML(vendor, pid){
@@ -97,6 +115,10 @@
         S.map = snap.val() || {};
         S.listeners.forEach(function(f){ try { f(); } catch(e){} });
       }, function(err){ console.warn('[kmRecv] read', err && err.message); });
+      fb.onValue(fb.ref(fb.db, 'expiry/' + br + '/ordRecent'), function(snap){
+        S.ord = snap.val() || {};
+        S.listeners.forEach(function(f){ try { f(); } catch(e){} });
+      }, function(err){ console.warn('[kmRecv] ord', err && err.message); });
       fb.onValue(fb.ref(fb.db, 'expiry/' + br + '/salesRecent'), function(snap){
         S.sales = snap.val() || {};
         S.listeners.forEach(function(f){ try { f(); } catch(e){} });
@@ -111,11 +133,15 @@
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
       'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.km-ord{display:block;margin:3px 0 0;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;' +
+      'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
+      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.km-ord.wait{background:#ede9fe;border-color:#c4b5fd;color:#5b21b6}' +
       '.km-sales{display:block;margin:3px 0 0;background:#e0f2fe;border:1px solid #7dd3fc;color:#075985;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
       'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 
-  window.kmRecv = { init: init, badgeHTML: badgeHTML, salesHTML: salesHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
+  window.kmRecv = { init: init, badgeHTML: badgeHTML, salesHTML: salesHTML, ordHTML: ordHTML, guard: guard, subscribe: subscribe, info: info, count: count, key: key };
 })();

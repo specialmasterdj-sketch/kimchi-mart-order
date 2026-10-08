@@ -17,7 +17,7 @@
 <script src="recommend.js?v=20260727a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20260919b"></script>
-<script src="recv.js?v=2"></script>
+<script src="recv.js?v=3"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -1362,7 +1362,7 @@ function buildTilesHtml(v, products){
     // 🏬 헐리우드 경유 — 표시·지정 버튼, 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
     const hubBlocked = window.kmHub ? window.kmHub.blocked(state.vendor, p.id) : false;
     const hubMark = window.kmHub ? (window.kmHub.badgeHTML(state.vendor, p.id) + window.kmHub.toggleHTML(state.vendor, p.id)) : '';
-    const recvMark = window.kmRecv ? (window.kmRecv.badgeHTML(state.vendor, p.id) + window.kmRecv.salesHTML(state.vendor, p.id)) : '';
+    const recvMark = window.kmRecv ? (window.kmRecv.badgeHTML(state.vendor, p.id) + window.kmRecv.ordHTML(state.vendor, p.id) + window.kmRecv.salesHTML(state.vendor, p.id)) : '';
     // 2026-06-08: + 버튼은 항상 1 씩만 추가 (사장님 지시 — 한 번에 packSize 갯수 추가 X).
     //   pack.pack 정보는 라벨 "1 CS = N pc" 로 안내만.
     const eaLabel = (showEA && pack)
@@ -2063,6 +2063,8 @@ async function emailWithPDF() {
     if (typeof window.cloudPushHistory === 'function'){
       try { window.cloudPushHistory(currentBranch, currentUserKey(), histEntry); } catch(e){}
     }
+    // 📦 품목별 주문 기록 — 보낸 그 순간에도 남긴다 (비우지 않고 그냥 두는 경우가 많다)
+    try { window.kmLogOrder(currentBranch, state.vendor, orders, '보내기'); } catch(e){}
 
   } catch(err) {
     if (wrap.parentNode) document.body.removeChild(wrap);
@@ -2265,7 +2267,7 @@ viewing Miami sees qty=3 instantly, and either can continue the cart.
 -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, get, child, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, update, onValue, get, child, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
@@ -2307,6 +2309,12 @@ if (window.kmRecs){
     try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
   });
 }
+// 📦 바깥(classic script)에서도 파이어베이스를 쓸 수 있게 — 주문 기록 저장용.
+//    2026-10-08 전무님: "오더한 것 지우면 아주 버리지 말고 저장하기."
+//    조사해 보니 '비우기 전 자동 백업' 문구만 있고 실제로는 한 번도 저장되지 않았다
+//    (db·set·ref 가 이 module 안에만 있어 바깥에서 안 보였다).
+window.__kmFb = { db, ref, set, update };
+
 // 🏬 헐리우드 경유 품목 — 지정이 바뀌면 바로 다시 그린다
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
@@ -2417,6 +2425,43 @@ function branchPath(branchId, userKey){ return 'orders/' + branchId + '/_shared'
 function historyPath(branchId, userKey){ return 'history/' + branchId + '/' + userKey; }
 
 // Write: called by saveState() whenever the user changes qty locally.
+/* 📦 주문 기록 남기기 — "이 상품을 언제 몇 개 시켰나"
+ *  2026-10-08 전무님: "오더한 것 지우면 아주 버리지 말고 저장하기. 그래야 이 아이템 언제
+ *  몇 개 오더한 기록이 남게. 중복 오더 없게 하고, 판매 기록 보면 몇 개 남은지도 알게."
+ *
+ *  두 군데에 남긴다 —
+ *   ① orders/{지점}/_shared_history/{벤더}/{시각}  장바구니 통째 (되살리기용)
+ *   ② expiry/{지점}/ordRecent/{벤더::품번}         품목별 마지막 주문 (상품칸에 띠로 보여 줌)
+ *  ②는 입고·판매와 같은 열쇠라 한 상품에 세 가지가 나란히 붙는다.
+ */
+window.kmLogOrder = function(branch, vendor, items, why){
+  try {
+    const fb = window.__kmFb;
+    if (!fb || !branch || !vendor) return;
+    const ids = Object.keys(items || {}).filter(id => (+items[id]) > 0);
+    if (!ids.length) return;
+    const ts = Date.now();
+    const who = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
+    const day = new Date(ts - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+
+    // ① 통째 보관 — 잘못 비워도 되살릴 수 있게
+    fb.set(fb.ref(fb.db, 'orders/' + branch + '/_shared_history/' + vendor + '/' + ts), {
+      ts, by: who || 'unknown', why: why || '',
+      types: ids.length, units: ids.reduce((n,id)=>n+(+items[id]||0),0),
+      cart: Object.fromEntries(ids.map(id => [fbEncKey(id), +items[id]]))
+    }).catch(e => console.warn('[order log] 통째 저장 실패', e));
+
+    // ② 품목별 마지막 주문
+    const patch = {};
+    ids.forEach(id => {
+      const key = (vendor + '::' + id).replace(/[.#$\[\]\/]/g, '_');
+      patch[key] = { d: day, q: +items[id], ts };
+    });
+    fb.update(fb.ref(fb.db, 'expiry/' + branch + '/ordRecent'), patch)
+      .catch(e => console.warn('[order log] 품목별 저장 실패', e));
+  } catch(e){ console.warn('[order log]', e); }
+};
+
 // 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + Firebase 자동 백업.
 window.clearVendorCartSafely = function(){
   const vendor = window.KM?.state?.vendor;
@@ -2429,15 +2474,9 @@ window.clearVendorCartSafely = function(){
   const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
   const warn = `⚠️ 공유 주문 카트입니다.\n\n[${b||'?'}] 지점 [${vendor}] 의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)`;
   if (!confirm(warn)) return;
-  try {
-    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
-      const ts = String(Date.now());
-      set(ref(db, 'orders/' + b + '/_shared_history/' + vendor + '/' + ts), {
-        ts: +ts, by: u || 'unknown', types, units,
-        cart: Object.fromEntries(Object.entries(items).map(([id, q]) => [fbEncKey(id), q]))
-      }).catch(e => console.warn('clear backup failed', e));
-    }
-  } catch(e){ console.warn('clear backup error', e); }
+  // ⚠️ 예전 조건(typeof set === 'function')은 module 안 변수라 바깥에서 늘 거짓이었다 →
+  //    '자동 백업' 문구만 있고 실제로는 한 번도 저장되지 않았다 (2026-10-08 확인).
+  window.kmLogOrder(b, vendor, items, '비우기');
   window.KM.state.orders[vendor] = {};
   try { window.KM.saveState(); } catch(_){}
   try { window.KM.render(); } catch(_){}

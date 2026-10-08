@@ -132,14 +132,14 @@
     css.textContent =
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
-      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      'white-space:normal;word-break:keep-all}' +
       '.km-ord{display:block;margin:3px 0 0;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
-      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      'white-space:normal;word-break:keep-all}' +
       '.km-ord.wait{background:#ede9fe;border-color:#c4b5fd;color:#5b21b6}' +
       '.km-sales{display:block;margin:3px 0 0;background:#e0f2fe;border:1px solid #7dd3fc;color:#075985;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
-      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
+      'white-space:normal;word-break:keep-all}';
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 

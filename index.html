@@ -18,6 +18,7 @@
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20260919b"></script>
 <script src="recv.js?v=7"></script>
+<script src="order-log.js?v=1"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
@@ -446,7 +447,7 @@ input { font-family:inherit; }
   </div>
 </div>
 
-<script src="products.js?v=20260727b"></script>
+<script src="products.js?v=20261008rhee"></script>
 <script>
 // 추가 제품(seoul_extra.js) async 병합. products.js는 가볍게 유지, seoul_extra는 라이브(404구간 없음).
 // 페이지네이션으로 대량이어도 렌더 안 멈춤. 안전 실패형(파일 지연시 기본 제품으로 정상).
@@ -2434,33 +2435,7 @@ function historyPath(branchId, userKey){ return 'history/' + branchId + '/' + us
  *   ② expiry/{지점}/ordRecent/{벤더::품번}         품목별 마지막 주문 (상품칸에 띠로 보여 줌)
  *  ②는 입고·판매와 같은 열쇠라 한 상품에 세 가지가 나란히 붙는다.
  */
-window.kmLogOrder = function(branch, vendor, items, why){
-  try {
-    const fb = window.__kmFb;
-    if (!fb || !branch || !vendor) return;
-    const ids = Object.keys(items || {}).filter(id => (+items[id]) > 0);
-    if (!ids.length) return;
-    const ts = Date.now();
-    const who = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
-    const day = new Date(ts - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-
-    // ① 통째 보관 — 잘못 비워도 되살릴 수 있게
-    fb.set(fb.ref(fb.db, 'orders/' + branch + '/_shared_history/' + vendor + '/' + ts), {
-      ts, by: who || 'unknown', why: why || '',
-      types: ids.length, units: ids.reduce((n,id)=>n+(+items[id]||0),0),
-      cart: Object.fromEntries(ids.map(id => [fbEncKey(id), +items[id]]))
-    }).catch(e => console.warn('[order log] 통째 저장 실패', e));
-
-    // ② 품목별 마지막 주문
-    const patch = {};
-    ids.forEach(id => {
-      const key = (vendor + '::' + id).replace(/[.#$\[\]\/]/g, '_');
-      patch[key] = { d: day, q: +items[id], ts };
-    });
-    fb.update(fb.ref(fb.db, 'expiry/' + branch + '/ordRecent'), patch)
-      .catch(e => console.warn('[order log] 품목별 저장 실패', e));
-  } catch(e){ console.warn('[order log]', e); }
-};
+// 📒 주문 기록은 order-log.js 로 옮겼다 (리브 전용 앱과 같은 코드를 쓰려고). window.kmLogOrder 로 그대로 부른다.
 
 // 🛡️ 2026-06-08: 공유 카트 보호 — 강화된 confirm + Firebase 자동 백업.
 window.clearVendorCartSafely = function(){

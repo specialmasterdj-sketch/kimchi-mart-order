@@ -57,6 +57,7 @@
   .pname{font-size:11.5px;font-weight:700;line-height:1.3;color:#222;margin-bottom:3px;min-height:30px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .pmeta{font-size:10px;color:#888;margin-bottom:3px;line-height:1.3}
   .pmeta .code{color:var(--red);font-weight:700}
+  .pname-kr{font-size:10.5px;color:#0f766e;line-height:1.25;margin:-1px 0 3px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
   .pbrand{font-size:9.5px;color:#aaa;margin-bottom:6px;text-transform:uppercase}
   .qrow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;background:#f5f5f5;border-radius:7px;padding:2px}
   .qbtn{flex-shrink:0;width:30px;height:28px;border:none;border-radius:5px;background:#fff;cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;display:flex;align-items:center;justify-content:center}
@@ -143,7 +144,7 @@
   <button class="back-btn" onclick="onBack()">←</button>
   <div class="hdr-title">
     <h1>RHEE BROS</h1>
-    <p>리브라더스 · 2025 Catalog</p>
+    <p>리브라더스 · 주문 사이트 목록 (2026-10-08)</p>
   </div>
   <div class="hdr-acts">
     <button id="branch-btn" onclick="openBranchModal()" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">📍 <span id="branch-btn-label">지점</span></button>
@@ -218,21 +219,15 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="rheebros_products.js"></script>
+<script src="rheebros_products.js?v=20261008site"></script>
 <script src="recommend.js?v=20260727a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20260919b"></script>
+<!-- 🔁 입고·주문·판매·매입가 띠 (2026-10-08) — index.html 과 같은 모듈 -->
+<script src="recv.js?v=7"></script>
+<script src="order-log.js?v=1"></script>
 <script src="product-images.js?v=20260726a"></script>
-<script>
-/* 🆕 2026-08-02 RHEE BROS 신제품 57개 추가 (포털 order.rhorder.online/new) — 사진 포함. rheebros_products.js 로드 직후 append. */
-(function(){ try{ var NEW=[{"id":"10928K","nameKr":"프레시베리 파인애플 케이크 (시즌한정)","name":"FRESH BERRY PINEAPPLE CAKE (SEASON LIMITED)","size":"8X12.7 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10928K-n5Rz02tzn9lPIlpvgv2J66sDcYxbO9.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10929K","nameKr":"초코파이 망고 (시즌한정)","name":"CHOCO PIE MANGO (SEASON LIMITED)","size":"8X14.39 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10929K-EOu1Uv8lfBIN1VtYh5kFV9UiFKUfeD.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10598K","nameKr":"피크닉 청포도 주스","name":"PICNIC WHITE GRAPE JUICE","size":"4X6X6.76 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10598K-rHU6cB5gQnitiFBjHwhnMzjlYQHcUX.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10599K","nameKr":"피크닉 사과 주스","name":"PICNIC APPLE JUICE","size":"4X6X6.76 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10599K-igdCQkgRPeajLMTpxQz1BJLPr3ReLF.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10745K","nameKr":"엔요 얼려먹는 아이스 (요구르트맛)","name":"ENYO FREEZER POP (YOGURT FLAVOR)","size":"4X6X3 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10745K-kFpsoINNmdH1oNgx7ySANiyD1rEDnG.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"10746K","nameKr":"얼려먹는 아이스 (귤&배맛)","name":"FREEZER POP (MANDARIN & PEAR FLAVOR)","size":"4X6X3 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10746K-c14JtfasH17hUNfu9sbleSacRwYJJ2.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"10750K","nameKr":"매일 두유 99.9%","name":"MAEIL SOY MILK 99.9%","size":"4X12X6.40 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10750K-cwCNza1gPts9hhmzwJSC0VXm2bCQ1J.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10751K","nameKr":"매일 두유 검은콩","name":"MAEIL SOY MILK BLACK SOYBEAN","size":"4X12X6.40 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10751K-s3wFJfXDAKmJNntiHq71G0KaB5a4Xn.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10752K","nameKr":"매일 두유 고단백 플레인","name":"MAEIL SOY MILK HIGH PROTEIN PLAIN","size":"4X12X6.40 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10752K-UvwkUqptXzTY8s5Uh3t5yoKjVD5qyW.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10753K","nameKr":"매일 두유 렌틸","name":"MAEIL SOY MILK LENTIL","size":"4X12X6.40 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10753K-F3K5DfzPvnlaIFhDFMCipAUlgU8KES.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10924K","nameKr":"초코파이 말차","name":"CHOCO PIE MATCHA","size":"8X14.39 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10924K-ILcBEnMPpO4qj8JK0Gg0xFMs9XuKAJ.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10927K","nameKr":"쉘위 소프트크림 디저트 (카카오)","name":"SHALL WE SOFT CREAM DESSERT (CACAO)","size":"8X14.39 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10927K-5qkKL1p1DiWlgBrCgcNFVbEXJ7wseO.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"19735K","nameKr":"마이카페라떼 마일드","name":"MY CAFE LATTE MILD","size":"10X7.4 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19735K-enUBY5A0QVxrbucXafwBJpwcbCwHWl.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19736K","nameKr":"마이카페라떼 카라멜마끼아또","name":"MY CAFE LATTE CARAMEL MACCHIATO","size":"10X7.4 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19736K-icuYRDOuQgXUP94cOKVcKlVstuFrF.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19737K","nameKr":"마이카페라떼 흑당 밀크티","name":"MY CAFE LATTE BROWN SUGAR MILK TEA","size":"10X7.4 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19737K-I71zAp6V1X6x5xIU6fSQjb5BKl3dEq.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19738K","nameKr":"마이카페라떼 마일드 라이트슈거","name":"MY CAFE LATTE MILD LOWER SUGAR","size":"10X7.4 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19738K-Rmbhb7mkr7hKL4g9ib8ZJ9AYsO8iM1.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19739K","nameKr":"바리스타룰스 시그니처 드립라떼","name":"BARISTA RULES SIGNATURE DRIP LATTE","size":"10X10.99 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19739K-EuYMZ3OXsdqOnptCmHuQWb0ktzkKUU.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19740K","nameKr":"바리스타룰스 마다가스카르 바닐라빈 라떼","name":"BARISTA RULES MADAGASCAR VANILLA BEAN LATTE","size":"10X10.99 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19740K-GbJajSMBDWvSmriX6fXcCACWMVJ9Pw.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"19741K","nameKr":"바리스타룰스 콜드브루 블랙","name":"BARISTA RULES COLD BREW BLACK","size":"10X10.99 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F19741K-KGeYgG3RcmEU11m6NE4IeucRzJn8aF.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10353K","nameKr":"초코 라이스케이크 쿠키 (10입)","name":"CHOCOLATE RICE CAKE COOKIE (10P)","size":"10X7.58 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10353K-Y7N2EZm5J4PfuVNuzMEj57LekLTpjf.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10724K","nameKr":"카페스노우 배 에이드","name":"CAFE SNOW KOREAN PEAR ADE","size":"5X10X8.11 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10724K-JZvKA0wDIkQy4HxFx6zdPwK4255VVc.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10853K","nameKr":"꼬북칩 (말차초코맛)","name":"TURTLE CHIPS (MATCHA CHOCO FLAVOR)","size":"12X5.64 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10853K-OiEgfGqT3582EkUBo7OFEd5V8xFt4I.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10891K","nameKr":"누네띠네 이탈리안 페이스트리 파이 (10입)","name":"NUNEDDINE ITALIAN PASTRY PIE (10P)","size":"16X4.23 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10891K-MA9CEp7D51wx1umYTph2eEhgf7kWjN.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10893K","nameKr":"팝칩 버터갈릭맛","name":"POP CHIP BUTTER GARLIC FLAVOR","size":"16X2.12 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10893K-zgWqQWyeklWuMMSFT8lP16jtBEqRbi.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"11034K","nameKr":"애플사이다 식초 (사과)","name":"APPLE CIDER VINEGAR (APPLE)","size":"16X10.14 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F11034K-xL4IkpDci1ModoEVTGdfk3Pgc40Y9W.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"11035K","nameKr":"애플사이다 식초 (샤인머스캣)","name":"APPLE CIDER VINEGAR (SHINE MUSCAT)","size":"16X10.14 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F11035K-9MC5lA6owc53oeF8BD4AM9PisOz4sL.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"21136K","nameKr":"죠이 크리미바 망고크림 (6입)","name":"JOEE CREAMY BAR MANGO CREAM (6P)","size":"6X6X2.71 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21136K-2ZfVmIC9i0nr4PrVOwc54rYq8O1xH3.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21137K","nameKr":"죠이 크리미바 그레인크럼블 (6입)","name":"JOEE CREAMY BAR GRAIN CRUMBLE (6P)","size":"6X6X2.71 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21137K-h0imostpUOpDa4c9PqL18xBlUwyCV6.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21138K","nameKr":"죠이 크리미바 헤이즐넛카카오 (6입)","name":"JOEE CREAMY BAR HAZELNUT CACAO (6P)","size":"6X6X2.71 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21138K-wNg7CKKgzhvAPHTSvcmfplepF70E9C.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"26053K","nameKr":"계란볶음밥 삼각김밥","name":"EGG FRIED RICE SAMGAK KIMBAP","size":"14X11.6 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F26053K-V88v1PzQd0139kO0N9WhcOFmiVGIno.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"26054K","nameKr":"간장계란 삼각김밥","name":"GANJANG EGG SAMGAK KIMBAP","size":"14X11.6 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F26054K-ZmvlQXKNt78fIs7xETyA7BWNqsUKX0.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"26055K","nameKr":"김치참치 삼각김밥","name":"KIMCHI TUNA SAMGAK KIMBAP","size":"14X11.6 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F26055K-mE68FLfLmIBkBeSAJ5TH87mcv6Fw3x.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"29945F","nameKr":"아메리칸 와규 차돌양지 슬라이스 (1LB)","name":"THIN SLICED & ROLLED AMERICAN WAGYU BRISKET (1#)","size":"6X1 LB","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F29945F-TMFxqKycUulvBvAxeA1K6Z4lua77mb.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"29946F","nameKr":"아메리칸 와규 홍두깨살 슬라이스 (1LB)","name":"THIN SLICED & ROLLED AMERICAN WAGYU EYE ROUND (1#)","size":"6X1 LB","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F29946F-stg8hWTOGaBPU05fT2Nr63pTvip54X.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"29947F","nameKr":"꽃등심 슬라이스 (1LB)","name":"THIN SLICED & ROLLED RIBEYE (1#)","size":"6X1 LB","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F29947F-15HWOdbIwIqPs3mGCuNscHbxeWdrCE.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"29948F","nameKr":"우삼겹 슬라이스 (1LB)","name":"THIN SLICED & ROLLED SHORT PLATE (1#)","size":"6X1 LB","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F29948F-ZOLJfltW6cy63BQLO3TwiskEL8RYwE.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"10354K","nameKr":"브로누아 브라우니 쿠키 & 초코칩","name":"BRONOIR BROWNIE COOKIE & CHOCOLATE CHIPS","size":"10X5.82 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10354K-6CJKHhDqTLprcMHaxrnaUkMnySAhFd.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10501K","nameKr":"수정과 선물세트 (12입)","name":"CINNAMON PUNCH GIFT BOX (12P)","size":"12X8.05 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10501K-8BmUE11upldKSwAR0XSIyq2nbiTZ3k.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"21175K","nameKr":"두바이 쫀득쿠키 (두쫀꾸)","name":"DUBAI CHEWY COOKIE (DUJJONKU)","size":"18X2.11 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21175K-eL3wrjVZWBdY1n5SmrlGAuC3OVqEkH.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10725K","nameKr":"카페스노우 제로 레몬 에이드","name":"CAFE SNOW ZERO LEMON ADE","size":"5X10X8.11 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10725K-7hWmuyLGcDFHrRscDYfvorJ7n4vBOR.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10726K","nameKr":"카페스노우 사과망고 에이드","name":"CAFE SNOW APPLE MANGO ADE","size":"5X10X8.11 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10726K-jWV3OQRGEn4EtPswVpG5RJcxs6eu2G.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10727K","nameKr":"카페스노우 커피 헤이즐넛","name":"CAFE SNOW COFFEE HAZELNUT FLAVOR","size":"5X10X8.11 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10727K-Dd2TRbiwxM2f2kyK1QuV9y8cbUH6Z4.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10926K","nameKr":"쉘위 소프트크림 디저트 (클래식)","name":"SHALL WE SOFT CREAM DESSERT (CLASSIC)","size":"8X14.39 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10926K-1wauBMtyey2YfJL3tAaT88bANTv7zM.png","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21234K","nameKr":"레디비 쫄깃 모찌 꽈배기","name":"READY B CHEWY MOCHI TWISTED BREAD","size":"10X7.94 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21234K-mkaJW5zKKhWgCoiSZ5FROKmL6Tz77t.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"10932K","nameKr":"땅콩 크런치 (대)","name":"PEANUT CRUNCH (L)","size":"18X5.19 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10932K-tCimlt5RkAKVAKDPMQdVJCurgjykGQ.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10495K","nameKr":"이천 식혜 (6입)","name":"ICHEON FRESH RICE PUNCH (6P)","size":"4X6X11.3 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10495K-QeoOuxLohMwCiBTlB7wkVeknfnXbEX.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10457K","nameKr":"마켓오 브라우니 (크림치즈, 12입)","name":"MARKET O BROWNIE (CREAM CHEESE, 12P)","size":"16X8.47 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10457K-MOsQcdUf4roulFtCyxaOwx5nn2rdtB.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"08418K","nameKr":"신라면 김치 (4입)","name":"SHIN RAMEN KIMCHI (4P)","size":"8X4X4.23 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F08418K-O0VgkWOP7KhXQ3v3to6oBAWYSDQNxG.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"08419K","nameKr":"사리곰탕 (4입)","name":"SARIGOMTANG (4P)","size":"8X4X3.88 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F08419K-hviG0V74on7cE7m271hDzq94BUAsOr.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"10854K","nameKr":"꼬북칩 (까르보 불닭맛)","name":"TURTLE CHIPS (CARBONARA HOT CHICKEN FLAVOR)","size":"12X5.64 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F10854K-oIZEpIM8eopiZ3KCOr3B48Eooou3Wr.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"DRY","isNew":1},{"id":"21143C","nameKr":"타오시 복숭아맛 아이스크림 (잼)","name":"TAOXI JOY PEACH FLAVORED ICE CREAM W/ JAM (1P)","size":"12X2.65 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21143C-re3opY86khqCxlZBtgWo9UhtbPWWTy.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21144C","nameKr":"진망 망고맛 아이스크림 (잼)","name":"JINMANG MANGO FLAVORED ICE CREAM W/ JAM (1P)","size":"12X2.65 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21144C-e6fH3EVvVJMjRU57S8doRNT4i0TwkV.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21145C","nameKr":"타오샨 우유맛 아이스크림 (잼)","name":"TAOSHAN MILK FLAVORED ICE CREAM W/ JAM (1P)","size":"12X2.12 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21145C-wVhUAVTRzisKClZJUaU3Tl0w6G3zl5.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21227K","nameKr":"완두 소보로빵 (1입)","name":"GREEN BEAN SOBORO BREAD (1P)","size":"36X3.35 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21227K-fMFvw7gK3pzpCjkWygn1QNN6COpEVI.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21228K","nameKr":"커스터드 크림빵 (1입)","name":"CUSTARD CREAM BREAD (1P)","size":"36X3.53 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21228K-7IVb3yA2qhnSzFAfca2109Yzp15hzb.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21229K","nameKr":"초코크림 소보로빵 (1입)","name":"CHOCOLATE CREAM SOBORO BREAD (1P)","size":"36X3 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21229K-ohPhe9qRDfeqtZbiGSzOosOcHu84Xs.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1},{"id":"21233K","nameKr":"레디비 쫄깃 모찌 도넛","name":"READY B CHEWY MOCHI DONUTS","size":"14X13.23 OZ","category":"🆕 NEW ARRIVAL","categoryKr":"🆕 신제품","barcode":"","barcodeDisplay":"","page":null,"image":"https://order.rhorder.online/api/blob?pathname=product-images%2F21233K-S3qmhz7Kssa6dxMh3NmsIMkzBwJ1tU.jpg","categoryId":"new","pageRange":"이번 주 신제품","channel":"FRZ","isNew":1}];
-  window.RHEE_PRODUCTS=(window.RHEE_PRODUCTS||[]);
-  var have={}; window.RHEE_PRODUCTS.forEach(function(p){ if(p&&p.id) have[p.id]=1; });
-  var add=NEW.filter(function(p){ return !have[p.id]; });
-  Array.prototype.unshift.apply(window.RHEE_PRODUCTS, add);
-  console.log("[rhee] 신제품 추가:", add.length);
-}catch(e){ console.warn("[rhee] new inject failed", e); } })();
-</script>
+<!-- 🆕 신제품은 이제 rheebros_products.js 안의 isNew 로 들어온다 (2026-10-08 사이트 카탈로그 도입). 손으로 넣던 57개 덩이 제거. -->
 
 
 <script>
@@ -266,7 +261,10 @@ const PRODUCTS = _HANMI_RAW.map(p => {
     detailId: p.id,
     name: (p.name || p.nameKr || p.id).trim(),
     nameKr: (p.nameKr || '').trim(),
-    brand: '',
+    // 2026-10-08 사이트 카탈로그를 쓰면서 브랜드가 들어왔다 (전에는 전부 빈칸이었다).
+    // 검색에도 걸린다 — "한국미", "HANKUKMI" 로 찾을 수 있다.
+    brand: (p.brand || '').trim(),
+    brandKr: (p.brandKr || '').trim(),
     category: p.category || '',
     packSize: p.size || '',
     barcode: p.barcode || '',
@@ -441,8 +439,11 @@ function onBack(){
 function buildGroups(){
   const cats = window.RHEE_CATEGORIES || [];
   const tabs = [
-    '<button class="gtab ' + (!CUR_CAT ? 'on' : '') + '" onclick="selCat(\'\')">' + t('all') + ' (' + PRODUCTS.length + ')</button>'
+    '<button class="gtab ' + (!CUR_CAT && !CUR_GROUP ? 'on' : '') + '" onclick="selCat(\'\')">' + t('all') + ' (' + PRODUCTS.length + ')</button>'
   ];
+  // 🆕 신제품 — 벤더 사이트에서 NEW 로 표시된 것. 제 분류 탭에도 그대로 남아 있다.
+  const newCnt = PRODUCTS.filter(p => p.isNew === 1).length;
+  if (newCnt) tabs.push('<button class="gtab ' + (CUR_GROUP === 'NEW' ? 'on' : '') + '" onclick="selGroup(\'NEW\')">' + t('new') + ' (' + newCnt + ')</button>');
   for (const c of cats){
     const n = PRODUCTS.filter(p => p.category === c.name).length;
     if (!n) continue;
@@ -544,7 +545,7 @@ function render(){
     // When actively searching, bypass category/tab filters so a query
     // across the whole catalog is never silently hidden by a tab pick.
     if (q){
-      const hay = hangulDecompose((p.name + ' ' + (p.nameKr||'') + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'')).toLowerCase());
+      const hay = hangulDecompose((p.name + ' ' + (p.nameKr||'') + ' ' + p.id + ' ' + (p.barcode||'') + ' ' + (p.brand||'') + ' ' + (p.brandKr||'')).toLowerCase());
       return hay.includes(q);
     }
     if (!matchesGroup(p)) return false;
@@ -623,6 +624,8 @@ function render(){
         '<img class="pimg" src="' + esc(_vimg) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' + _ibtn +
         '<div class="pbody">' +
           '<div class="pname" title="' + esc(p.name) + '">' + esc(p.name) + recBadges + '</div>' +
+          // 2026-10-08 사이트 카탈로그에 한글 이름이 2,584개 들어왔다 — 한글로 찾는 직원이 많아 카드에 바로 보여 준다
+          (p.nameKr ? '<div class="pname-kr">' + esc(p.nameKr) + '</div>' : '') +
           recTools +
           '<div class="pmeta"><span class="code">#' + esc(p.id) + '</span> · ' + esc(p.packSize||'-') + '</div>' +
           (p.barcodeDisplay ? '<div class="pmeta" style="font-family:monospace;font-size:9.5px;color:#666">' + esc(p.barcodeDisplay) + '</div>' : '') +
@@ -630,6 +633,10 @@ function render(){
           ((typeof VelaStock !== 'undefined' && VelaStock.badgeHtml(p)) ? '<div style="margin:2px 0 4px">' + VelaStock.badgeHtml(p) + '</div>' : '') +
           overGuide +
           _hubMark +
+          // 🔁 입고 · 💵 매입가 · 🛒 주문 · 🔀 다른 벤더 · 📈 판매 — 오더 전에 "이미 받았나/주문했나" 를 보여 준다.
+          // 2026-10-08 전무님: "사람이 눈으로 하다 보니 놓치고, 또 오더해 낭비가 심해서."
+          (window.kmRecv ? (window.kmRecv.badgeHTML('rhee_full', p.id) + window.kmRecv.ordHTML('rhee_full', p.id)
+                          + window.kmRecv.altHTML('rhee_full', p.id) + window.kmRecv.salesHTML('rhee_full', p.id)) : '') +
           (_hubBlocked ? window.kmHub.requestHTML('rhee_full', p.id) : (
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
@@ -665,6 +672,8 @@ function bumpQty(id, delta){
   const cur = CART[id] || 0;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
+  // 🔁 최근에 받은 물건이면 처음 담는 순간 한 번만 묻는다 (이미 담은 것엔 안 묻는다)
+  if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
   if (next === 0) delete CART[id];
   else CART[id] = next;
@@ -679,6 +688,7 @@ function bumpQty(id, delta){
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
+  if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
   if (v === 0) delete CART[id];
   else CART[id] = v;
   saveCart();
@@ -727,6 +737,7 @@ function openPd(detailId){
     '</div>' +
     '<div class="pd-info">' +
       '<div class="pd-name">' + esc(p.name) + (p.isNew ? '<span class="pd-new">NEW</span>' : '') + '</div>' +
+      (p.nameKr ? '<div style="font-size:13px;color:#0f766e;margin:-3px 0 7px">' + esc(p.nameKr) + '</div>' : '') +
       '<table class="pd-table">' +
         (p.brand ? '<tr><td class="label">' + t('brand') + '</td><td class="value">' + esc(p.brand) + '</td></tr>' : '') +
         (p.category ? '<tr><td class="label">' + t('category') + '</td><td class="value">' + esc(p.category) + '</td></tr>' : '') +
@@ -856,17 +867,10 @@ function clearCart(){
   const branchLbl = b || '?';
   const warn = `⚠️ 공유 주문 카트입니다.\n\n[${branchLbl}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 24시간 내 복구 가능)`;
   if (!confirm(warn)) return;
-  // 🗂 자동 백업 — Firebase RTDB 의 history 경로에 timestamp 별 저장
-  try {
-    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
-      const ts = String(Date.now());
-      const snapshot = {};
-      for (const k of Object.keys(CART)) snapshot[k] = CART[k];
-      set(ref(db, 'carts/rheebros/' + b + '/_shared_history/' + ts), {
-        ts: +ts, by: u || 'unknown', types, units, cart: snapshot
-      }).catch(e => console.warn('clear backup failed', e));
-    }
-  } catch(e){ console.warn('clear backup error', e); }
+  // 🗂 자동 백업 — order-log.js 가 orders/{지점}/_shared_history/rhee_full/{시각} 에 통째로 남긴다.
+  //   ⚠️ 예전 조건 `typeof set === 'function'` 은 module 안 변수를 바깥 script 에서 본 것이라 늘 거짓이었다.
+  //      그래서 "자동 백업 보관 중" 이라고 띄우기만 하고 실제로는 한 번도 저장되지 않았다 (2026-10-08 확인).
+  try { window.kmLogOrder(b, 'rhee_full', _cartForLog(), '비우기'); } catch(e){ console.warn('clear backup error', e); }
   for (const k in CART) delete CART[k];
   saveCart();
   render();
@@ -893,9 +897,21 @@ function buildOrderText(){
   return lines.join('\n');
 }
 
+/* 📒 장바구니를 기록용 모양으로 — 낱개(__EA)·파렛(__PL)은 품번 하나로 합친다.
+   recv.js 가 보는 열쇠가 "rhee_full::품번" 이라 접미사가 붙으면 띠가 안 붙는다. */
+function _cartForLog(){
+  const out = {};
+  for (const k of Object.keys(CART)){
+    const base = baseIdOf(k);
+    out[base] = (out[base] || 0) + (+CART[k] || 0);
+  }
+  return out;
+}
 function copyOrderText(){
   const txt = buildOrderText();
   if (!txt){ toast(t('noCart')); return; }
+  // 리브는 벤더 사이트에 붙여넣어 주문한다 — 복사하는 순간이 사실상 '보냈다' 다.
+  try { window.kmLogOrder(getBranchId(), 'rhee_full', _cartForLog(), '복사'); } catch(e){}
   if (navigator.clipboard){
     navigator.clipboard.writeText(txt).then(
       () => toast(t('copied')),
@@ -940,6 +956,7 @@ function exportOrder(){
 function emailOrder(){
   const txt = buildOrderText();
   if (!txt){ toast(t('noCart')); return; }
+  try { window.kmLogOrder(getBranchId(), 'rhee_full', _cartForLog(), '메일'); } catch(e){}
   exportOrder();
   const branch = (localStorage.getItem('km_branch') || '').toUpperCase();
   const today = new Date().toISOString().slice(0,10);
@@ -959,7 +976,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 <!-- Real-time cart sync per branch (mirrors the main order app) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, update, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
@@ -975,6 +992,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+// 📒 모듈 밖(classic script)에서도 Firebase 를 쓸 수 있게 내놓는다.
+//    order-log.js 가 이것만 보고 주문 기록을 남긴다 — 예전처럼 typeof 로 더듬지 않는다.
+window.__kmFb = { db: db, ref: ref, set: set, update: update };
 // If Firebase auth is restored from shared IndexedDB, unlock. Otherwise
 // bounce to the Manager Apps login (single shared password for the whole
 // suite). Small grace window so a slow IndexedDB cold-start doesn't kick
@@ -1028,6 +1048,12 @@ if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.config({ vendorName: 'Rhee Bros', vendorNameKr: '이브라더스', lookup: (v, id) => PRODUCTS.find(p => String(p.id) === String(id)) || null });
   window.kmHub.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+
+// 🔁 입고·🛒 주문·📈 판매·💵 매입가 띠 — 지점별로 읽는다 (expiry/{지점}/...)
+if (window.kmRecv){
+  window.kmRecv.init({ db, ref, onValue });
+  window.kmRecv.subscribe(() => { try { if (typeof render === "function") render(); } catch(e){} });
 }
 
 // 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.

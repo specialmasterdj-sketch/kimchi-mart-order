@@ -35,7 +35,8 @@
     if (!r) return null;
     var ago = daysAgo(r.d);
     if (ago === null || ago > WARN_DAYS) return null;
-    return { ago: ago, qty: r.q, name: r.n, times: r.t || 1, date: r.d };
+    return { ago: ago, qty: r.q, name: r.n, times: r.t || 1, date: r.d,
+             each: Number(r.p) || 0, unit: Number(r.u) || 0, size: r.z || '' };
   }
 
   /* 상품칸에 붙는 띠 — 노랗게, 한 줄. 자리를 많이 쓰지 않는다. */
@@ -46,8 +47,16 @@
              : r.ago === 1 ? T('어제', 'yesterday', 'ayer')
              : T(r.ago + '일 전', r.ago + 'd ago', 'hace ' + r.ago + 'd');
     var more = r.times > 1 ? ' · ' + T(r.times + '번', r.times + '×', r.times + '×') : '';
+    var cost = '';
+    if (r.unit > 0 || r.each > 0){
+      var bits = [];
+      if (r.unit > 0)  bits.push(T('케이스', 'case', 'caja') + ' $' + r.unit.toFixed(2));
+      if (r.each > 0 && r.each !== r.unit) bits.push(T('낱개', 'each', 'unidad') + ' $' + r.each.toFixed(2));
+      cost = '<div class="km-cost" title="' + esc(T('마지막 매입가', 'last cost', 'último costo') + (r.size ? ' · ' + r.size : '')) + '">💵 ' +
+        esc(bits.join(' · ')) + (r.size ? ' <span style="opacity:.7">' + esc(r.size) + '</span>' : '') + '</div>';
+    }
     return '<div class="km-recv" title="' + esc(r.date + ' · ' + r.name) + '">🔁 ' +
-      esc(when) + ' ' + esc(String(r.qty)) + T('개 받음', ' received', ' recibido') + esc(more) + '</div>';
+      esc(when) + ' ' + esc(String(r.qty)) + T('개 받음', ' received', ' recibido') + esc(more) + '</div>' + cost;
   }
 
   /* 수량을 올릴 때만 묻는다 — 0 → 1 로 처음 담는 순간 한 번.
@@ -175,6 +184,9 @@
     css.textContent =
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
+      'white-space:normal;word-break:keep-all}' +
+      '.km-cost{display:block;margin:2px 0 0;background:#fffbeb;border:1px solid #fde68a;color:#92400e;' +
+      'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:900;line-height:1.35;' +
       'white-space:normal;word-break:keep-all}' +
       '.km-cheap{display:block;margin:3px 0 0;background:#dcfce7;border:1px solid #86efac;color:#166534;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:900;line-height:1.35;' +

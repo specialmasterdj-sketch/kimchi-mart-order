@@ -79,13 +79,18 @@
     if (!S.same) return '';
     var sib = S.same[key(vendor, pid)];
     if (!sib || !sib.length) return '';
-    var best = null;
+    var best = null, cheap = null;
     for (var i = 0; i < sib.length; i++){
       var x = sib[i];
       var o = (x.k && S.ord) ? S.ord[x.k] : null;         // 그 벤더에 주문한 적이 있나
       var cand = o ? { v: x.v, d: o.d, q: o.q, kind: 'ord' }
                    : { v: x.v, d: x.d, q: x.q, kind: 'recv' };
       if (!best || cand.d > best.d) best = cand;
+      // 💲 어디가 싼지 — 낱개 단가끼리 견준다 (케이스 수가 달라도 공평하게)
+      if (x.p > 0 && x.mp > 0 && x.p < x.mp * 0.98){
+        var save = Math.round((x.mp - x.p) / x.mp * 100);
+        if (!cheap || x.p < cheap.p) cheap = { v: x.v, p: x.p, mp: x.mp, save: save };
+      }
     }
     if (!best) return '';
     var ago = daysAgo(best.d);
@@ -94,8 +99,16 @@
              : ago <= 7 ? T('지난주', 'last week', 'la semana pasada')
              : T(ago + '일 전', ago + 'd ago', 'hace ' + ago + 'd');
     var what = best.kind === 'ord' ? T('주문함', 'ordered', 'pedido') : T('받음', 'received', 'recibido');
-    return '<div class="km-alt" title="' + esc(T('같은 물건을 다른 거래처에서', 'same item, other vendor', 'mismo artículo, otro proveedor')) + '">🔀 ' +
+    var line = '<div class="km-alt" title="' + esc(T('같은 물건을 다른 거래처에서', 'same item, other vendor', 'mismo artículo, otro proveedor')) + '">🔀 ' +
       esc(best.v) + ' ' + esc(when) + ' ' + esc(String(best.q)) + T('개 ', ' ', ' ') + esc(what) + '</div>';
+    if (cheap){
+      line += '<div class="km-cheap" title="' + esc(T('낱개 단가 비교', 'per-unit cost', 'costo por unidad')) + '">💲 ' +
+        esc(cheap.v) + ' $' + cheap.p.toFixed(2) + ' · ' +
+        esc(T(cheap.save + '% 쌈 (여기 $' + cheap.mp.toFixed(2) + ')',
+              cheap.save + '% cheaper (here $' + cheap.mp.toFixed(2) + ')',
+              cheap.save + '% más barato (aquí $' + cheap.mp.toFixed(2) + ')')) + '</div>';
+    }
+    return line;
   }
 
   /* 🛒 언제 몇 개 시켰나 — 2026-10-08 전무님: "이 아이템 언제 몇 개 오더한 기록이 남게."
@@ -162,6 +175,9 @@
     css.textContent =
       '.km-recv{display:block;margin:3px 0 0;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +
+      'white-space:normal;word-break:keep-all}' +
+      '.km-cheap{display:block;margin:3px 0 0;background:#dcfce7;border:1px solid #86efac;color:#166534;' +
+      'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:900;line-height:1.35;' +
       'white-space:normal;word-break:keep-all}' +
       '.km-alt{display:block;margin:3px 0 0;background:#fff1f2;border:1px solid #fda4af;color:#9f1239;' +
       'border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;line-height:1.35;' +

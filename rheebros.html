@@ -61,9 +61,6 @@
   /* 🏭 벤더 쪽 사정 띠 — 품절·재고·시즌·마감세일 */
   .vs{display:block;margin:2px 0 0;border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:800;
       line-height:1.35;white-space:normal;word-break:keep-all;border:1px solid}
-  .vs-out{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-  .vs-low{background:#ffedd5;border-color:#fdba74;color:#9a3412}
-  .vs-ok{background:#f1f5f9;border-color:#e2e8f0;color:#64748b;font-weight:700}
   .vs-sale{background:#dcfce7;border-color:#86efac;color:#166534}
   .vs-note{background:#f5f3ff;border-color:#ddd6fe;color:#5b21b6}
   .vs-asof{opacity:.65;font-weight:600}
@@ -308,20 +305,6 @@ const ST_LABEL = {
   READYTOORDER:{ ko: '📦 주문 대기',  en: '📦 Ready to order', es: '📦 Por pedido' },
   TBD:         { ko: '❓ 미정',       en: '❓ TBD',        es: '❓ Por definir' },
 };
-/* 🚫 벤더 품절 — 처음 담는 순간 한 번만 묻는다. 담아 봐야 안 오는 물건이다.
-   (재고는 목록 받아 온 날 기준이라 "그 뒤 들어왔을 수도 있다" 를 같이 알린다) */
-const _oosAsked = {};
-function oosGuard(pid, next, prev){
-  if (!(next > 0 && (prev || 0) === 0)) return false;
-  const p = BY_ID[pid];
-  if (!p || !p.oos || _oosAsked[pid]) return false;
-  _oosAsked[pid] = 1;
-  const msg = LANG === 'ko'
-    ? '🚫 ' + (p.nameKr || p.name) + '\n\n' + ASOF + ' 기준 벤더 재고가 없습니다.\n그 뒤로 들어왔을 수도 있습니다.\n\n그래도 담을까요?'
-    : '🚫 ' + p.name + '\n\nOut of stock at the vendor as of ' + ASOF + '.\nIt may have come in since.\n\nAdd it anyway?';
-  try { return !confirm(msg); } catch(e){ return false; }
-}
-
 function vendorStateHTML(p){
   const L = (o) => (o && (o[LANG] || o.ko)) || '';
   let h = '';
@@ -331,16 +314,11 @@ function vendorStateHTML(p){
        + (c.p ? ' $' + c.p : '') + (c.exp ? ' · ' + (LANG==='ko'?'유통기한 ':'exp ') + c.exp : '')
        + (c.left ? ' · ' + (LANG==='ko'? c.left+'개 남음' : c.left+' left') : '') + '</div>';
   }
-  if (p.oos){
-    h += '<div class="vs vs-out">🚫 ' + (LANG==='ko'?'벤더 품절':LANG==='es'?'Agotado':'Out of stock')
-       + ' <span class="vs-asof">' + ASOF + '</span></div>';
-  }
-  /* 🗑 2026-10-08 전무님 — 남은 개수(📦 벤더 재고 66 / ⚠️ 4개뿐) 는 뺐다.
-     받아 온 날 한 번 찍힌 숫자라 저절로 갱신되지 않는다. 안 맞는 숫자를 띄우면
-     믿고 주문량을 정하게 돼서 없느니만 못하다.
-     품절 표시(🚫)는 남겼다 — 날짜를 같이 밝히고 "그 뒤로 들어왔을 수도 있다" 고
-     묻고 넘어가는 경고라, 숫자와 달리 틀려도 손해로 이어지지 않는다.
-     벤더가 재고를 실시간으로 주게 되면 여기에 되살리면 된다. */
+  /* 🗑 2026-10-08 전무님: "벤더 재고 자동 업데이트 안 되면 빼 줘."
+     재고(📦 66 / ⚠️ 4개뿐 / 🚫 품절)는 목록을 받아 온 날 한 번 찍힌 숫자라 저절로 갱신되지 않는다.
+     어제 품절이던 게 오늘 들어와 있고, 어제 100개던 게 오늘 없다. 안 맞는 표시를 믿고
+     주문량을 정하게 되면 없느니만 못하다 → 숫자도 품절도 다 뺐다.
+     자료(inv·oos)는 목록에 그대로 있다. 매일 자동으로 받아 올리게 되면 여기에 되살리면 된다. */
   if (p.st && ST_LABEL[p.st]) h += '<div class="vs vs-note">' + L(ST_LABEL[p.st]) + '</div>';
   if (p.coming) h += '<div class="vs vs-note">🚚 ' + (LANG==='ko'?'입고 예정 ':'arriving ') + p.coming + '</div>';
   if (p.lim)    h += '<div class="vs vs-note">🔢 ' + (LANG==='ko'?'수량 제한 ':'limit ') + esc(p.lim) + '</div>';
@@ -742,8 +720,6 @@ function bumpQty(id, delta){
   const cur = CART[id] || 0;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
-  // 🚫 벤더에 없는 물건이면 처음 담는 순간 한 번만 묻는다 — 주문해도 안 온다
-  if (oosGuard(_hubPid(id), Math.max(0, cur + delta), cur)) return;
   // 🔁 최근에 받은 물건이면 처음 담는 순간 한 번만 묻는다 (이미 담은 것엔 안 묻는다)
   if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
@@ -760,7 +736,6 @@ function bumpQty(id, delta){
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
-  if (oosGuard(_hubPid(id), v, CART[id] || 0)) return;
   if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
   if (v === 0) delete CART[id];
   else CART[id] = v;
@@ -819,10 +794,7 @@ function openPd(detailId){
         (p.minOrder ? '<tr><td class="label">' + t('minOrder') + '</td><td class="value">' + esc(p.minOrder) + '</td></tr>' : '') +
         (p.barcode ? '<tr><td class="label">' + t('barcode') + '</td><td class="value barcode">' + esc(p.barcode) + '</td></tr>' : '') +
         // 🏭 벤더가 자기 사이트에서 보여 주는 나머지 — 2026-10-08 "똑같이" 요청
-        // 남은 개수는 뺐다(갱신이 안 돼 틀린 숫자가 된다). 품절만 날짜와 함께 남긴다.
-        (p.oos ? '<tr><td class="label">' + (LANG==='ko'?'벤더 재고':LANG==='es'?'Inventario':'Vendor stock') + '</td><td class="value">'
-          + '🚫 ' + (LANG==='ko'?'품절':'Out of stock')
-          + ' <span style="color:#999;font-weight:600">(' + ASOF + ' ' + (LANG==='ko'?'기준':'as of') + ')</span></td></tr>' : '') +
+        // 벤더 재고는 띄우지 않는다 — 갱신이 안 돼 틀린 숫자가 된다 (2026-10-08 전무님 지시)
         (p.stor ? '<tr><td class="label">' + (LANG==='ko'?'보관':LANG==='es'?'Almacenaje':'Storage') + '</td><td class="value">' + esc(p.stor) + '</td></tr>' : '') +
         (p.ctry ? '<tr><td class="label">' + (LANG==='ko'?'원산지':LANG==='es'?'Origen':'Origin') + '</td><td class="value">' + esc(p.ctry) + '</td></tr>' : '') +
         (p.shelf ? '<tr><td class="label">' + (LANG==='ko'?'유통기한':LANG==='es'?'Caducidad':'Shelf life') + '</td><td class="value">' + p.shelf + (LANG==='ko'?'일':' days') + '</td></tr>' : '') +

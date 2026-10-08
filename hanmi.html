@@ -248,6 +248,9 @@
 <script src="recommend.js?v=20260727a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20260919b"></script>
+<!-- 🔁 입고·매입가·주문·판매 띠 + 주문 기록 (2026-10-08) — 리브·오더센터와 같은 모듈 -->
+<script src="recv.js?v=7"></script>
+<script src="order-log.js?v=1"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
@@ -658,6 +661,9 @@ function render(){
           (recBadges ? '<div style="text-align:center;margin:-2px 0 4px">' + recBadges + '</div>' : '') +
           overGuide +
           _hubMark +
+          // 🔁 입고 · 💵 매입가 · 🛒 주문 · 🔀 다른 벤더 · 📈 판매 — 오더 전에 "이미 받았나/주문했나" 를 보여 준다
+          (window.kmRecv ? (window.kmRecv.badgeHTML('wang', p.id) + window.kmRecv.ordHTML('wang', p.id)
+                          + window.kmRecv.altHTML('wang', p.id) + window.kmRecv.salesHTML('wang', p.id)) : '') +
           (_hubBlocked ? window.kmHub.requestHTML('wang', p.id) : (
           '<div class="qrow" onclick="event.stopPropagation()">' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
@@ -686,6 +692,8 @@ function bumpQty(id, delta){
   const cur = CART[id] || 0;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('wang', _hubPid(id), Math.max(0, cur + delta), cur)) return;
+  // 🔁 최근에 받은 물건이면 처음 담는 순간 한 번만 묻는다
+  if (window.kmRecv && window.kmRecv.guard('wang', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
   if (next === 0) delete CART[id];
   else CART[id] = next;
@@ -700,6 +708,7 @@ function bumpQty(id, delta){
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
   if (window.kmHub && window.kmHub.guard('wang', _hubPid(id), v, CART[id] || 0)) return;
+  if (window.kmRecv && window.kmRecv.guard('wang', _hubPid(id), v, CART[id] || 0)) return;
   if (v === 0) delete CART[id];
   else CART[id] = v;
   saveCart();
@@ -868,16 +877,10 @@ function clearCart(){
   const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
   const warn = `⚠️ 공유 주문 카트입니다.\n\n[${b||'?'}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)`;
   if (!confirm(warn)) return;
-  try {
-    if (b && typeof set === 'function' && typeof ref === 'function' && typeof db !== 'undefined'){
-      const ts = String(Date.now());
-      const snapshot = {};
-      for (const k of Object.keys(CART)) snapshot[k] = CART[k];
-      set(ref(db, 'carts/hanmi/' + b + '/_shared_history/' + ts), {
-        ts: +ts, by: u || 'unknown', types, units, cart: snapshot
-      }).catch(e => console.warn('clear backup failed', e));
-    }
-  } catch(e){ console.warn('clear backup error', e); }
+  // 🗂 자동 백업 — order-log.js 가 orders/{지점}/_shared_history/wang/{시각} 에 통째로 남긴다.
+  //   ⚠️ 예전 조건 `typeof set === 'function'` 은 module 안 변수를 바깥 script 에서 본 것이라 늘 거짓이었다.
+  //      그래서 "자동 백업 보관 중" 이라고 띄우기만 하고 실제로는 한 번도 저장되지 않았다 (2026-10-08 확인).
+  try { window.kmLogOrder(b, 'wang', _cartForLog(), '비우기'); } catch(e){ console.warn('clear backup error', e); }
   for (const k in CART) delete CART[k];
   saveCart();
   render();
@@ -903,6 +906,13 @@ function buildOrderText(){
   return lines.join('\n');
 }
 
+/* 📒 장바구니를 기록용 모양으로 — 낱개(__EA)는 품번 하나로 합친다.
+   recv.js 가 보는 열쇠가 "wang::품번" 이라 접미사가 붙으면 띠가 안 붙는다. */
+function _cartForLog(){
+  const out = {};
+  for (const k of Object.keys(CART)){ const base = baseIdOf(k); out[base] = (out[base]||0) + (+CART[k]||0); }
+  return out;
+}
 function copyOrderText(){
   const txt = buildOrderText();
   if (!txt){ toast(t('noCart')); return; }
@@ -1013,7 +1023,7 @@ $('pd-modal').addEventListener('click', (e) => { if (e.target.id === 'pd-modal')
 <!-- Real-time cart sync per branch (mirrors the main order app) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, set, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
@@ -1028,6 +1038,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+// 📒 모듈 밖(classic script)에서도 Firebase 를 쓰게 내놓는다 — order-log.js 가 이것만 본다
+window.__kmFb = { db: db, ref: ref, set: set, update: update };
 const auth = getAuth(app);
 // If Firebase auth is restored from shared IndexedDB, unlock. Otherwise
 // bounce to the Manager Apps login (single shared password for the whole
@@ -1086,6 +1098,12 @@ if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.config({ vendorName: 'Hanmi', vendorNameKr: '한미', lookup: (v, id) => PRODUCTS.find(p => String(p.id) === String(id)) || null });
   window.kmHub.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+}
+
+// 🔁 입고·🛒 주문·📈 판매·💵 매입가 띠 — 지점별로 읽는다 (expiry/{지점}/...)
+if (window.kmRecv){
+  window.kmRecv.init({ db, ref, onValue });
+  window.kmRecv.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
 }
 
 // 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.

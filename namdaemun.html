@@ -662,7 +662,7 @@ const VEGETABLES = [
 ];
 
 const SUBCAT_ORDER = [
-  "b_otg", "b_sempio", "b_jayone", "b_nongshim", "b_samyang", "b_crown", "b_cj", "b_pmo", "b_jongga", "b_sky", "b_spam", "b_etc", "t_kimchi", "t_bulk", "t_nori", "t_jeotgal", "t_paste", "t_sauce", "t_ramen", "t_snack", "t_drink", "t_other",
+  "b_otg", "b_sempio", "b_ofood", "b_jayone", "b_nongshim", "b_samyang", "b_crown", "b_cj", "b_pmo", "b_jongga", "b_sky", "b_spam", "b_etc", "t_kimchi", "t_bulk", "t_nori", "t_jeotgal", "t_paste", "t_sauce", "t_ramen", "t_snack", "t_drink", "t_other",
   "고기", "계란", "잎", "뿌리", "열매", "버섯", "허브", "과일", "기타",
   // Jayone subcats
   "tofu", "noodle", "ricecake", "ramen", "rice", "flour",
@@ -693,6 +693,7 @@ const SUBCAT_LABEL = {
   "b_nongshim": "🅝 농심 NS",
   "b_jayone": "🅙 자연나라 JY",
   "b_sempio": "🅢 샘표 SP",
+  "b_ofood": "🅞 청정원 O'Food",
   "b_otg": "🅾️ 오뚜기 OTG",
   "container": "🥡 Container 용기·트레이",
   "supply":    "🧤 Supply 소모품",
@@ -891,7 +892,16 @@ const NDM_GROCERY = [
   {code:"NDM-G-123", plu:"", en:"PMO EXTRA SOFT TOFU 10OZ/30", ko:"순두부", unit:"10OZ", price: 49, cat:"b_pmo"},
   {code:"NDM-G-124", plu:"", en:"PMO FIRM TOFU 16OZ/12", ko:"부침두부", unit:"16OZ", price: 20, cat:"b_pmo"},
   {code:"NDM-G-125", plu:"", en:"PMO SOFT TOFU (ORGANIC) 15OZ/12", ko:"두부", unit:"15OZ", price: 27, cat:"b_pmo"},
-  {code:"NDM-G-152", plu:"140771", en:"PMO CRISPY POTATO CORN DOGS 12.7OZ/18", ko:"통모짜 감자핫도그", unit:"12.7OZ/18", price: 126, cat:"b_pmo", image:"images/pulmuone/140771.jpg"},
+  {code:"NDM-G-305", plu:"140771", en:"PMO CRISPY POTATO CORN DOGS 12.7OZ/18", ko:"통모짜 감자핫도그", unit:"12.7OZ/18", price: 126, cat:"b_pmo", image:"images/pulmuone/140771.jpg"},
+  /* 🅞 청정원 O'Food 떡볶이 — 2026-10-11 전무님 요청.
+     203·204 는 남대문 인보이스에 이미 찍혀 있던 코드 그대로 쓴다 (값도 그 인보이스 것).
+     나머지 셋은 아직 받은 적이 없어 값을 모른다 — 0 으로 두고 인보이스 오면 채운다.
+     사진은 전무님이 찾아 주시기로 했다. */
+  {code:"NDM-G-203", plu:"", en:"O'FOOD ORIGINAL TTEOKBOKKI 260G/12", ko:"오리지널 떡볶이", unit:"260G X6 X2", price: 42.5, cat:"b_ofood"},
+  {code:"NDM-G-204", plu:"", en:"O'FOOD ROSE TTEOKBOKKI 240G/12", ko:"로제 떡볶이", unit:"240G X6 X2", price: 42.5, cat:"b_ofood"},
+  {code:"NDM-G-302", plu:"", en:"O'FOOD SWEET CHILI TTEOKBOKKI 280G/12", ko:"스위트칠리 떡볶이", unit:"280G X6 X2", price: 0, cat:"b_ofood"},
+  {code:"NDM-G-303", plu:"", en:"O'FOOD GARLIC TTEOKBOKKI 260G/12", ko:"마늘 떡볶이", unit:"260G X6 X2", price: 0, cat:"b_ofood"},
+  {code:"NDM-G-304", plu:"", en:"O'FOOD EXTRA SPICY TTEOKBOKKI 280G/12", ko:"핵매운 떡볶이", unit:"280G X6 X2", price: 0, cat:"b_ofood"},
   {code:"NDM-G-126", plu:"", en:"DS COOKING SYRUP 6/2.45KG", ko:"요리당", unit:"6/2.45KG", price: 43.9, cat:"b_etc"},
   {code:"NDM-G-127", plu:"", en:"SP SOY SAUCE JIN -S 1.7L/6", ko:"간장", unit:"1.7L", price: 40.5, cat:"b_sempio"},
   {code:"NDM-G-128", plu:"", en:"SP SOY SAUCE JIN-GOLD S 1.7L/6", ko:"간장", unit:"1.7L", price: 39, cat:"b_sempio"},

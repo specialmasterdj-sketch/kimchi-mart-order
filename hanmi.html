@@ -53,6 +53,12 @@
   .card .new-badge{position:absolute;top:6px;left:6px;background:#ff9800;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;z-index:2;letter-spacing:.3px}
   .pimg{width:100%;aspect-ratio:340/460;object-fit:contain;background:#fff;padding:0}
   .pbody{padding:7px 9px 8px;display:flex;flex-direction:column;flex:1}
+  /* 사진을 갈아 끼운 칸에만 붙는 글자줄 — 카탈로그 칸 그림에 인쇄돼 있던 정보를 대신한다 */
+  .swaptxt{margin:-2px 0 5px;line-height:1.25}
+  .swaptxt .st-name{font-size:11.5px;font-weight:700;color:#1f2937;word-break:break-word}
+  .swaptxt .st-kr{font-size:11px;color:#4b5563;word-break:break-word}
+  .swaptxt .st-meta{font-size:10px;color:#6b7280;margin-top:1px}
+  .swaptxt .st-meta b{color:#1a5c3a}
   .pname{font-size:11.5px;font-weight:700;line-height:1.3;color:#222;margin-bottom:3px;min-height:30px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .pmeta{font-size:10px;color:#888;margin-bottom:3px;line-height:1.3}
   .pmeta .code{color:var(--red);font-weight:700}
@@ -650,13 +656,27 @@ function render(){
     // 🏬 헐리우드 경유 — 헐리우드 아닌 지점은 수량칸 대신 [헐리우드에 요청]
     const _hubBlocked = window.kmHub ? window.kmHub.blocked('wang', p.id) : false;
     const _hubMark = window.kmHub ? (window.kmHub.badgeHTML('wang', p.id) + window.kmHub.toggleHTML('wang', p.id)) : '';
-    const _vimg = (window.kmImg ? (window.kmImg.get('wang', p.id) || '') : '') || p.image;
+    const _uimg = window.kmImg ? (window.kmImg.get('wang', p.id) || '') : '';
+    const _vimg = _uimg || p.image;
     const _ibtn = window.kmImg ? window.kmImg.btnHtml('wang', p.id, !!_vimg) : '';
+    /* 🔴 2026-10-11 전무님: "사진을 바꾸니 위에 아이템 번호와 이름이 사라졌네."
+       위 주석대로 글자를 안 쓰는 근거는 '카탈로그 칸 그림에 이미 인쇄돼 있다' 는 것뿐이다.
+       ✏️ 로 더 큰 상품 사진으로 갈아 끼우면 그 전제가 깨져 번호도 이름도 없는 칸이 된다.
+       → 갈아 끼운 칸에만 품번·이름·규격·바코드를 글자로 되살린다 (원래 칸은 그대로 둔다). */
+    const _txt = _uimg ? (
+      '<div class="swaptxt">' +
+        '<div class="st-name">' + esc(p.name || p.nameKr || '') + '</div>' +
+        (p.nameKr ? '<div class="st-kr">' + esc(p.nameKr) + '</div>' : '') +
+        '<div class="st-meta"><b>#' + esc(p.id) + '</b>' + (p.packSize ? ' · ' + esc(p.packSize) : '') + '</div>' +
+        ((p.barcodeDisplay || p.barcode) ? '<div class="st-meta">📶 ' + esc(p.barcodeDisplay || p.barcode) + '</div>' : '') +
+      '</div>'
+    ) : '';
     return (
       '<div class="card ' + (anyQty?'has-qty':'') + recRing + '" onclick="openPd(\''+p.detailId+'\')">' +
         (p.brand === 'CJ' ? '<span class="new-badge" style="background:#C8352A">CJ</span>' : '') +
         '<img class="pimg" src="' + esc(_vimg) + '" loading="lazy" onerror="this.style.visibility=\'hidden\';this.style.background=\'#f0f0f0\'">' + _ibtn +
         '<div class="pbody" style="padding:6px 8px">' +
+          _txt +
           recTools +
           (recBadges ? '<div style="text-align:center;margin:-2px 0 4px">' + recBadges + '</div>' : '') +
           overGuide +

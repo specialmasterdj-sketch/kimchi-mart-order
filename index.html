@@ -1399,13 +1399,19 @@ function buildTilesHtml(v, products){
     const stockBadge = (typeof VelaStock !== 'undefined') ? VelaStock.badgeHtml(p) : '';
     // Catalog-style tile: image already contains name + code + size, so skip
     // the text rows and show only the cell image plus the qty controls.
+    //
+    // 🔴 2026-10-11 전무님: "사진을 바꾸니 위에 아이템 번호와 이름이 사라졌네."
+    //   맞는 지적이다. 글자줄을 뺀 근거는 '카탈로그에서 오린 칸 그림에 이미 이름·번호·
+    //   바코드가 인쇄돼 있다' 는 것뿐이다. 직원이 ✏️ 로 더 큰 상품 사진으로 갈아 끼우면
+    //   그 전제가 깨져 이름도 번호도 없는 칸이 된다.
+    //   → 사진을 갈아 끼운 칸은 보통 칸으로 그려 글자줄을 되살린다.
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
     const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
     const recBadges = window.kmRecs ? (window.kmRecs.badgeHTML(p.id) + window.kmRecs.noteHTML(p.id, recUnit)) : '';
     const recRing   = window.kmRecs ? window.kmRecs.cardClass(p.id) : '';
     // 🎯 발주 가이드 배너 — 케이스 입력란 위. 탭하면 사장님 OVER 수량 자동입력.
     const overGuide = window.kmRecs ? window.kmRecs.orderGuideHTML(p.id, recUnit, "setQty('"+state.vendor+"','"+p.id+"',{q})") : '';
-    if (p.catalog || p.category === 'wal-lkk') {
+    if ((p.catalog || p.category === 'wal-lkk') && !_userImg) {
       tiles += `<div class="product-tile catalog ${anyQty?'has-qty':''}${recRing}" onclick="openPd('${state.vendor}','${p.id}')" style="cursor:pointer">
         ${newBadge}
         <div class="img-wrap">${riskCorner}${imgHtml}${_imgBtn}</div>

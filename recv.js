@@ -101,23 +101,28 @@
         if (!cheap || x.p < cheap.p) cheap = { v: x.v, p: x.p, mp: x.mp, save: save };
       }
     }
-    if (!best) return '';
+    /* 💲 **어디가 싼지는 입고 날짜와 상관없이 늘 보여 준다** — 2026-10-13 전무님:
+       "오더할 때 그 품목 어느 밴더가 싸다고".
+       예전에는 '30일 안에 받은 기록' 이 있어야만 이 줄까지 같이 떴다. 값 비교는 받은 날짜와
+       아무 상관이 없는데, 그 조건에 걸려 조용히 사라지곤 했다. 이제 따로 떼어 둔다. */
+    var cheapLine = '';
+    if (cheap){
+      cheapLine = '<div class="km-cheap" title="' + esc(T('낱개 단가 비교', 'per-unit cost', 'costo por unidad')) + '">💲 ' +
+        esc(cheap.v) + ' $' + cheap.p.toFixed(2) + ' · ' +
+        esc(T(cheap.save + '% 쌈 (여기 $' + cheap.mp.toFixed(2) + ')',
+              cheap.save + '% cheaper (here $' + cheap.mp.toFixed(2) + ')',
+              cheap.save + '% más barato (aquí $' + cheap.mp.toFixed(2) + ')')) + '</div>';
+    }
+    if (!best) return cheapLine;
     var ago = daysAgo(best.d);
-    if (ago === null || ago > 30) return '';
+    if (ago === null || ago > 30) return cheapLine;
     var when = ago <= 1 ? T('어제', 'yesterday', 'ayer')
              : ago <= 7 ? T('지난주', 'last week', 'la semana pasada')
              : T(ago + '일 전', ago + 'd ago', 'hace ' + ago + 'd');
     var what = best.kind === 'ord' ? T('주문함', 'ordered', 'pedido') : T('받음', 'received', 'recibido');
     var line = '<div class="km-alt" title="' + esc(T('같은 물건을 다른 거래처에서', 'same item, other vendor', 'mismo artículo, otro proveedor')) + '">🔀 ' +
       esc(best.v) + ' ' + esc(when) + ' ' + esc(String(best.q)) + T('개 ', ' ', ' ') + esc(what) + '</div>';
-    if (cheap){
-      line += '<div class="km-cheap" title="' + esc(T('낱개 단가 비교', 'per-unit cost', 'costo por unidad')) + '">💲 ' +
-        esc(cheap.v) + ' $' + cheap.p.toFixed(2) + ' · ' +
-        esc(T(cheap.save + '% 쌈 (여기 $' + cheap.mp.toFixed(2) + ')',
-              cheap.save + '% cheaper (here $' + cheap.mp.toFixed(2) + ')',
-              cheap.save + '% más barato (aquí $' + cheap.mp.toFixed(2) + ')')) + '</div>';
-    }
-    return line;
+    return line + cheapLine;
   }
 
   /* 🛒 언제 몇 개 시켰나 — 2026-10-08 전무님: "이 아이템 언제 몇 개 오더한 기록이 남게."

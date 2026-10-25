@@ -192,7 +192,7 @@
     const byV = {};
     for (const x of list) (byV[x.v] = byV[x.v] || []).push(x);
     const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>🔴 Top 500 매장에 없음 · ' + list.length + '</b><button type="button" id="km-t5-x">닫기 · Close</button></div>' +
+    let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>🔴 Top 500 매장에 없음 · ' + new Set(list.map(x => x.item)).size + '개 품목</b><button type="button" id="km-t5-x">닫기 · Close</button></div>' +
       '<div class="km-t5-sh-sub">' + esc(state.branch) + ' · 그로서리 Top 500 점검에서 ✗ 나온 품목 — 누르면 그 상품으로 바로 갑니다. 오더하면 목록에서 사라집니다.</div>';
     for (const [v, xs] of Object.entries(byV)) {
       h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + xs.length + '</div>';
@@ -209,7 +209,8 @@
   }
   function t5Panel(){
     if (typeof document === 'undefined' || !document.body) return;
-    const n = t5List().length;
+    // 같은 품목을 여러 벤더에서 팔면 줄이 여러 개 — 버튼 숫자는 품목 수
+    const n = new Set(t5List().map(x => x.item)).size;
     let btn = document.getElementById('km-t5-fab');
     if (!n) { if (btn) btn.remove(); return; }
     if (!btn) {

@@ -74,9 +74,10 @@ function add(vendor, list){
 { const c = load(['hanmi_products.js', 'cj_products.js']); const l = []; walk(c.window, l); walk(c.CJ_PRODUCTS, l); add('wang', l); }
 // rheebros.html (vendor 'rhee_full')
 { const c = load(['rheebros_products.js']); const l = []; walk(c.window, l); add('rhee_full', l); }
-// wismettac.html (vendor 'wismettac') — 데이터 파일이 있으면
-for (const f of fs.readdirSync(ROOT)) if (/^wismettac.*products.*\.js$/i.test(f)) { const c = load([f]); const l = []; walk(c.window, l); walk(c, l); add('wismettac', l); }
-
+// wismettac.html (vendor 'wismettac') — 상품 목록이 페이지 안 PRODUCTS 에 있다. 페이지가 kmRecs 에 넘기는 p.id 기준.
+{ const html = fs.readFileSync(path.join(ROOT, 'wismettac.html'), 'utf8');
+  const line = html.split(/\r?\n/).find(l => l.startsWith('const PRODUCTS = ['));
+  if (line) { delete vendors.wismettac; add('wismettac', JSON.parse(line.slice('const PRODUCTS = '.length).replace(/;\s*$/, ''))); } }
 for (const v of Object.keys(vendors)) if (!Object.keys(vendors[v]).length) delete vendors[v];
 const out = { asof: new Date().toISOString().slice(0, 10), vendors };
 fs.writeFileSync(path.join(ROOT, 'top500-map.json'), JSON.stringify(out));

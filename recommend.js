@@ -91,7 +91,9 @@
        오늘 점검한 품목은 오늘 결과만 본다(매일 백지에서 새로 체크). 오늘 아직 안 본 품목은
        어제 ✗ 를 이어서 강조한다 — 아침에 오더를 넣는 사람이 어제 빠진 것을 놓치지 않게.
      - 내 지점(km_branch) 기준. 지점이 없으면(오너 전체 보기) 표시하지 않는다. */
-  const T5 = { map: null, out: new Set(), unsubs: [], key: '' };
+  //   ✅ 오더하면 사라진다: 이 지점이 그 품목(어느 벤더 상품이든 연결된 것)을 ✗ 표시 이후에 오더(보내기·메일·복사·비우기)하면
+  //   expiry/<지점>/ordRecent/<벤더::품번> 에 남는 기록을 보고 모든 오더센터에서 즉시 깜빡임을 끈다.
+  const T5 = { map: null, rev: null, out: new Set(), unsubs: [], key: '' };
   const T5_STORE = { CORAL_SPRINGS:'coral', HOLLYWOOD:'hollywood', LASOLAS:'lasolas', LAS_OLAS:'lasolas',
                      MIAMI:'miami', PEMBROKE_PINES:'pembroke', PEMBROKE:'pembroke', WEST_PALM:'wpb', WEST_PALM_BEACH:'wpb' };
   const T5_ZONES = ['dry', 'drinks', 'cold', 'frozen', 'alcohol'];
@@ -99,8 +101,16 @@
   function t5Start(){
     if (!T5.map) {
       T5.map = {};
-      fetch('top500-map.json?v=20261025a').then(r => r.ok ? r.json() : null)
-        .then(j => { if (j && j.vendors) { T5.map = j.vendors; notify(); } }).catch(() => {});
+      fetch('top500-map.json?v=20261025b').then(r => r.ok ? r.json() : null)
+        .then(j => {
+          if (!j || !j.vendors) return;
+          T5.map = j.vendors;
+          // 거꾸로: Top 500 itemId → ordRecent 열쇠들 (order-log.js 의 itemKey 와 글자까지 같게)
+          T5.rev = {};
+          for (const [v, m] of Object.entries(j.vendors)) for (const [pid, item] of Object.entries(m))
+            (T5.rev[item] = T5.rev[item] || []).push((v + '::' + pid).replace(/[.#$\[\]\/]/g, '_'));
+          if (T5.recompute) T5.recompute(); else notify();
+        }).catch(() => {});
     }
     const store = T5_STORE[state.branch] || '';
     const key = store + '|' + t5Day(0);
@@ -111,20 +121,36 @@
     if (!store) { notify(); return; }
     const { ref, onValue } = state.fbOps;
     const today = t5Day(0), yday = t5Day(1), snaps = {};
+    let ordered = {};
+    const dayStart = d => Date.parse(d + 'T00:00:00-05:00');   // 대략 그날 0시(동부) — t 가 없을 때만 쓴다
     const recompute = () => {
-      const out = new Set(), seenToday = new Set();
-      for (const z of T5_ZONES) for (const [id, v] of Object.entries(snaps[today + '|' + z] || {})) { seenToday.add(id); if (v === 'x') out.add(id); }
-      for (const z of T5_ZONES) for (const [id, v] of Object.entries(snaps[yday + '|' + z] || {})) if (v === 'x' && !seenToday.has(id)) out.add(id);
+      const marks = new Map(), seenToday = new Set();   // itemId → ✗ 표시한 시각
+      for (const z of T5_ZONES) { const d = snaps[today + '|' + z] || {};
+        for (const [id, v] of Object.entries(d.s || {})) { seenToday.add(id); if (v === 'x') marks.set(id, +((d.t || {})[id]) || dayStart(today)); } }
+      for (const z of T5_ZONES) { const d = snaps[yday + '|' + z] || {};
+        for (const [id, v] of Object.entries(d.s || {})) if (v === 'x' && !seenToday.has(id)) marks.set(id, +((d.t || {})[id]) || dayStart(yday)); }
+      const out = new Set();
+      for (const [id, at] of marks) {
+        const keys = (T5.rev && T5.rev[id]) || [];
+        const done = keys.some(k => { const o = ordered[k]; return o && +o.ts >= at; });
+        if (!done) out.add(id);
+      }
       T5.out = out; notify();
     };
+    T5.recompute = recompute;
     for (const day of [today, yday]) for (const z of T5_ZONES) {
       try {
-        const u = onValue(ref(state.db, 'inventory/keyItems/grocery/checks/' + day + '/' + day + '_' + store + '_' + z + '/s'),
+        const u = onValue(ref(state.db, 'inventory/keyItems/grocery/checks/' + day + '/' + day + '_' + store + '_' + z),
           snap => { snaps[day + '|' + z] = (snap && snap.val && snap.val()) || {}; recompute(); },
           () => {});
         if (typeof u === 'function') T5.unsubs.push(u);
       } catch(e){}
     }
+    try {
+      const u = onValue(ref(state.db, 'expiry/' + state.branch + '/ordRecent'),
+        snap => { ordered = (snap && snap.val && snap.val()) || {}; recompute(); }, () => {});
+      if (typeof u === 'function') T5.unsubs.push(u);
+    } catch(e){}
     // 자정이 지나면 날짜를 바꿔 다시 받는다 (화면을 켜 둔 채 다음 날이 돼도 백지부터)
     if (!T5.timer) T5.timer = setInterval(() => { if (T5.key && T5.key.split('|')[1] !== t5Day(0)) t5Start(); }, 60000);
   }

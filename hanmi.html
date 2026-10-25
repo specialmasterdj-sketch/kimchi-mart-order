@@ -251,7 +251,7 @@
 
 <script src="hanmi_products.js"></script>
 <script src="cj_products.js"></script>
-<script src="recommend.js?v=20261025t5"></script>
+<script src="recommend.js?v=20261025t6"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20260919b"></script>
 <!-- 🔁 입고·매입가·주문·판매 띠 + 주문 기록 (2026-10-08) — 리브·오더센터와 같은 모듈 -->
@@ -936,6 +936,8 @@ function _cartForLog(){
 function copyOrderText(){
   const txt = buildOrderText();
   if (!txt){ toast(t('noCart')); return; }
+  // 📒 2026-10-25: 복사·메일 = 사실상 '보냈다' — 품목별 주문 기록(Top 500 ✗ 깜빡임이 이걸 보고 꺼진다)
+  try { const b = localStorage.getItem('km_branch') || ''; window.kmLogOrder(b, 'wang', _cartForLog(), '복사'); } catch(e){}
   if (navigator.clipboard){
     navigator.clipboard.writeText(txt).then(
       () => toast(t('copied')),
@@ -979,6 +981,7 @@ function exportOrder(){
 function emailOrder(){
   const txt = buildOrderText();
   if (!txt){ toast(t('noCart')); return; }
+  try { const b = localStorage.getItem('km_branch') || ''; window.kmLogOrder(b, 'wang', _cartForLog(), '메일'); } catch(e){}
   exportOrder();
   const branch = (localStorage.getItem('km_branch') || '').toUpperCase();
   const today = new Date().toISOString().slice(0,10);

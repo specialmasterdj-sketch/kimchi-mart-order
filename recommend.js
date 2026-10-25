@@ -651,6 +651,8 @@
       '@keyframes kmT5Badge{0%,100%{opacity:1}50%{opacity:.45}}' +
       '.km-t5-out-card{animation:kmT5Flash 1s ease-in-out infinite !important;border-radius:12px;position:relative}' +
       '.km-t5-out-badge{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border-radius:999px;background:#dc2626;color:#fff;font-weight:800;font-size:11.5px;animation:kmT5Badge 1s ease-in-out infinite}' +
+      // 상품명 칸이 두 줄로 잘리는 앱(리브 등)에서 배지가 가려지지 않게 — 카드 사진 위에 띠로 띄운다
+      '.km-t5-out-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
       '@media (prefers-reduced-motion:reduce){.km-t5-out-card{animation:none !important;box-shadow:0 0 0 3px #dc2626 !important}.km-t5-out-badge{animation:none}}' +
       // Yellow box around the whole card — meant to scream "발주 필수".
       '.km-rec-card{outline:1.5px solid #f59e0b !important;outline-offset:-1.5px;' +

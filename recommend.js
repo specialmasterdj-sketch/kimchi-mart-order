@@ -80,7 +80,59 @@
   }
   // setBranch kept as no-op for API compatibility with earlier vendor-page
   // integrations. Marks are now global-only — there is no per-branch scope.
-  function setBranch(b){ state.branch = String(b || '').toUpperCase(); }
+  function setBranch(b){ state.branch = String(b || '').toUpperCase(); t5Start(); }
+
+  /* 🔴 Top 500 현재 없음 — 2026-10-25 사장님:
+       "그로서리 Top 500 점검에서 없음(✗)이 나온 제품을 오더센터에서 계속 강조(깜빡임)해서
+        실제 오더 → 매장 딜리버리까지 이어지게."
+     - 연결표 top500-map.json (만들기: _Claude_Tools/build_top500_map.js — 바코드로만 맞춤)
+         { vendors: { <vendor>: { <productId>: <Top 500 itemId> } } }
+     - 점검 기록 inventory/keyItems/grocery/checks/<날짜>/<날짜>_<지점>_<구역>/s  { itemId: 'o'|'x'|'n' }
+       오늘 점검한 품목은 오늘 결과만 본다(매일 백지에서 새로 체크). 오늘 아직 안 본 품목은
+       어제 ✗ 를 이어서 강조한다 — 아침에 오더를 넣는 사람이 어제 빠진 것을 놓치지 않게.
+     - 내 지점(km_branch) 기준. 지점이 없으면(오너 전체 보기) 표시하지 않는다. */
+  const T5 = { map: null, out: new Set(), unsubs: [], key: '' };
+  const T5_STORE = { CORAL_SPRINGS:'coral', HOLLYWOOD:'hollywood', LASOLAS:'lasolas', LAS_OLAS:'lasolas',
+                     MIAMI:'miami', PEMBROKE_PINES:'pembroke', PEMBROKE:'pembroke', WEST_PALM:'wpb', WEST_PALM_BEACH:'wpb' };
+  const T5_ZONES = ['dry', 'drinks', 'cold', 'frozen', 'alcohol'];
+  function t5Day(off){ return new Date(Date.now() - off * 86400000).toLocaleDateString('en-CA', { timeZone:'America/New_York' }); }
+  function t5Start(){
+    if (!T5.map) {
+      T5.map = {};
+      fetch('top500-map.json?v=20261025a').then(r => r.ok ? r.json() : null)
+        .then(j => { if (j && j.vendors) { T5.map = j.vendors; notify(); } }).catch(() => {});
+    }
+    const store = T5_STORE[state.branch] || '';
+    const key = store + '|' + t5Day(0);
+    if (!state.fbOps || T5.key === key) return;
+    T5.key = key;
+    T5.unsubs.forEach(u => { try { u(); } catch(e){} });
+    T5.unsubs = []; T5.out = new Set();
+    if (!store) { notify(); return; }
+    const { ref, onValue } = state.fbOps;
+    const today = t5Day(0), yday = t5Day(1), snaps = {};
+    const recompute = () => {
+      const out = new Set(), seenToday = new Set();
+      for (const z of T5_ZONES) for (const [id, v] of Object.entries(snaps[today + '|' + z] || {})) { seenToday.add(id); if (v === 'x') out.add(id); }
+      for (const z of T5_ZONES) for (const [id, v] of Object.entries(snaps[yday + '|' + z] || {})) if (v === 'x' && !seenToday.has(id)) out.add(id);
+      T5.out = out; notify();
+    };
+    for (const day of [today, yday]) for (const z of T5_ZONES) {
+      try {
+        const u = onValue(ref(state.db, 'inventory/keyItems/grocery/checks/' + day + '/' + day + '_' + store + '_' + z + '/s'),
+          snap => { snaps[day + '|' + z] = (snap && snap.val && snap.val()) || {}; recompute(); },
+          () => {});
+        if (typeof u === 'function') T5.unsubs.push(u);
+      } catch(e){}
+    }
+    // 자정이 지나면 날짜를 바꿔 다시 받는다 (화면을 켜 둔 채 다음 날이 돼도 백지부터)
+    if (!T5.timer) T5.timer = setInterval(() => { if (T5.key && T5.key.split('|')[1] !== t5Day(0)) t5Start(); }, 60000);
+  }
+  function isTop500Out(productId){
+    const m = T5.map && T5.map[state.vendor];
+    const item = m && m[String(productId)];
+    return !!(item && T5.out.has(item));
+  }
 
   function init({ db, vendor, branch, ref, set, onValue, remove }){
     if (!db || !vendor || !ref || !set || !onValue || !remove){
@@ -91,6 +143,7 @@
     state.vendor = String(vendor);
     state.branch = (branch || '').toString().toUpperCase();
     state.fbOps = { ref, set, onValue, remove };
+    t5Start();
     // Hydrate from localStorage immediately so chips show even before the
     // first Firebase snapshot arrives (or if it never does because of auth).
     state.notes = Object.assign({}, _loadLocalNotes());
@@ -446,6 +499,7 @@
     let c = '';
     if (isGlobal(productId)) c += ' km-rec-card';       // star → yellow box
     if (isBest(productId))   c += ' km-rec-best-card';  // best → red outline
+    if (isTop500Out(productId)) c += ' km-t5-out-card';  // 🔴 Top 500 매장에 없음 → 깜빡
     return c;
   }
 
@@ -453,6 +507,7 @@
   // independent badges — a product can show either, both, or neither.
   function badgeHTML(productId){
     let out = '';
+    if (isTop500Out(productId)) out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 · 매장에 없음 — 오더!</span>';
     if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
     if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
     return out;
@@ -565,6 +620,12 @@
     const css = document.createElement('style');
     css.id = 'km-rec-styles';
     css.textContent = (
+      // 🔴 Top 500 매장에 없음 — 빨간 테두리가 깜빡인다 (움직임 줄이기 설정이면 고정)
+      '@keyframes kmT5Flash{0%,100%{box-shadow:0 0 0 3px rgba(220,38,38,.95),0 0 14px rgba(220,38,38,.55)}50%{box-shadow:0 0 0 3px rgba(220,38,38,.15),0 0 0 rgba(220,38,38,0)}}' +
+      '@keyframes kmT5Badge{0%,100%{opacity:1}50%{opacity:.45}}' +
+      '.km-t5-out-card{animation:kmT5Flash 1s ease-in-out infinite !important;border-radius:12px;position:relative}' +
+      '.km-t5-out-badge{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border-radius:999px;background:#dc2626;color:#fff;font-weight:800;font-size:11.5px;animation:kmT5Badge 1s ease-in-out infinite}' +
+      '@media (prefers-reduced-motion:reduce){.km-t5-out-card{animation:none !important;box-shadow:0 0 0 3px #dc2626 !important}.km-t5-out-badge{animation:none}}' +
       // Yellow box around the whole card — meant to scream "발주 필수".
       '.km-rec-card{outline:1.5px solid #f59e0b !important;outline-offset:-1.5px;' +
         'background:linear-gradient(180deg,#fffbeb 0%,#fff7d6 100%) !important;' +
@@ -742,7 +803,7 @@
     badgeHTML, toggleHTML, filterChipHTML, filterLabel, cardClass,
     noteHTML, editNote, getNote, defaultUnit,
     getOverQty, overLabel, orderGuideHTML,
-    canMark,
+    canMark, isTop500Out,
   };
 
   if (document.readyState === 'loading'){

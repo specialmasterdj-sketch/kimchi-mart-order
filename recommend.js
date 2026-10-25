@@ -101,10 +101,11 @@
   function t5Start(){
     if (!T5.map) {
       T5.map = {};
-      fetch('top500-map.json?v=20261025c').then(r => r.ok ? r.json() : null)
+      fetch('top500-map.json?v=20261025d').then(r => r.ok ? r.json() : null)
         .then(j => {
           if (!j || !j.vendors) return;
           T5.map = j.vendors;
+          T5.names = j.names || {};
           // 거꾸로: Top 500 itemId → ordRecent 열쇠들 (order-log.js 의 itemKey 와 글자까지 같게)
           T5.rev = {};
           for (const [v, m] of Object.entries(j.vendors)) for (const [pid, item] of Object.entries(m))
@@ -135,7 +136,7 @@
         const done = keys.some(k => { const o = ordered[k]; return o && +o.ts >= at; });
         if (!done) out.add(id);
       }
-      T5.out = out; notify();
+      T5.out = out; notify(); t5Panel();
     };
     T5.recompute = recompute;
     for (const day of [today, yday]) for (const z of T5_ZONES) {
@@ -154,6 +155,83 @@
     // 자정이 지나면 날짜를 바꿔 다시 받는다 (화면을 켜 둔 채 다음 날이 돼도 백지부터)
     if (!T5.timer) T5.timer = setInterval(() => { if (T5.key && T5.key.split('|')[1] !== t5Day(0)) t5Start(); }, 60000);
   }
+  /* 🔴 어디서나 보이게 — 2026-10-25 사장님: "어디에도 안 보여"
+     수천 개 상품 사이에 깜빡이는 카드가 묻혀 있어서, 모든 오더 화면 왼쪽 아래에
+     「🔴 Top 500 없음 N」 버튼을 띄운다. 누르면 벤더별 목록, 품목을 누르면
+     그 벤더 화면으로 가서 품번으로 검색해 그 상품 하나만 보여 준다(?t5q=품번). */
+  const T5_PAGE = { rhee_full:'rheebros.html', wismettac:'wismettac.html', wang:'hanmi.html', namdaemun:'namdaemun.html' };
+  const T5_VNAME = { rhee_full:'Rhee Bros (리브)', wismettac:'Wismettac', wang:'Wang·Hanmi (왕·한미)', jfc:'JFC', eastland:'Eastland (이스트랜드)',
+    seoul_trading:'Seoul Trading (서울)', well_luck:'Well Luck (웰럭)', walong:'Walong (왈롱)', ocm:'OCM', eastern_wine:'Eastern Wine', faf:'FAF',
+    aaf:'AAF', pocas:'Pocas', two_bros_food:'Two Bros', haitai:'Haitai (해태)', link:'Link', freshpoint:'FreshPoint' };
+  function t5List(){
+    const out = [];
+    if (!T5.map) return out;
+    for (const [v, m] of Object.entries(T5.map)) for (const [pid, item] of Object.entries(m))
+      if (T5.out.has(item)) out.push({ v, pid, item, nm: (T5.names && T5.names[item]) || ['', ''] });
+    return out;
+  }
+  function t5Go(v, pid){
+    const page = T5_PAGE[v] || 'index.html';
+    const here = (location.pathname.split('/').pop() || 'index.html');
+    if (page === here && (page !== 'index.html' || state.vendor === v)) { t5Search(pid); t5Close(); return; }
+    location.href = page + (page === 'index.html' ? '?vendor=' + encodeURIComponent(v) + '&' : '?') + 't5q=' + encodeURIComponent(pid);
+  }
+  function t5Search(q){
+    const box = document.getElementById('search-input-box') || document.getElementById('search') ||
+                document.querySelector('input[type="search"]');
+    if (!box) return false;
+    box.value = q;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    try { box.scrollIntoView({ block:'start' }); } catch(e){}
+    return true;
+  }
+  function t5Close(){ const d = document.getElementById('km-t5-sheet'); if (d) d.remove(); }
+  function t5Open(){
+    t5Close();
+    const list = t5List();
+    const byV = {};
+    for (const x of list) (byV[x.v] = byV[x.v] || []).push(x);
+    const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>🔴 Top 500 매장에 없음 · ' + list.length + '</b><button type="button" id="km-t5-x">닫기 · Close</button></div>' +
+      '<div class="km-t5-sh-sub">' + esc(state.branch) + ' · 그로서리 Top 500 점검에서 ✗ 나온 품목 — 누르면 그 상품으로 바로 갑니다. 오더하면 목록에서 사라집니다.</div>';
+    for (const [v, xs] of Object.entries(byV)) {
+      h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + xs.length + '</div>';
+      for (const x of xs) h += '<button type="button" class="km-t5-sh-it" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + '</span></button>';
+    }
+    if (!list.length) h += '<div class="km-t5-sh-sub">지금은 없습니다 · Nothing missing right now</div>';
+    const d = document.createElement('div');
+    d.id = 'km-t5-sheet'; d.innerHTML = h + '</div>';
+    d.addEventListener('click', e => {
+      if (e.target === d || e.target.id === 'km-t5-x') { t5Close(); return; }
+      const b = e.target.closest('.km-t5-sh-it'); if (b) t5Go(b.dataset.v, b.dataset.p);
+    });
+    document.body.appendChild(d);
+  }
+  function t5Panel(){
+    if (typeof document === 'undefined' || !document.body) return;
+    const n = t5List().length;
+    let btn = document.getElementById('km-t5-fab');
+    if (!n) { if (btn) btn.remove(); return; }
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.type = 'button'; btn.id = 'km-t5-fab';
+      btn.addEventListener('click', t5Open);
+      document.body.appendChild(btn);
+    }
+    btn.textContent = '🔴 Top 500 없음 ' + n;
+    btn.title = 'Top 500 점검에서 매장에 없음(✗) — 눌러서 보기';
+  }
+  // 목록에서 눌러 다른 화면으로 왔으면(?t5q=품번) 그 상품을 검색해 보여 준다
+  function t5FromUrl(){
+    let q = ''; try { q = new URLSearchParams(location.search).get('t5q') || ''; } catch(e){}
+    if (!q) return;
+    let n = 0; const t = setInterval(() => { if (t5Search(q) || ++n > 40) clearInterval(t); }, 300);
+  }
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(t5FromUrl, 800));
+    else setTimeout(t5FromUrl, 800);
+  }
+
   function isTop500Out(productId){
     const m = T5.map && T5.map[state.vendor];
     const item = m && m[String(productId)];
@@ -654,6 +732,15 @@
       // 상품명 칸이 두 줄로 잘리는 앱(리브 등)에서 배지가 가려지지 않게 — 카드 사진 위에 띠로 띄운다
       '.km-t5-out-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
       '@media (prefers-reduced-motion:reduce){.km-t5-out-card{animation:none !important;box-shadow:0 0 0 3px #dc2626 !important}.km-t5-out-badge{animation:none}}' +
+      '#km-t5-fab{position:fixed;left:12px;bottom:88px;z-index:9990;border:0;border-radius:999px;padding:10px 16px;background:#dc2626;color:#fff;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(220,38,38,.45);cursor:pointer;animation:kmT5Badge 1s ease-in-out infinite}' +
+      '#km-t5-sheet{position:fixed;inset:0;z-index:9995;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center}' +
+      '.km-t5-sh-in{background:#fff;width:min(560px,100%);max-height:80vh;overflow:auto;border-radius:16px 16px 0 0;padding:14px 14px 20px}' +
+      '.km-t5-sh-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px;color:#b91c1c}' +
+      '.km-t5-sh-hd button{border:0;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer}' +
+      '.km-t5-sh-sub{font-size:12px;color:#64748b;margin:6px 0 4px}' +
+      '.km-t5-sh-v{margin:12px 0 4px;font-weight:900;font-size:13px;color:#1a5c3a}' +
+      '.km-t5-sh-it{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:1.5px solid #fecaca;background:#fff5f5;border-radius:10px;padding:8px 10px;margin:4px 0;cursor:pointer}' +
+      '.km-t5-sh-it b{font-size:13.5px;color:#111}.km-t5-sh-it span{font-size:12px;color:#64748b}' +
       // Yellow box around the whole card — meant to scream "발주 필수".
       '.km-rec-card{outline:1.5px solid #f59e0b !important;outline-offset:-1.5px;' +
         'background:linear-gradient(180deg,#fffbeb 0%,#fff7d6 100%) !important;' +

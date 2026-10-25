@@ -120,7 +120,14 @@ if (POSFILE && fs.existsSync(POSFILE)) {
 }
 console.log('via barcode', viaBarcode, '· via POS bridge', viaPos);
 for (const v of Object.keys(vendors)) if (!Object.keys(vendors[v]).length) delete vendors[v];
-const out = { asof: new Date().toISOString().slice(0, 10), vendors };
+// 오더센터 🔴 목록에 띄울 이름 (연결된 품목만)
+const names = {};
+{ const want = new Set(Object.values(vendors).flatMap(m => Object.values(m)));
+  for (const f of fs.readdirSync(path.join(KFOOD, 'key-grocery-cat'))) if (f.endsWith('.json'))
+    for (const it of JSON.parse(fs.readFileSync(path.join(KFOOD, 'key-grocery-cat', f), 'utf8')).items || [])
+      if (want.has(it.id) && !names[it.id]) names[it.id] = [it.en || '', it.ko || ''];
+}
+const out = { asof: new Date().toISOString().slice(0, 10), vendors, names };
 fs.writeFileSync(path.join(ROOT, 'top500-map.json'), JSON.stringify(out));
 const linked = new Set(Object.values(vendors).flatMap(m => Object.values(m)));
 console.log('Top 500 items:', new Set(top.values()).size, '· linked:', linked.size);

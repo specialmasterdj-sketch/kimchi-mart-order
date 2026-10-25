@@ -68,16 +68,57 @@ function add(vendor, list){
   }
 }
 
+// 벤더별 상품 목록 — 각 오더 페이지가 kmRecs 에 넘기는 p.id 기준
+const isProduct = o => o.id != null && (o.name || o.nameKr || o.en) && (o.size || o.packSize || o.unit || o.um || o.price != null || o.upc || o.barcode);
+function walkAll(o, out, seen = new Set()){
+  if (!o || typeof o !== 'object' || seen.has(o)) return; seen.add(o);
+  if (Array.isArray(o)) { o.forEach(x => walkAll(x, out, seen)); return; }
+  if (isProduct(o)) out.push(o);
+  for (const v of Object.values(o)) if (v && typeof v === 'object') walkAll(v, out, seen);
+}
+const lists = {};
 // index.html — VENDORS[<vendor>] 안의 상품들
-{ const c = load(['products.js']); for (const [v, def] of Object.entries(c.VENDORS || {})) { const l = []; walk(def, l); add(v, l); } }
-// hanmi.html (vendor 'wang') — 한미 + CJ
-{ const c = load(['hanmi_products.js', 'cj_products.js']); const l = []; walk(c.window, l); walk(c.CJ_PRODUCTS, l); add('wang', l); }
-// rheebros.html (vendor 'rhee_full')
-{ const c = load(['rheebros_products.js']); const l = []; walk(c.window, l); add('rhee_full', l); }
-// wismettac.html (vendor 'wismettac') — 상품 목록이 페이지 안 PRODUCTS 에 있다. 페이지가 kmRecs 에 넘기는 p.id 기준.
+{ const c = load(['products.js']); for (const [v, def] of Object.entries(c.VENDORS || {})) { lists[v] = []; walkAll(def, lists[v]); } }
+// hanmi.html (vendor 'wang') — 한미 + CJ   ·  rheebros.html (vendor 'rhee_full')
+{ const c = load(['hanmi_products.js', 'cj_products.js']); lists.wang = []; walkAll(c.window, lists.wang); walkAll(c.CJ_PRODUCTS, lists.wang); }
+{ const c = load(['rheebros_products.js']); lists.rhee_full = []; walkAll(c.window, lists.rhee_full); }
+// wismettac.html — 상품 목록이 페이지 안 PRODUCTS 에 있다
 { const html = fs.readFileSync(path.join(ROOT, 'wismettac.html'), 'utf8');
   const line = html.split(/\r?\n/).find(l => l.startsWith('const PRODUCTS = ['));
-  if (line) { delete vendors.wismettac; add('wismettac', JSON.parse(line.slice('const PRODUCTS = '.length).replace(/;\s*$/, ''))); } }
+  if (line) lists.wismettac = JSON.parse(line.slice('const PRODUCTS = '.length).replace(/;\s*$/, '')); }
+
+// ① 카탈로그에 바코드가 있는 상품 — 바코드로 바로
+for (const [v, l] of Object.entries(lists)) add(v, l.filter(p => p.upc || p.barcode || p.barcodeDisplay));
+const viaBarcode = Object.values(vendors).reduce((n, m) => n + Object.keys(m).length, 0);
+
+// ② 카탈로그에 바코드가 없는 벤더 — POS 상품 마스터를 다리로 쓴다
+//    Top 500 바코드 → POS 행(FULL_BARCODE) → 그 행의 VENDOR + VENDOR_CODE(벤더 품번) → 같은 벤더 카탈로그에서 품번이 똑같은 상품
+//    POS 벤더 ↔ 오더센터 벤더 짝은 사람이 정한 표만 쓴다(추측 금지). 품번은 대소문자·기호·앞 0 만 무시하고 정확히 같아야 한다.
+//    POS 파일: [바코드, 벤더, 벤더품번, 이름] 배열 (kfood-guide 의 products/<지점>/rows 에서 뽑음) — 3번째 인자
+const POS2ORD = { 'JFC':'jfc', 'ASSI':'rhee_full', 'WISMETTAC':'wismettac', 'SEOULTRADING':'seoul_trading', 'EASTLAND':'eastland',
+  'WANG HANMI':'wang', 'HANMI':'wang', 'CJ':'wang', 'LINK TRADING':'link', 'EASTERN WINE':'eastern_wine', 'WALONG':'walong', 'OCM':'ocm',
+  'TWO BROS':'two_bros_food', 'WELL LUCK':'well_luck', 'FAF':'faf', 'HAITAI':'haitai', 'POCAS':'pocas', 'AAF IMPORT':'aaf', 'FRESHPOINT':'freshpoint' };
+// POS 다리로 이어졌지만 이름이 전혀 다른 것 — POS 쪽 품번 오류로 보고 빼 둔다 (2026-10-25 육안 검수)
+const EXCLUDE_POS = new Set(['two_bros_food:HKT907', 'two_bros_food:KMN301', 'eastern_wine:3904']);
+const normCode = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^0+/, '');
+const POSFILE = process.argv[3];
+let viaPos = 0;
+if (POSFILE && fs.existsSync(POSFILE)) {
+  const byCode = {};
+  for (const [v, l] of Object.entries(lists)) { byCode[v] = new Map(); for (const p of l) { const k = normCode(p.id); if (k.length >= 3 && !byCode[v].has(k)) byCode[v].set(k, p); } }
+  for (const r of JSON.parse(fs.readFileSync(POSFILE, 'utf8'))) {
+    const [bc, pv, vcode] = r;
+    const ov = POS2ORD[String(pv || '').trim().toUpperCase()];
+    if (!ov || !byCode[ov]) continue;
+    const item = findTop(bc); if (!item) continue;
+    const k = normCode(vcode); if (k.length < 3) continue;
+    const p = byCode[ov].get(k); if (!p) continue;
+    if (EXCLUDE_POS.has(ov + ':' + p.id)) continue;
+    const m = vendors[ov] = vendors[ov] || {};
+    if (!m[String(p.id)]) { m[String(p.id)] = item; viaPos++; }
+  }
+}
+console.log('via barcode', viaBarcode, '· via POS bridge', viaPos);
 for (const v of Object.keys(vendors)) if (!Object.keys(vendors[v]).length) delete vendors[v];
 const out = { asof: new Date().toISOString().slice(0, 10), vendors };
 fs.writeFileSync(path.join(ROOT, 'top500-map.json'), JSON.stringify(out));

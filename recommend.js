@@ -101,7 +101,7 @@
   function t5Start(){
     if (!T5.map) {
       T5.map = {};
-      fetch('top500-map.json?v=20261025b').then(r => r.ok ? r.json() : null)
+      fetch('top500-map.json?v=20261025c').then(r => r.ok ? r.json() : null)
         .then(j => {
           if (!j || !j.vendors) return;
           T5.map = j.vendors;

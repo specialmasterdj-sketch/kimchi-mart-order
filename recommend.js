@@ -99,6 +99,45 @@
   const T5_ZONES = ['dry', 'drinks', 'cold', 'frozen', 'alcohol'];
   const T5_WAIT = 7 * 86400000;   // 입고 대기 기본 1주일 (사장님 2026-10-25) — 벤더별로 바꿀 때 여기부터
   const t5md = ts => { const d = new Date(ts); return (d.getMonth() + 1) + '/' + d.getDate(); };
+  // 🌐 2026-10-25 사장님: "한국말만 나와, 영어·스패니쉬 버전이 안돼" — 페이지 언어(currentLang/LANG/kimchi_lang)를 따른다
+  const T5T = {
+    outB:    { ko:'🔴 Top 500 없음 · 오더!', en:'🔴 Top 500 out · Order!', es:'🔴 Top 500 agotado · ¡Pedir!' },
+    outTip:  { ko:'Top 500 점검에서 매장 진열 없음(✗) — 오더하세요', en:'Out on shelf in the Top 500 check — please order', es:'Sin producto en la revisión Top 500 — hagan el pedido' },
+    lateB:   { ko:'🟠 입고 지연 · {d} 주문', en:'🟠 Late · ordered {d}', es:'🟠 Atrasado · pedido {d}' },
+    lateTip: { ko:'{d} 주문했는데 1주일이 지나도 매장에 없음 — 다시 시키기 전에 벤더에 확인', en:'Ordered {d}, still not on the shelf after a week — call the vendor before reordering', es:'Pedido {d}, sigue sin estar en tienda tras una semana — llamen al proveedor antes de volver a pedir' },
+    waitB:   { ko:'🟡 주문함 {d} · 입고 대기', en:'🟡 Ordered {d} · waiting', es:'🟡 Pedido {d} · en espera' },
+    waitTip: { ko:'{d} 주문함{q} — {u} 까지 입고 대기. 다시 담지 마세요', en:'Ordered {d}{q} — waiting for delivery until {u}. Do not reorder', es:'Pedido {d}{q} — en espera de entrega hasta {u}. No vuelvan a pedir' },
+    already: { ko:'이미 주문한 품목입니다', en:'This item was already ordered', es:'Este artículo ya fue pedido' },
+    more:    { ko:'그래도 더 담을까요?', en:'Add more anyway?', es:'¿Agregar más de todos modos?' },
+    head:    { ko:'🔴 Top 500 매장에 없음 · {n}개 품목', en:'🔴 Top 500 out on shelf · {n} items', es:'🔴 Top 500 sin producto · {n} artículos' },
+    close:   { ko:'닫기', en:'Close', es:'Cerrar' },
+    sub:     { ko:'그로서리 Top 500 점검에서 ✗ 나온 품목 — 누르면 그 상품으로 바로 갑니다. 오더하면 🟡 입고 대기(1주일)로 바뀝니다.', en:'Items marked ✗ in the Grocery Top 500 check — tap to jump to the product. Once ordered they move to 🟡 waiting (1 week).', es:'Artículos con ✗ en la revisión Top 500 — toquen para ir al producto. Al pedir pasan a 🟡 en espera (1 semana).' },
+    out:     { ko:'🔴 없음 · 오더하세요', en:'🔴 Out · please order', es:'🔴 Sin producto · hagan el pedido' },
+    late:    { ko:'🟠 입고 지연 — 주문 1주일이 지나도 없음 · 벤더 확인', en:'🟠 Late delivery — still out a week after ordering · call the vendor', es:'🟠 Entrega atrasada — sigue sin llegar una semana después · llamen al proveedor' },
+    wait:    { ko:'🟡 주문함 · 입고 대기 (1주일) — 다시 시키지 마세요', en:'🟡 Ordered · waiting for delivery (1 week) — do not reorder', es:'🟡 Pedido · en espera de entrega (1 semana) — no vuelvan a pedir' },
+    ord:     { ko:'{d} 주문', en:'ordered {d}', es:'pedido {d}' },
+    done:    { ko:'✓ 오더 완료', en:'✓ Order done', es:'✓ Pedido hecho' },
+    none:    { ko:'지금은 없습니다', en:'Nothing missing right now', es:'No falta nada por ahora' },
+    fab:     { ko:'🔴 Top 500 없음 {n}', en:'🔴 Top 500 out {n}', es:'🔴 Top 500 agotado {n}' },
+    fabTip:  { ko:'Top 500 점검에서 매장에 없음(✗) — 눌러서 보기', en:'Out on shelf in the Top 500 check — tap to see', es:'Sin producto en la revisión Top 500 — toquen para ver' },
+    ask:     { ko:'「{n}」\n오더 완료로 표시할까요?\n\n→ 🟡 입고 대기(1주일)로 바뀌고 빨간 목록에서 빠집니다.\n   1주일이 지나도 매장에 없으면 🟠 입고 지연으로 다시 뜹니다.',
+               en:'"{n}"\nMark this as ordered?\n\n→ It moves to 🟡 waiting for delivery (1 week) and leaves the red list.\n   If it is still not on the shelf after a week, it comes back as 🟠 late delivery.',
+               es:'"{n}"\n¿Marcar como pedido?\n\n→ Pasa a 🟡 en espera de entrega (1 semana) y sale de la lista roja.\n   Si después de una semana sigue sin estar en tienda, vuelve como 🟠 entrega atrasada.' },
+    fail:    { ko:'저장하지 못했습니다 — 다시 해 주세요 ({e})', en:'Could not save — please try again ({e})', es:'No se pudo guardar — intenten de nuevo ({e})' },
+  };
+  function t5Lang(){
+    let l = '';
+    try { if (typeof currentLang !== 'undefined') l = currentLang; } catch(e){}        // index.html
+    try { if (!l && typeof LANG !== 'undefined') l = LANG; } catch(e){}                // rheebros·hanmi·wismettac·namdaemun
+    if (!l) try { l = localStorage.getItem('kimchi_lang') || ''; } catch(e){}
+    l = String(l || 'ko').toLowerCase().slice(0, 2);
+    return (l === 'en' || l === 'es') ? l : 'ko';
+  }
+  function t5t(k, vars){ let t = (T5T[k] && (T5T[k][t5Lang()] || T5T[k].en)) || k; for (const [a, b] of Object.entries(vars || {})) t = t.split('{' + a + '}').join(b); return t; }
+  const esc5 = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  // 언어 버튼을 누르면 떠 있는 버튼 글자도 바로 바꾼다
+  let __t5LastLang = '';
+  if (typeof setInterval === 'function') setInterval(() => { const l = t5Lang(); if (l !== __t5LastLang) { __t5LastLang = l; try { t5Panel(); } catch(e){} } }, 1500);
   function t5Day(off){ return new Date(Date.now() - off * 86400000).toLocaleDateString('en-CA', { timeZone:'America/New_York' }); }
   function t5Start(){
     if (!T5.map) {
@@ -209,12 +248,12 @@
   function t5MarkDone(v, pid){
     const item = T5.map && T5.map[v] && T5.map[v][pid];
     const nm = (item && T5.names && T5.names[item]) || [pid, ''];
-    if (!window.confirm('「' + (nm[0] || pid) + '」\n오더 완료로 표시할까요?\n\n→ 🟡 입고 대기(1주일)로 바뀌고 빨간 목록에서 빠집니다.\n   1주일이 지나도 매장에 없으면 🟠 입고 지연으로 다시 뜹니다.')) return;
+    if (!window.confirm(t5t('ask', { n: (t5Lang() === 'ko' ? (nm[1] || nm[0]) : nm[0]) || pid }))) return;
     if (!state.fbOps || !state.branch) return;
     const ts = Date.now(), key = (v + '::' + pid).replace(/[.#$\[\]\/]/g, '_');
     const day = new Date(ts).toLocaleDateString('en-CA', { timeZone:'America/New_York' });
     state.fbOps.set(state.fbOps.ref(state.db, 'expiry/' + state.branch + '/ordRecent/' + key), { d: day, q: 0, ts, by: (me() || {}).name || '', manual: true })
-      .then(() => t5Open()).catch(e => alert('저장하지 못했습니다 — 다시 해 주세요 (' + (e && e.message || e) + ')'));
+      .then(() => t5Open()).catch(e => alert(t5t('fail', { e: (e && e.message) || e })));
   }
   function t5Close(){ const d = document.getElementById('km-t5-sheet'); if (d) d.remove(); }
   function t5Open(){
@@ -222,12 +261,12 @@
     const all = t5List();
     const list = all.filter(x => x.s !== 'wait');
     const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>🔴 Top 500 매장에 없음 · ' + new Set(list.map(x => x.item)).size + '개 품목</b><button type="button" id="km-t5-x">닫기 · Close</button></div>' +
-      '<div class="km-t5-sh-sub">' + esc(state.branch) + ' · 그로서리 Top 500 점검에서 ✗ 나온 품목 — 누르면 그 상품으로 바로 갑니다. 오더하면 목록에서 사라집니다.</div>';
+    let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>' + esc(t5t('head', { n: new Set(list.map(x => x.item)).size })) + '</b><button type="button" id="km-t5-x">' + esc(t5t('close')) + '</button></div>' +
+      '<div class="km-t5-sh-sub">' + esc(state.branch) + ' · ' + esc(t5t('sub')) + '</div>';
     const SEC = [
-      ['out',  '🔴 없음 · 오더하세요', ''],
-      ['late', '🟠 입고 지연 — 주문 1주일이 지나도 없음 · 벤더 확인', ' km-t5-sh-late'],
-      ['wait', '🟡 주문함 · 입고 대기 (1주일) — 다시 시키지 마세요', ' km-t5-sh-wait'],
+      ['out',  t5t('out'), ''],
+      ['late', t5t('late'), ' km-t5-sh-late'],
+      ['wait', t5t('wait'), ' km-t5-sh-wait'],
     ];
     for (const [s, title, cls] of SEC) {
       const xs = all.filter(x => x.s === s); if (!xs.length) continue;
@@ -235,11 +274,11 @@
       const byV = {}; for (const x of xs) (byV[x.v] = byV[x.v] || []).push(x);
       for (const [v, ys] of Object.entries(byV)) {
         h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + ys.length + '</div>';
-        for (const x of ys) h += '<div class="km-t5-sh-row"><button type="button" class="km-t5-sh-it' + cls + '" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + (x.ts ? ' · ' + t5md(x.ts) + ' 주문' : '') + '</span></button>' +
-          (s !== 'wait' && t5CanClear() ? '<button type="button" class="km-t5-done" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '">✓ 오더 완료</button>' : '') + '</div>';
+        for (const x of ys) h += '<div class="km-t5-sh-row"><button type="button" class="km-t5-sh-it' + cls + '" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + (t5Lang() === 'ko' ? esc(x.nm[1]) + ' · ' : '') + '#' + esc(x.pid) + (x.ts ? ' · ' + esc(t5t('ord', { d: t5md(x.ts) })) : '') + '</span></button>' +
+          (s !== 'wait' && t5CanClear() ? '<button type="button" class="km-t5-done" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '">' + esc(t5t('done')) + '</button>' : '') + '</div>';
       }
     }
-    if (!all.length) h += '<div class="km-t5-sh-sub">지금은 없습니다 · Nothing missing right now</div>';
+    if (!all.length) h += '<div class="km-t5-sh-sub">' + esc(t5t('none')) + '</div>';
     const d = document.createElement('div');
     d.id = 'km-t5-sheet'; d.innerHTML = h + '</div>';
     d.addEventListener('click', e => {
@@ -261,8 +300,8 @@
       btn.addEventListener('click', t5Open);
       document.body.appendChild(btn);
     }
-    btn.textContent = '🔴 Top 500 없음 ' + n;
-    btn.title = 'Top 500 점검에서 매장에 없음(✗) — 눌러서 보기';
+    btn.textContent = t5t('fab', { n });
+    btn.title = t5t('fabTip');
   }
   // 🛑 중복 오더 막기 — 🟡 입고 대기 카드의 + 버튼은 처음 한 번 확인을 받는다 (취소하면 수량 그대로)
   if (typeof document !== 'undefined') document.addEventListener('click', e => {
@@ -273,7 +312,7 @@
     const isPlus = label === '+' || /plus|inc/i.test(btn.className) || (/bump|setQty|addQty|changeQty|inc/i.test(oc) && !/-1|minus|dec/i.test(oc + btn.className) && label !== '−' && label !== '-');
     if (!isPlus) return;
     const b = card.querySelector('.km-t5-wait-badge');
-    const msg = ((b && b.getAttribute('title')) || '이미 주문한 품목입니다') + '\n\n그래도 더 담을까요? / Add more anyway?';
+    const msg = ((b && b.getAttribute('title')) || t5t('already')) + '\n\n' + t5t('more');
     if (window.confirm(msg)) { card.dataset.t5ok = '1'; return; }
     e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
   }, true);
@@ -684,9 +723,9 @@
   function badgeHTML(productId){
     let out = '';
     const t5 = t5Info(productId);
-    if (t5 && t5.s === 'out') out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 없음 · 오더!</span>';
-    if (t5 && t5.s === 'late') out += '<span class="km-t5-out-badge km-t5-late-badge" title="' + t5md(t5.ts) + ' 주문했는데 1주일이 지나도 매장에 없음 — 다시 시키기 전에 벤더에 확인 / Ordered ' + t5md(t5.ts) + ', still not on shelf after a week — call the vendor">🟠 입고 지연 · ' + t5md(t5.ts) + ' 주문</span>';
-    if (t5 && t5.s === 'wait') out += '<span class="km-t5-out-badge km-t5-wait-badge" title="' + t5md(t5.ts) + ' 주문함' + (t5.q ? ' (' + t5.q + ')' : '') + ' — ' + t5md(t5.ts + T5_WAIT) + ' 까지 입고 대기. 다시 담지 마세요 / Ordered — waiting for delivery">🟡 주문함 ' + t5md(t5.ts) + ' · 입고 대기</span>';
+    if (t5 && t5.s === 'out') out += '<span class="km-t5-out-badge" title="' + esc5(t5t('outTip')) + '">' + esc5(t5t('outB')) + '</span>';
+    if (t5 && t5.s === 'late') out += '<span class="km-t5-out-badge km-t5-late-badge" title="' + esc5(t5t('lateTip', { d: t5md(t5.ts) })) + '">' + esc5(t5t('lateB', { d: t5md(t5.ts) })) + '</span>';
+    if (t5 && t5.s === 'wait') out += '<span class="km-t5-out-badge km-t5-wait-badge" title="' + esc5(t5t('waitTip', { d: t5md(t5.ts), q: t5.q ? ' (' + t5.q + ')' : '', u: t5md(t5.ts + T5_WAIT) })) + '">' + esc5(t5t('waitB', { d: t5md(t5.ts) })) + '</span>';
     if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
     if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
     return out;

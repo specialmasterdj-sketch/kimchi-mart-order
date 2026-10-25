@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v185';   // 🔴 버튼 숫자 = 품목 수 (2026-10-25)
+const CACHE_NAME = 'km-order-v186';   // Top 500: 🟡 입고 대기(1주일)·🟠 지연·중복 오더 경고 (2026-10-25)
 // 이미지 전용 캐시. v2 = 이전 버전(v1)이 외부 Wismettac 이미지를 no-cors 로
 // 가로채 캐시했던 깨진 opaque/error 응답을 전부 폐기하기 위해 이름을 올림.
 const IMG_CACHE = 'km-order-img-v2';

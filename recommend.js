@@ -97,6 +97,8 @@
   const T5_STORE = { CORAL_SPRINGS:'coral', HOLLYWOOD:'hollywood', LASOLAS:'lasolas', LAS_OLAS:'lasolas',
                      MIAMI:'miami', PEMBROKE_PINES:'pembroke', PEMBROKE:'pembroke', WEST_PALM:'wpb', WEST_PALM_BEACH:'wpb' };
   const T5_ZONES = ['dry', 'drinks', 'cold', 'frozen', 'alcohol'];
+  const T5_WAIT = 7 * 86400000;   // 입고 대기 기본 1주일 (사장님 2026-10-25) — 벤더별로 바꿀 때 여기부터
+  const t5md = ts => { const d = new Date(ts); return (d.getMonth() + 1) + '/' + d.getDate(); };
   function t5Day(off){ return new Date(Date.now() - off * 86400000).toLocaleDateString('en-CA', { timeZone:'America/New_York' }); }
   function t5Start(){
     if (!T5.map) {
@@ -130,13 +132,22 @@
         for (const [id, v] of Object.entries(d.s || {})) { seenToday.add(id); if (v === 'x') marks.set(id, +((d.t || {})[id]) || dayStart(today)); } }
       for (const z of T5_ZONES) { const d = snaps[yday + '|' + z] || {};
         for (const [id, v] of Object.entries(d.s || {})) if (v === 'x' && !seenToday.has(id)) marks.set(id, +((d.t || {})[id]) || dayStart(yday)); }
-      const out = new Set();
-      for (const [id, at] of marks) {
-        const keys = (T5.rev && T5.rev[id]) || [];
-        const done = keys.some(k => { const o = ordered[k]; return o && +o.ts >= at; });
-        if (!done) out.add(id);
+      // ⏳ 2026-10-25 사장님: "오더했다면 며칠간 기다림의 시간이 필요" → 기본 1주일.
+      //   오늘(또는 어제) ✗ 인 품목을, 연결된 어느 벤더 상품이든 마지막 주문 시각으로 나눈다.
+      //     주문 0~7일 전  → 🟡 입고 대기 (깜빡이지 않음, 다시 담으면 중복 경고)
+      //     주문 7~14일 전 → 🟠 입고 지연 (깜빡임 — 다시 시키기 전에 벤더 확인)
+      //     주문 없음·14일 넘음 → 🔴 없음 · 오더!
+      //   다음 점검에서 ✓ 가 되면 marks 에서 빠지므로 모든 표시가 사라진다.
+      const now = Date.now(), out = new Set(), st = new Map();
+      for (const [id] of marks) {
+        let last = null;
+        for (const k of ((T5.rev && T5.rev[id]) || [])) { const o = ordered[k]; if (o && +o.ts && (!last || +o.ts > +last.ts)) last = o; }
+        const age = last ? now - (+last.ts) : Infinity;
+        const s = age < T5_WAIT ? 'wait' : age < T5_WAIT * 2 ? 'late' : 'out';
+        st.set(id, { s, ts: last ? +last.ts : 0, q: last ? last.q : 0 });
+        if (s !== 'wait') out.add(id);
       }
-      T5.out = out; notify(); t5Panel();
+      T5.out = out; T5.st = st; notify(); t5Panel();
     };
     T5.recompute = recompute;
     for (const day of [today, yday]) for (const z of T5_ZONES) {
@@ -166,8 +177,10 @@
   function t5List(){
     const out = [];
     if (!T5.map) return out;
-    for (const [v, m] of Object.entries(T5.map)) for (const [pid, item] of Object.entries(m))
-      if (T5.out.has(item)) out.push({ v, pid, item, nm: (T5.names && T5.names[item]) || ['', ''] });
+    for (const [v, m] of Object.entries(T5.map)) for (const [pid, item] of Object.entries(m)) {
+      const x = T5.st && T5.st.get(item);
+      if (x) out.push({ v, pid, item, s: x.s, ts: x.ts, q: x.q, nm: (T5.names && T5.names[item]) || ['', ''] });
+    }
     return out;
   }
   function t5Go(v, pid){
@@ -188,17 +201,26 @@
   function t5Close(){ const d = document.getElementById('km-t5-sheet'); if (d) d.remove(); }
   function t5Open(){
     t5Close();
-    const list = t5List();
-    const byV = {};
-    for (const x of list) (byV[x.v] = byV[x.v] || []).push(x);
+    const all = t5List();
+    const list = all.filter(x => x.s !== 'wait');
     const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
     let h = '<div class="km-t5-sh-in"><div class="km-t5-sh-hd"><b>🔴 Top 500 매장에 없음 · ' + new Set(list.map(x => x.item)).size + '개 품목</b><button type="button" id="km-t5-x">닫기 · Close</button></div>' +
       '<div class="km-t5-sh-sub">' + esc(state.branch) + ' · 그로서리 Top 500 점검에서 ✗ 나온 품목 — 누르면 그 상품으로 바로 갑니다. 오더하면 목록에서 사라집니다.</div>';
-    for (const [v, xs] of Object.entries(byV)) {
-      h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + xs.length + '</div>';
-      for (const x of xs) h += '<button type="button" class="km-t5-sh-it" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + '</span></button>';
+    const SEC = [
+      ['out',  '🔴 없음 · 오더하세요', ''],
+      ['late', '🟠 입고 지연 — 주문 1주일이 지나도 없음 · 벤더 확인', ' km-t5-sh-late'],
+      ['wait', '🟡 주문함 · 입고 대기 (1주일) — 다시 시키지 마세요', ' km-t5-sh-wait'],
+    ];
+    for (const [s, title, cls] of SEC) {
+      const xs = all.filter(x => x.s === s); if (!xs.length) continue;
+      h += '<div class="km-t5-sh-sec">' + esc(title) + ' · ' + new Set(xs.map(x => x.item)).size + '</div>';
+      const byV = {}; for (const x of xs) (byV[x.v] = byV[x.v] || []).push(x);
+      for (const [v, ys] of Object.entries(byV)) {
+        h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + ys.length + '</div>';
+        for (const x of ys) h += '<button type="button" class="km-t5-sh-it' + cls + '" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + (x.ts ? ' · ' + t5md(x.ts) + ' 주문' : '') + '</span></button>';
+      }
     }
-    if (!list.length) h += '<div class="km-t5-sh-sub">지금은 없습니다 · Nothing missing right now</div>';
+    if (!all.length) h += '<div class="km-t5-sh-sub">지금은 없습니다 · Nothing missing right now</div>';
     const d = document.createElement('div');
     d.id = 'km-t5-sheet'; d.innerHTML = h + '</div>';
     d.addEventListener('click', e => {
@@ -210,7 +232,7 @@
   function t5Panel(){
     if (typeof document === 'undefined' || !document.body) return;
     // 같은 품목을 여러 벤더에서 팔면 줄이 여러 개 — 버튼 숫자는 품목 수
-    const n = new Set(t5List().map(x => x.item)).size;
+    const n = new Set(t5List().filter(x => x.s !== 'wait').map(x => x.item)).size;
     let btn = document.getElementById('km-t5-fab');
     if (!n) { if (btn) btn.remove(); return; }
     if (!btn) {
@@ -222,6 +244,20 @@
     btn.textContent = '🔴 Top 500 없음 ' + n;
     btn.title = 'Top 500 점검에서 매장에 없음(✗) — 눌러서 보기';
   }
+  // 🛑 중복 오더 막기 — 🟡 입고 대기 카드의 + 버튼은 처음 한 번 확인을 받는다 (취소하면 수량 그대로)
+  if (typeof document !== 'undefined') document.addEventListener('click', e => {
+    const card = e.target && e.target.closest && e.target.closest('.km-t5-wait-card');
+    if (!card || card.dataset.t5ok) return;
+    const btn = e.target.closest('button'); if (!btn) return;
+    const label = (btn.textContent || '').trim(), oc = btn.getAttribute('onclick') || '';
+    const isPlus = label === '+' || /plus|inc/i.test(btn.className) || (/bump|setQty|addQty|changeQty|inc/i.test(oc) && !/-1|minus|dec/i.test(oc + btn.className) && label !== '−' && label !== '-');
+    if (!isPlus) return;
+    const b = card.querySelector('.km-t5-wait-badge');
+    const msg = ((b && b.getAttribute('title')) || '이미 주문한 품목입니다') + '\n\n그래도 더 담을까요? / Add more anyway?';
+    if (window.confirm(msg)) { card.dataset.t5ok = '1'; return; }
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  }, true);
+
   // 목록에서 눌러 다른 화면으로 왔으면(?t5q=품번) 그 상품을 검색해 보여 준다
   function t5FromUrl(){
     let q = ''; try { q = new URLSearchParams(location.search).get('t5q') || ''; } catch(e){}
@@ -237,6 +273,18 @@
     const m = T5.map && T5.map[state.vendor];
     const item = m && m[String(productId)];
     return !!(item && T5.out.has(item));
+  }
+  // 'out' | 'late' | 'wait' | ''
+  function t5State(productId){
+    const m = T5.map && T5.map[state.vendor];
+    const item = m && m[String(productId)];
+    const x = item && T5.st && T5.st.get(item);
+    return x ? x.s : '';
+  }
+  function t5Info(productId){
+    const m = T5.map && T5.map[state.vendor];
+    const item = m && m[String(productId)];
+    return (item && T5.st && T5.st.get(item)) || null;
   }
 
   function init({ db, vendor, branch, ref, set, onValue, remove }){
@@ -604,7 +652,10 @@
     let c = '';
     if (isGlobal(productId)) c += ' km-rec-card';       // star → yellow box
     if (isBest(productId))   c += ' km-rec-best-card';  // best → red outline
-    if (isTop500Out(productId)) c += ' km-t5-out-card';  // 🔴 Top 500 매장에 없음 → 깜빡
+    const t5s = t5State(productId);
+    if (t5s === 'out')  c += ' km-t5-out-card';    // 🔴 Top 500 매장에 없음 → 빨강 깜빡
+    if (t5s === 'late') c += ' km-t5-late-card';   // 🟠 입고 지연 → 주황 깜빡
+    if (t5s === 'wait') c += ' km-t5-wait-card';   // 🟡 입고 대기 → 노랑, 깜빡이지 않음
     return c;
   }
 
@@ -612,7 +663,10 @@
   // independent badges — a product can show either, both, or neither.
   function badgeHTML(productId){
     let out = '';
-    if (isTop500Out(productId)) out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 없음 · 오더!</span>';
+    const t5 = t5Info(productId);
+    if (t5 && t5.s === 'out') out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 없음 · 오더!</span>';
+    if (t5 && t5.s === 'late') out += '<span class="km-t5-out-badge km-t5-late-badge" title="' + t5md(t5.ts) + ' 주문했는데 1주일이 지나도 매장에 없음 — 다시 시키기 전에 벤더에 확인 / Ordered ' + t5md(t5.ts) + ', still not on shelf after a week — call the vendor">🟠 입고 지연 · ' + t5md(t5.ts) + ' 주문</span>';
+    if (t5 && t5.s === 'wait') out += '<span class="km-t5-out-badge km-t5-wait-badge" title="' + t5md(t5.ts) + ' 주문함' + (t5.q ? ' (' + t5.q + ')' : '') + ' — ' + t5md(t5.ts + T5_WAIT) + ' 까지 입고 대기. 다시 담지 마세요 / Ordered — waiting for delivery">🟡 주문함 ' + t5md(t5.ts) + ' · 입고 대기</span>';
     if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
     if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
     return out;
@@ -733,6 +787,14 @@
       // 상품명 칸이 두 줄로 잘리는 앱(리브 등)에서 배지가 가려지지 않게 — 카드 사진 위에 띠로 띄운다
       '.km-t5-out-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
       '@media (prefers-reduced-motion:reduce){.km-t5-out-card{animation:none !important;box-shadow:0 0 0 3px #dc2626 !important}.km-t5-out-badge{animation:none}}' +
+      '@keyframes kmT5Late{0%,100%{box-shadow:0 0 0 3px rgba(234,88,12,.95),0 0 14px rgba(234,88,12,.5)}50%{box-shadow:0 0 0 3px rgba(234,88,12,.15)}}' +
+      '.km-t5-late-card{animation:kmT5Late 1.2s ease-in-out infinite !important;border-radius:12px;position:relative}' +
+      '.km-t5-wait-card{box-shadow:0 0 0 3px #facc15 !important;border-radius:12px;position:relative}' +
+      '.km-t5-late-badge{background:#ea580c !important}' +
+      '.km-t5-wait-badge{background:#facc15 !important;color:#713f12 !important;animation:none !important}' +
+      '.km-t5-wait-card .km-t5-out-badge,.km-t5-late-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
+      '.km-t5-sh-sec{margin:14px 0 2px;font-weight:900;font-size:13.5px;color:#7c2d12}' +
+      '.km-t5-sh-it.km-t5-sh-late{border-color:#fdba74;background:#fff7ed}.km-t5-sh-it.km-t5-sh-wait{border-color:#fde68a;background:#fefce8}' +
       '#km-t5-fab{position:fixed;left:12px;bottom:88px;z-index:9990;border:0;border-radius:999px;padding:10px 16px;background:#dc2626;color:#fff;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(220,38,38,.45);cursor:pointer;animation:kmT5Badge 1s ease-in-out infinite}' +
       '#km-t5-sheet{position:fixed;inset:0;z-index:9995;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center}' +
       '.km-t5-sh-in{background:#fff;width:min(560px,100%);max-height:80vh;overflow:auto;border-radius:16px 16px 0 0;padding:14px 14px 20px}' +
@@ -919,7 +981,7 @@
     badgeHTML, toggleHTML, filterChipHTML, filterLabel, cardClass,
     noteHTML, editNote, getNote, defaultUnit,
     getOverQty, overLabel, orderGuideHTML,
-    canMark, isTop500Out,
+    canMark, isTop500Out, t5State,
   };
 
   if (document.readyState === 'loading'){

@@ -533,7 +533,7 @@
   // independent badges — a product can show either, both, or neither.
   function badgeHTML(productId){
     let out = '';
-    if (isTop500Out(productId)) out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 · 매장에 없음 — 오더!</span>';
+    if (isTop500Out(productId)) out += '<span class="km-t5-out-badge" title="Top 500 점검에서 매장 진열 없음(✗) — 오더하세요 / Out on shelf in Top 500 check — order it">🔴 Top 500 없음 · 오더!</span>';
     if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
     if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
     return out;

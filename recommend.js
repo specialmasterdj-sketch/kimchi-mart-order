@@ -198,6 +198,24 @@
     try { box.scrollIntoView({ block:'start' }); } catch(e){}
     return true;
   }
+  /* ✓ 오더 완료 — 앱 밖(전화·벤더 사이트)에서 주문했을 때 그 지점 수퍼바이저 이상이 직접 넘긴다.
+     ordRecent 에 주문 기록을 남겨 🟡 입고 대기(1주일)로 — 1주일 뒤에도 ✗ 면 🟠 지연으로 다시 뜬다. (2026-10-25 사장님) */
+  function t5CanClear(){
+    const m = me() || {}, r = String(m.role || '').toUpperCase();
+    if (canMark()) return true;   // 오너·전무
+    if (!/MANAGER|SUPERVISOR|GERENTE|매니저|점장|감독/.test(r)) return false;
+    return String(m.branch || '').toUpperCase() === state.branch;
+  }
+  function t5MarkDone(v, pid){
+    const item = T5.map && T5.map[v] && T5.map[v][pid];
+    const nm = (item && T5.names && T5.names[item]) || [pid, ''];
+    if (!window.confirm('「' + (nm[0] || pid) + '」\n오더 완료로 표시할까요?\n\n→ 🟡 입고 대기(1주일)로 바뀌고 빨간 목록에서 빠집니다.\n   1주일이 지나도 매장에 없으면 🟠 입고 지연으로 다시 뜹니다.')) return;
+    if (!state.fbOps || !state.branch) return;
+    const ts = Date.now(), key = (v + '::' + pid).replace(/[.#$\[\]\/]/g, '_');
+    const day = new Date(ts).toLocaleDateString('en-CA', { timeZone:'America/New_York' });
+    state.fbOps.set(state.fbOps.ref(state.db, 'expiry/' + state.branch + '/ordRecent/' + key), { d: day, q: 0, ts, by: (me() || {}).name || '', manual: true })
+      .then(() => t5Open()).catch(e => alert('저장하지 못했습니다 — 다시 해 주세요 (' + (e && e.message || e) + ')'));
+  }
   function t5Close(){ const d = document.getElementById('km-t5-sheet'); if (d) d.remove(); }
   function t5Open(){
     t5Close();
@@ -217,7 +235,8 @@
       const byV = {}; for (const x of xs) (byV[x.v] = byV[x.v] || []).push(x);
       for (const [v, ys] of Object.entries(byV)) {
         h += '<div class="km-t5-sh-v">' + esc(T5_VNAME[v] || v) + ' · ' + ys.length + '</div>';
-        for (const x of ys) h += '<button type="button" class="km-t5-sh-it' + cls + '" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + (x.ts ? ' · ' + t5md(x.ts) + ' 주문' : '') + '</span></button>';
+        for (const x of ys) h += '<div class="km-t5-sh-row"><button type="button" class="km-t5-sh-it' + cls + '" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '"><b>' + esc(x.nm[0] || x.pid) + '</b><span>' + esc(x.nm[1]) + ' · #' + esc(x.pid) + (x.ts ? ' · ' + t5md(x.ts) + ' 주문' : '') + '</span></button>' +
+          (s !== 'wait' && t5CanClear() ? '<button type="button" class="km-t5-done" data-v="' + esc(x.v) + '" data-p="' + esc(x.pid) + '">✓ 오더 완료</button>' : '') + '</div>';
       }
     }
     if (!all.length) h += '<div class="km-t5-sh-sub">지금은 없습니다 · Nothing missing right now</div>';
@@ -225,6 +244,7 @@
     d.id = 'km-t5-sheet'; d.innerHTML = h + '</div>';
     d.addEventListener('click', e => {
       if (e.target === d || e.target.id === 'km-t5-x') { t5Close(); return; }
+      const dn = e.target.closest('.km-t5-done'); if (dn) { t5MarkDone(dn.dataset.v, dn.dataset.p); return; }
       const b = e.target.closest('.km-t5-sh-it'); if (b) t5Go(b.dataset.v, b.dataset.p);
     });
     document.body.appendChild(d);
@@ -793,6 +813,8 @@
       '.km-t5-late-badge{background:#ea580c !important}' +
       '.km-t5-wait-badge{background:#facc15 !important;color:#713f12 !important;animation:none !important}' +
       '.km-t5-wait-card .km-t5-out-badge,.km-t5-late-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
+      '.km-t5-sh-row{display:flex;gap:6px;align-items:stretch}.km-t5-sh-row .km-t5-sh-it{flex:1;min-width:0}' +
+      '.km-t5-done{flex:none;margin:4px 0;border:0;border-radius:10px;padding:0 12px;background:#16a34a;color:#fff;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap}' +
       '.km-t5-sh-sec{margin:14px 0 2px;font-weight:900;font-size:13.5px;color:#7c2d12}' +
       '.km-t5-sh-it.km-t5-sh-late{border-color:#fdba74;background:#fff7ed}.km-t5-sh-it.km-t5-sh-wait{border-color:#fde68a;background:#fefce8}' +
       '#km-t5-fab{position:fixed;left:12px;bottom:88px;z-index:9990;border:0;border-radius:999px;padding:10px 16px;background:#dc2626;color:#fff;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(220,38,38,.45);cursor:pointer;animation:kmT5Badge 1s ease-in-out infinite}' +

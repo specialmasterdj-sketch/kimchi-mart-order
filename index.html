@@ -448,6 +448,52 @@ input { font-family:inherit; }
 </div>
 
 <script src="products.js?v=20261008jfc"></script>
+<script src="pulmuone_products.js?v=20261011"></script>
+<script>
+// 🟢 2026-10-28 사장님: "남대문 안의 풀무원 코너는 그대로 두고, 밖으로도 빼서 하나의 벤더로 따로 오더할 수 있게 — 해태 밑에"
+//   상품 목록은 남대문 풀무원 탭과 같은 파일(pulmuone_products.js) 하나를 같이 쓴다 → 가격·사진을 한 번 고치면 양쪽 다 바뀐다.
+(function(){
+  try {
+    if (typeof VENDORS === 'undefined' || typeof PULMUONE_ITEMS === 'undefined' || VENDORS.pulmuone) return;
+    const cat = en => { const e = String(en || '').toLowerCase();
+      if (/dumpling|wonton|potsticker/.test(e)) return 'pmo-dumpling';
+      if (/ddukbokki|rice cake/.test(e)) return 'pmo-ricecake';
+      if (/noodle|udon|ramen|jjolmyun|kalguk|soba|pho |pad thai|makguksoo|shirataki|jjamppong|jjambbong/.test(e)) return 'pmo-noodle';
+      if (/drink/.test(e)) return 'pmo-etc';
+      if (/tofu soup|soup|stew|seasoning|sauce|ssamjang|paste|dressing/.test(e)) return 'pmo-sauce';
+      if (/tofu|natto/.test(e)) return 'pmo-tofu';
+      if (/kimchi|pickled|radish|cucumber/.test(e)) return 'pmo-kimchi';
+      if (/seaweed|laver/.test(e)) return 'pmo-seaweed';
+      if (/corn dog|cheese ball|persimmon/.test(e)) return 'pmo-frozen';
+      if (/rice|grain|bean|barley/.test(e)) return 'pmo-rice';
+      return 'pmo-etc'; };
+    const pmo = {
+      name: 'Pulmuone', nameKr: '풀무원', email: '', color: '#2E7D32',
+      categories: [
+        { id:'pmo-tofu', name:'TOFU & NATTO', nameKr:'두부·낫또' },
+        { id:'pmo-noodle', name:'NOODLES', nameKr:'면류' },
+        { id:'pmo-ricecake', name:'RICE CAKES', nameKr:'떡·떡볶이' },
+        { id:'pmo-dumpling', name:'DUMPLINGS', nameKr:'만두' },
+        { id:'pmo-rice', name:'RICE & GRAINS', nameKr:'밥·쌀·잡곡' },
+        { id:'pmo-kimchi', name:'KIMCHI & PICKLES', nameKr:'김치·단무지' },
+        { id:'pmo-sauce', name:'SAUCE & SOUP', nameKr:'소스·찌개' },
+        { id:'pmo-seaweed', name:'SEAWEED', nameKr:'김·미역' },
+        { id:'pmo-frozen', name:'FROZEN SNACKS', nameKr:'냉동 간식' },
+        { id:'pmo-etc', name:'OTHER', nameKr:'기타' },
+      ],
+      products: PULMUONE_ITEMS.map(x => ({ id: String(x.plu), brand: 'PULMUONE', name: x.en || '', nameKr: x.ko || '',
+        size: x.unit || '', um: 'CS', barcode: '', category: cat(x.en), avgQty: 0, price: 0, image: x.image || '' })),
+    };
+    // 해태 바로 다음 순서로 넣는다 (해태 뒤의 벤더들을 빼서 다시 붙이면 순서가 바뀐다)
+    const keys = Object.keys(VENDORS), at = keys.indexOf('haitai');
+    const after = at >= 0 ? keys.slice(at + 1) : [];
+    const moved = after.map(k => [k, VENDORS[k]]);
+    moved.forEach(([k]) => { delete VENDORS[k]; });
+    VENDORS.pulmuone = pmo;
+    moved.forEach(([k, v]) => { VENDORS[k] = v; });
+  } catch (e) { console.warn('pulmuone vendor failed', e); }
+})();
+</script>
 <script>
 // 추가 제품(seoul_extra.js) async 병합. products.js는 가볍게 유지, seoul_extra는 라이브(404구간 없음).
 // 페이지네이션으로 대량이어도 렌더 안 멈춤. 안전 실패형(파일 지연시 기본 제품으로 정상).

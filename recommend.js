@@ -80,7 +80,7 @@
   }
   // setBranch kept as no-op for API compatibility with earlier vendor-page
   // integrations. Marks are now global-only — there is no per-branch scope.
-  function setBranch(b){ state.branch = String(b || '').toUpperCase(); t5Start(); }
+  function setBranch(b){ state.branch = String(b || '').toUpperCase(); t5Start(); expStart(); }
 
   /* 🔴 Top 500 현재 없음 — 2026-10-25 사장님:
        "그로서리 Top 500 점검에서 없음(✗)이 나온 제품을 오더센터에서 계속 강조(깜빡임)해서
@@ -328,6 +328,64 @@
     else setTimeout(t5FromUrl, 800);
   }
 
+  /* ⚠️ 유통기한 지나 버린 적 있는 상품 — 2026-10-28 사장님:
+       "유통기한 관리에 나온 제품은 오더센터에서 오더할 때 반드시 경고. 벤더 하나씩, 같은 제품이면 그 지점 관리자에게."
+     - 오더센터 상품 → 바코드: order-barcodes.json (만들기: _Claude_Tools/build_order_barcodes.js — 카탈로그 바코드 + POS 품번 다리,
+       사진 대조로 틀린 연결 12건 제외, 2026-10-28 기준 유통기한 상품 844쌍 확인)
+     - 매장의 유통기한 이력: expiry/<지점>/expHist { <바코드>: [지난 횟수, 개수 합, 마지막 날짜, 이름] } — 유통기한 관리 화면이 만들어 둔다
+     - 내 지점(km_branch) 기준만. 지점이 없으면(오너 전체 보기) 표시하지 않는다.
+     - 카드에 '⚠️ 유통기한 N번 지남' 띠, + 를 처음 누르면 확인 창(취소하면 수량 그대로). */
+  const EXP = { bc: null, hist: {}, key: '', unsub: null };
+  const EXPT = {
+    badge: { ko:'⚠️ 유통기한 지남 {n}번', en:'⚠️ Expired {n}x before', es:'⚠️ Venció {n} veces' },
+    tip:   { ko:'이 매장에서 유통기한이 지나 버린 적 {n}번 · 총 {q}개 · 마지막 {d}', en:'Expired at this store {n} times · {q} units total · last {d}', es:'Venció en esta tienda {n} veces · {q} unidades · última {d}' },
+    ask:   { ko:'⚠️ 유통기한 경고\n「{p}」\n\n이 매장에서 유통기한이 지나 버린 적이 {n}번 있습니다 (총 {q}개, 마지막 {d}).\n팔리는 속도를 확인하고 꼭 필요한 만큼만 주문하세요.\n\n그래도 담을까요?',
+             en:'⚠️ Expiry warning\n"{p}"\n\nThis item expired at this store {n} times ({q} units, last {d}).\nCheck how fast it sells and order only what you need.\n\nAdd it anyway?',
+             es:'⚠️ Aviso de vencimiento\n"{p}"\n\nEste artículo venció en esta tienda {n} veces ({q} unidades, última {d}).\nRevisen qué tan rápido se vende y pidan solo lo necesario.\n\n¿Agregarlo de todos modos?' },
+  };
+  function expt(k, vars){ let t = (EXPT[k] && (EXPT[k][t5Lang()] || EXPT[k].en)) || k; for (const [a, b] of Object.entries(vars || {})) t = t.split('{' + a + '}').join(b); return t; }
+  const expCd = b => { let s = 0; for (let i = 0; i < b.length; i++) s += (+b[b.length - 1 - i]) * (i % 2 ? 1 : 3); return (10 - s % 10) % 10; };
+  function expStart(){
+    if (!EXP.bc) {
+      EXP.bc = {};
+      fetch('order-barcodes.json?v=20261028a').then(r => r.ok ? r.json() : null)
+        .then(j => { if (j && j.vendors) { EXP.bc = j.vendors; notify(); } }).catch(() => {});
+    }
+    const br = state.branch && state.branch !== 'ALL' ? state.branch : '';
+    if (!state.fbOps || EXP.key === br) return;
+    EXP.key = br;
+    if (EXP.unsub) { try { EXP.unsub(); } catch(e){} EXP.unsub = null; }
+    EXP.hist = {};
+    if (!br) { notify(); return; }
+    const { ref, onValue } = state.fbOps;
+    try { EXP.unsub = onValue(ref(state.db, 'expiry/' + br + '/expHist'), snap => { EXP.hist = snap.val() || {}; notify(); }, () => {}); } catch(e){}
+  }
+  // 체크디지트 한 자리 차이만 같은 바코드로 본다 (Top 500 연결과 같은 규칙)
+  function expInfo(productId){
+    const m = EXP.bc && EXP.bc[state.vendor];
+    const d = m && m[String(productId)];
+    if (!d || !EXP.hist) return null;
+    let h = EXP.hist[d];
+    if (!h) { const body = d.slice(0, -1); if (expCd(body) === +d.slice(-1)) h = EXP.hist[body]; }
+    if (!h) h = EXP.hist[d + expCd(d)];
+    if (!Array.isArray(h) || !(h[0] > 0)) return null;
+    const ds = String(h[2] || ''), md = ds.length >= 10 ? (+ds.slice(5, 7)) + '/' + (+ds.slice(8, 10)) + '/' + ds.slice(2, 4) : ds;
+    return { n: h[0], q: h[1] || 0, d: md, name: h[3] || '' };
+  }
+  // 🛑 + 를 처음 누를 때 경고 (카드마다 한 번)
+  if (typeof document !== 'undefined') document.addEventListener('click', e => {
+    const card = e.target && e.target.closest && e.target.closest('.km-exp-card');
+    if (!card || card.dataset.expok) return;
+    const btn = e.target.closest('button'); if (!btn) return;
+    const label = (btn.textContent || '').trim(), oc = btn.getAttribute('onclick') || '';
+    const isPlus = label === '+' || /plus|inc/i.test(btn.className) || (/bump|setQty|addQty|changeQty|inc/i.test(oc) && !/-1|minus|dec/i.test(oc + btn.className) && label !== '−' && label !== '-');
+    if (!isPlus) return;
+    const b = card.querySelector('.km-exp-badge');
+    const msg = (b && b.getAttribute('data-ask')) || '';
+    if (!msg || window.confirm(msg)) { card.dataset.expok = '1'; return; }
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  }, true);
+
   function isTop500Out(productId){
     const m = T5.map && T5.map[state.vendor];
     const item = m && m[String(productId)];
@@ -356,6 +414,7 @@
     state.branch = (branch || '').toString().toUpperCase();
     state.fbOps = { ref, set, onValue, remove };
     t5Start();
+    expStart();
     // Hydrate from localStorage immediately so chips show even before the
     // first Firebase snapshot arrives (or if it never does because of auth).
     state.notes = Object.assign({}, _loadLocalNotes());
@@ -715,6 +774,7 @@
     if (t5s === 'out')  c += ' km-t5-out-card';    // 🔴 Top 500 매장에 없음 → 빨강 깜빡
     if (t5s === 'late') c += ' km-t5-late-card';   // 🟠 입고 지연 → 주황 깜빡
     if (t5s === 'wait') c += ' km-t5-wait-card';   // 🟡 입고 대기 → 노랑, 깜빡이지 않음
+    if (expInfo(productId)) c += ' km-exp-card';   // ⚠️ 유통기한 지나 버린 적 있음
     return c;
   }
 
@@ -726,6 +786,8 @@
     if (t5 && t5.s === 'out') out += '<span class="km-t5-out-badge" title="' + esc5(t5t('outTip')) + '">' + esc5(t5t('outB')) + '</span>';
     if (t5 && t5.s === 'late') out += '<span class="km-t5-out-badge km-t5-late-badge" title="' + esc5(t5t('lateTip', { d: t5md(t5.ts) })) + '">' + esc5(t5t('lateB', { d: t5md(t5.ts) })) + '</span>';
     if (t5 && t5.s === 'wait') out += '<span class="km-t5-out-badge km-t5-wait-badge" title="' + esc5(t5t('waitTip', { d: t5md(t5.ts), q: t5.q ? ' (' + t5.q + ')' : '', u: t5md(t5.ts + T5_WAIT) })) + '">' + esc5(t5t('waitB', { d: t5md(t5.ts) })) + '</span>';
+    const ex = expInfo(productId);
+    if (ex) out += '<span class="km-exp-badge" title="' + esc5(expt('tip', ex)) + '" data-ask="' + esc5(expt('ask', { n: ex.n, q: ex.q, d: ex.d, p: ex.name })) + '">' + esc5(expt('badge', ex)) + '</span>';
     if (isGlobal(productId)) out += '<span class="km-rec-badge" title="TOP PICK — 추천">⭐ TOP PICK</span>';
     if (isBest(productId))   out += '<span class="km-rec-badge-best" title="BEST ITEM — 꼭 주문하세요 / Must order">⭐ BEST ITEM</span>';
     return out;
@@ -850,6 +912,11 @@
       '.km-t5-late-card{animation:kmT5Late 1.2s ease-in-out infinite !important;border-radius:12px;position:relative}' +
       '.km-t5-wait-card{box-shadow:0 0 0 3px #facc15 !important;border-radius:12px;position:relative}' +
       '.km-t5-late-badge{background:#ea580c !important}' +
+      // ⚠️ 유통기한 지나 버린 적 있음 — 갈색 점선 테두리 + 사진 위 띠 (깜빡이지 않음: 빨강 Top 500 과 구분)
+      '.km-exp-card{outline:3px dashed #b45309;outline-offset:-3px;border-radius:12px;position:relative}' +
+      '.km-exp-badge{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border-radius:999px;background:#78350f;color:#fff;font-weight:800;font-size:11.5px;white-space:nowrap}' +
+      '.km-exp-card .km-exp-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25)}' +
+      '.km-t5-out-card .km-exp-badge,.km-t5-late-card .km-exp-badge,.km-t5-wait-card .km-exp-badge{top:56px}' +
       '.km-t5-wait-badge{background:#facc15 !important;color:#713f12 !important;animation:none !important}' +
       '.km-t5-wait-card .km-t5-out-badge,.km-t5-late-card .km-t5-out-badge{position:absolute;top:30px;left:6px;z-index:5;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}' +
       '.km-t5-sh-row{display:flex;gap:6px;align-items:stretch}.km-t5-sh-row .km-t5-sh-it{flex:1;min-width:0}' +

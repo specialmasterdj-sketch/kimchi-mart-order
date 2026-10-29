@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v188';   // Top 500 배지·목록 영어·스페인어 (2026-10-25)
+const CACHE_NAME = 'km-order-v189';   // ⚠️ 유통기한 지난 적 있는 상품 오더 경고 (2026-10-28)
 // 이미지 전용 캐시. v2 = 이전 버전(v1)이 외부 Wismettac 이미지를 no-cors 로
 // 가로채 캐시했던 깨진 opaque/error 응답을 전부 폐기하기 위해 이름을 올림.
 const IMG_CACHE = 'km-order-img-v2';

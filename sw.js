@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-order-v192';   // 🏬 Route via Hollywood: DJ·김병호만 + 다른 지점 주문 완전 차단 (2026-10-29)
+const CACHE_NAME = 'km-order-v193';   // 🏬 Request from Hollywood → Route to Hollywood 페이지 (2026-10-29)
 // 이미지 전용 캐시. v2 = 이전 버전(v1)이 외부 Wismettac 이미지를 no-cors 로
 // 가로채 캐시했던 깨진 opaque/error 응답을 전부 폐기하기 위해 이름을 올림.
 const IMG_CACHE = 'km-order-img-v2';

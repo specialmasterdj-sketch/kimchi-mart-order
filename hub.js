@@ -8,7 +8,7 @@
    · 지정되면 헐리우드가 아닌 지점의 장바구니에 이미 담긴 것도 페이지가 자동으로 뺀다.
      상품 타일의 [🏬 경유 지정] 버튼. 박스 입수(1박스 몇 개)를 물어 함께 저장.
    · 헐리우드가 아닌 지점 — 경유 품목은 +/− 대신 [🏬 헐리우드에 요청] 버튼.
-     누르면 kfood-guide 공동 오더 앱(share-order.html)이 그 품목을 연 채로 열린다.
+     누르면 kfood-guide Route to Hollywood(hollywood-route.html)가 그 품목을 연 채로 열린다 (2026-10-29, 전엔 공동 오더 앱).
      setQty 로 들어오는 다른 길(숫자패드 등)도 guard() 가 막는다 — 단, 줄이는 건 허용
      (지정 전에 담아둔 것을 뺄 수 있게).
    · 헐리우드 — 평소처럼 벤더 장바구니에 담는다 (박스로 사서 나눠 보내는 곳).
@@ -18,7 +18,8 @@
    recommend.js 와 같은 방식으로 %XX 인코딩.
 */
 (function(){
-  const HUB_APP = 'https://specialmasterdj-sketch.github.io/kfood-guide/share-order.html';
+  // 🏬 2026-10-29: 요청은 Route to Hollywood 페이지로 — 지점별 요청 모음·진행 추적·✅ Received 가 한곳에
+  const HUB_APP = 'https://specialmasterdj-sketch.github.io/kfood-guide/hollywood-route.html';
   const ORDER_APP = 'https://specialmasterdj-sketch.github.io/kimchi-mart-order/';
   const HUB_BRANCH = 'HOLLYWOOD';
   const S = { items: {}, listeners: [], fb: null, lookup: null, vendorName: '', vendorNameKr: '' };
@@ -62,7 +63,7 @@
   function isHub(vendor, pid){ return !!item(vendor, pid); }
   function blocked(vendor, pid){ return isHub(vendor, pid) && effBranch() !== HUB_BRANCH; }
   function reqUrl(vendor, pid){
-    return HUB_APP + '?hub=' + encodeURIComponent(key(vendor, pid)) + (branch() ? '&from=' + encodeURIComponent(branch()) : '');
+    return HUB_APP + '?req=' + encodeURIComponent(key(vendor, pid)) + (branch() ? '&branch=' + encodeURIComponent(branch()) : '');
   }
 
   function badgeHTML(vendor, pid){
@@ -88,9 +89,9 @@
   function guard(vendor, pid, nextQty, curQty){
     if (!blocked(vendor, pid)) return false;
     if (!(nextQty > (curQty || 0))) return false;           // 줄이기·지우기는 허용
-    if (confirm(T('🏬 헐리우드 경유 품목입니다.\n벤더에 직접 주문할 수 없고 헐리우드에서 받습니다.\n\n공동 오더 앱에서 요청할까요?',
-                  '🏬 This item is routed via Hollywood.\nIt cannot be ordered from the vendor directly.\n\nOpen the shared order app to request it?',
-                  '🏬 Este producto va vía Hollywood.\nNo se puede pedir al proveedor.\n\n¿Abrir la app para pedirlo?'))){
+    if (confirm(T('🏬 헐리우드 경유 품목입니다.\n벤더에 직접 주문할 수 없고 헐리우드에서 받습니다.\n\nRoute to Hollywood 에서 요청할까요?',
+                  '🏬 This item is routed via Hollywood.\nIt cannot be ordered from the vendor directly.\n\nOpen Route to Hollywood to request it?',
+                  '🏬 Este producto va vía Hollywood.\nNo se puede pedir al proveedor.\n\n¿Abrir Route to Hollywood para pedirlo?'))){
       location.href = reqUrl(vendor, pid);
     }
     return true;

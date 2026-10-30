@@ -4,7 +4,7 @@
    해서 헐리우드에서 각 지점으로 보내는 방법 … 오더 앱에서 그 물품들을 클릭하면
    헐리우드 공동 오더 앱에 들어오게." 배경: 지점마다 박스로 받아 20%만 팔고 버린다.
 
-   · 경유 지정/해제 — DJ · B.H.K(김병호 전무) 두 사람만 (2026-10-29). 다른 사람에겐 버튼이 안 보인다.
+   · 경유 지정/해제 — DJ · Sun Kim · B.H.K(김병호 전무)만 (2026-10-29, Sun Kim 10-30 추가). 다른 사람에겐 버튼이 안 보인다.
    · 지정되면 헐리우드가 아닌 지점의 장바구니에 이미 담긴 것도 페이지가 자동으로 뺀다.
      상품 타일의 [🏬 경유 지정] 버튼. 박스 입수(1박스 몇 개)를 물어 함께 저장.
    · 헐리우드가 아닌 지점 — 경유 품목은 +/− 대신 [🏬 헐리우드에 요청] 버튼.
@@ -35,7 +35,7 @@
   // 🔐 2026-10-29 사장님: "route via hollywood 버튼은 김병호 전무와 나에게만 — 다른 사람들에게는 보이면 안 돼."
   //   예전엔 추천(⭐)과 같은 권한(오너·임원 전원)이었다 → 이제 DJ · B.H.K(김병호) 두 사람만.
   //   이름은 auth-gate 가 지켜 준다(오너·임원 이름은 진짜 그 계정이 로그인했을 때만 붙는다) + 역할도 함께 본다.
-  const ROUTERS = ['DJ', 'B.H.K', 'BHK', '비에이치케이', '김병호', 'BYUNGHOKIM'];
+  const ROUTERS = ['DJ', 'SUNKIM', '선킴', '썬킴', 'B.H.K', 'BHK', '비에이치케이', '김병호', 'BYUNGHOKIM'];   // 2026-10-30 Sun Kim(OWNER) 추가
   function normName(n){ return String(n || '').replace(/\s+/g, '').toUpperCase(); }
   function role(){ return String(me().role || '').trim().toUpperCase(); }
   function canMark(){ return /^(OWNER|EXECUTIVE)$/.test(role()) && ROUTERS.includes(normName(me().name)); }

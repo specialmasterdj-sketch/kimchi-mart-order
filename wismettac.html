@@ -218,7 +218,7 @@
 
 <script src="recommend.js?v=20261028e1"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
-<script src="hub.js?v=20260919b"></script>
+<script src="hub.js?v=20261029h"></script>
 <script src="product-images.js?v=20260726a"></script>
 <script>
 // Recommended-products filter state — toggled from a chip above the grid.
@@ -996,7 +996,11 @@ if (window.kmRecs){
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.config({ vendorName: 'Wismettac', vendorNameKr: '위스메탁', lookup: (v, id) => PRODUCTS.find(p => String(p.id) === String(id)) || null });
-  window.kmHub.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+  window.kmHub.subscribe(() => {
+    // 🔐 2026-10-29 사장님: 경유 지정되는 순간 다른 지점은 '반드시' 주문 못 하게 — 이미 담아 둔 것도 장바구니에서 뺀다
+    try { let gone = 0; for (const id of Object.keys(CART)) if (window.kmHub.blocked('wismettac', _hubPid(id))) { delete CART[id]; gone++; } if (gone) saveCart(); } catch(e){}
+    try { if (typeof render === 'function') render(); } catch(e){}
+  });
 }
 
 // 상품 사진 모듈(window.kmImg) — 빈 상품에 사진 추가 → 공유.

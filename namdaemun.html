@@ -457,7 +457,7 @@
 <!-- 📷 상품 사진 — 촬영·파일·URL·붙여넣기 (2026-09-20 전무님: 모든 품목에 사진) -->
 <script src="product-images.js?v=20260726a"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
-<script src="hub.js?v=20260919b"></script>
+<script src="hub.js?v=20261029h"></script>
 <script>
 /* URL ?branch=<ID> override — set by vendor-order-center.html so this app
    loads the right per-branch cart regardless of whatever km_branch the device
@@ -2010,7 +2010,11 @@ if (window.kmImg){
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.config({ vendorName: 'Namdaemun', vendorNameKr: '남대문', lookup: (v, key) => { const r = findItemByKey(key); if (!r) return null; const it = r.item; return { name: it.en || it.ko, nameKr: it.ko || '', unit: it.unit || '', barcode: it.barcode || '', image: it.image || '' }; } });
-  window.kmHub.subscribe(() => { try { if (typeof renderContent === 'function') renderContent(); } catch(e){} });
+  window.kmHub.subscribe(() => {
+    // 🔐 2026-10-29 사장님: 경유 지정되는 순간 다른 지점은 '반드시' 주문 못 하게 — 이미 담아 둔 것도 장바구니에서 뺀다
+    try { let gone = 0; for (const k of Object.keys(state.qty || {})) if (window.kmHub.blocked('namdaemun', k)) { delete state.qty[k]; gone++; } if (gone) saveState(); } catch(e){}
+    try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
+  });
 }
 // Re-subscribe once the user's auth token is restored from IndexedDB —
 // otherwise the very first read can race ahead of auth and silently fail.

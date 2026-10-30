@@ -4,7 +4,8 @@
    해서 헐리우드에서 각 지점으로 보내는 방법 … 오더 앱에서 그 물품들을 클릭하면
    헐리우드 공동 오더 앱에 들어오게." 배경: 지점마다 박스로 받아 20%만 팔고 버린다.
 
-   · 경유 지정/해제 — 오너·임원만 (추천 표시 kmRecs 와 같은 권한 canMark).
+   · 경유 지정/해제 — DJ · B.H.K(김병호 전무) 두 사람만 (2026-10-29). 다른 사람에겐 버튼이 안 보인다.
+   · 지정되면 헐리우드가 아닌 지점의 장바구니에 이미 담긴 것도 페이지가 자동으로 뺀다.
      상품 타일의 [🏬 경유 지정] 버튼. 박스 입수(1박스 몇 개)를 물어 함께 저장.
    · 헐리우드가 아닌 지점 — 경유 품목은 +/− 대신 [🏬 헐리우드에 요청] 버튼.
      누르면 kfood-guide 공동 오더 앱(share-order.html)이 그 품목을 연 채로 열린다.
@@ -30,7 +31,20 @@
   function key(vendor, pid){ return String(vendor) + '__' + fbKey(baseId(pid)); }
   function branch(){ try { return (localStorage.getItem('km_branch') || '').toUpperCase(); } catch(e){ return ''; } }
   function me(){ try { return JSON.parse(localStorage.getItem('chat.me') || 'null') || {}; } catch(e){ return {}; } }
-  function canMark(){ try { return !!(window.kmRecs && window.kmRecs.canMark()); } catch(e){ return false; } }
+  // 🔐 2026-10-29 사장님: "route via hollywood 버튼은 김병호 전무와 나에게만 — 다른 사람들에게는 보이면 안 돼."
+  //   예전엔 추천(⭐)과 같은 권한(오너·임원 전원)이었다 → 이제 DJ · B.H.K(김병호) 두 사람만.
+  //   이름은 auth-gate 가 지켜 준다(오너·임원 이름은 진짜 그 계정이 로그인했을 때만 붙는다) + 역할도 함께 본다.
+  const ROUTERS = ['DJ', 'B.H.K', 'BHK', '비에이치케이', '김병호', 'BYUNGHOKIM'];
+  function normName(n){ return String(n || '').replace(/\s+/g, '').toUpperCase(); }
+  function role(){ return String(me().role || '').trim().toUpperCase(); }
+  function canMark(){ return /^(OWNER|EXECUTIVE)$/.test(role()) && ROUTERS.includes(normName(me().name)); }
+  // 🔐 2026-10-29: 지점은 '본인 지점' 으로 판단한다. 오더 앱 지점 선택(km_branch)이나 주소 ?branch=HOLLYWOOD 로
+  //   헐리우드인 척하면 막힘이 풀리던 구멍. 지점을 넘나드는 건 오너·임원만(auth-gate 와 같은 선) —
+  //   그 밖의 직원은 서버가 정해 준 chat.me.branch 가 이긴다.
+  function effBranch(){
+    if (/^(OWNER|EXECUTIVE)$/.test(role())) return branch();
+    return String(me().branch || '').toUpperCase() || branch();
+  }
   function lang(){ try { return localStorage.getItem('kimchi_lang') || 'ko'; } catch(e){ return 'ko'; } }
   function T(ko, en, es){ const l = lang(); return l === 'en' ? en : l === 'es' ? es : ko; }
   function esc(x){ return String(x == null ? '' : x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -46,7 +60,7 @@
   }
   function item(vendor, pid){ const it = S.items[key(vendor, pid)]; return (it && it.active !== false) ? it : null; }
   function isHub(vendor, pid){ return !!item(vendor, pid); }
-  function blocked(vendor, pid){ return isHub(vendor, pid) && branch() !== HUB_BRANCH; }
+  function blocked(vendor, pid){ return isHub(vendor, pid) && effBranch() !== HUB_BRANCH; }
   function reqUrl(vendor, pid){
     return HUB_APP + '?hub=' + encodeURIComponent(key(vendor, pid)) + (branch() ? '&from=' + encodeURIComponent(branch()) : '');
   }
@@ -135,5 +149,5 @@
     (document.head || document.documentElement).appendChild(css);
   } catch(e){}
 
-  window.kmHub = { init, isHub, blocked, badgeHTML, toggleHTML, requestHTML, guard, toggle, subscribe, config, count, key };
+  window.kmHub = { init, isHub, blocked, canMark, badgeHTML, toggleHTML, requestHTML, guard, toggle, subscribe, config, count, key };
 })();

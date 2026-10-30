@@ -16,7 +16,7 @@
 <script src="vela_stock.js"></script>
 <script src="recommend.js?v=20261028e1"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
-<script src="hub.js?v=20260919b"></script>
+<script src="hub.js?v=20261029h"></script>
 <script src="recv.js?v=8"></script>
 <script src="order-log.js?v=1"></script>
 <script src="product-images.js?v=20260726a"></script>
@@ -2372,6 +2372,13 @@ window.__kmFb = { db, ref, set, update };
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.subscribe(() => {
+    // 🔐 2026-10-29 사장님: 경유 지정되는 순간 다른 지점은 '반드시' 주문 못 하게 — 이미 담아 둔 것도 장바구니에서 뺀다
+    try {
+      let gone = 0;
+      for (const v of Object.keys(state.orders || {})) for (const pid of Object.keys(state.orders[v] || {}))
+        if (window.kmHub.blocked(v, pid)) { delete state.orders[v][pid]; gone++; }
+      if (gone) saveState();
+    } catch(e){}
     try { if (window.KM && typeof window.KM.render === 'function') window.KM.render(); } catch(e){}
   });
 }

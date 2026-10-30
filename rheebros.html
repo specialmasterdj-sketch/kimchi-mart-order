@@ -228,7 +228,7 @@
 <script src="rheebros_products.js?v=20261008c"></script>
 <script src="recommend.js?v=20261028e1"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
-<script src="hub.js?v=20260919b"></script>
+<script src="hub.js?v=20261029h"></script>
 <!-- 🔁 입고·주문·판매·매입가 띠 (2026-10-08) — index.html 과 같은 모듈 -->
 <script src="recv.js?v=7"></script>
 <script src="order-log.js?v=1"></script>
@@ -1106,7 +1106,11 @@ if (window.kmRecs){
 if (window.kmHub){
   window.kmHub.init({ db, ref, set, onValue });
   window.kmHub.config({ vendorName: 'Rhee Bros', vendorNameKr: '이브라더스', lookup: (v, id) => PRODUCTS.find(p => String(p.id) === String(id)) || null });
-  window.kmHub.subscribe(() => { try { if (typeof render === 'function') render(); } catch(e){} });
+  window.kmHub.subscribe(() => {
+    // 🔐 2026-10-29 사장님: 경유 지정되는 순간 다른 지점은 '반드시' 주문 못 하게 — 이미 담아 둔 것도 장바구니에서 뺀다
+    try { let gone = 0; for (const id of Object.keys(CART)) if (window.kmHub.blocked('rhee_full', _hubPid(id))) { delete CART[id]; gone++; } if (gone) saveCart(); } catch(e){}
+    try { if (typeof render === 'function') render(); } catch(e){}
+  });
 }
 
 // 🔁 입고·🛒 주문·📈 판매·💵 매입가 띠 — 지점별로 읽는다 (expiry/{지점}/...)

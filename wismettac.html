@@ -143,13 +143,14 @@
   <button class="back-btn" onclick="onBack()">←</button>
   <div class="hdr-title">
     <h1>Wismettac</h1>
-    <p>위스메탁 · Orlando</p>
+    <p id="hdr-sub">위스메탁 · Orlando</p>
   </div>
   <div class="hdr-acts">
     <button id="branch-btn" onclick="openBranchModal()" style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">📍 <span id="branch-btn-label">지점</span></button>
     <div class="lang-sel">
       <button class="on" data-lang="ko" onclick="setLang('ko')">KO</button>
       <button data-lang="en" onclick="setLang('en')">EN</button>
+      <button data-lang="es" onclick="setLang('es')">ES</button>
     </div>
     <button class="cart-btn" onclick="openCart()">
       🛒
@@ -163,8 +164,8 @@
   <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
     <div style="background:linear-gradient(135deg,#C8352A,#A02820);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
       <div>
-        <div style="font-size:16px;font-weight:800">📍 지점 선택</div>
-        <div style="font-size:11px;opacity:.85;margin-top:2px">장바구니는 지점별로 실시간 공유됩니다</div>
+        <div style="font-size:16px;font-weight:800" id="bm-title">📍 지점 선택</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px" id="bm-hint">장바구니는 지점별로 실시간 공유됩니다</div>
       </div>
       <button onclick="closeBranchModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
     </div>
@@ -180,7 +181,7 @@
 
 <div class="cart-bar" id="cart-bar" onclick="openCart()">
   <div class="info"><span id="cart-summary">0 종 · 0 개</span></div>
-  <button class="cta">주문 확인 →</button>
+  <button class="cta" id="cart-cta">주문 확인 →</button>
 </div>
 
 <!-- PRODUCT DETAIL MODAL -->
@@ -198,17 +199,17 @@
 <div class="modal" id="cart-modal">
   <div class="modal-box">
     <div class="modal-hdr">
-      <h2>🛒 주문 내역</h2>
+      <h2 id="cart-title">🛒 주문 내역</h2>
       <button class="close" onclick="closeCart()">✕</button>
     </div>
     <div class="modal-body"><div class="cart-body-inner" id="cart-body"></div></div>
     <div class="modal-foot">
       <div class="summary"><span id="cart-counts-text">-</span></div>
       <div class="btns">
-        <button class="gray" onclick="clearCart()">🗑 비우기</button>
-        <button class="outline" onclick="exportOrder()">📥 엑셀</button>
-        <button class="primary" onclick="copyOrderText()">📋 복사</button>
-        <button class="primary" style="background:#1a73e8" onclick="emailOrder()">📧 이메일</button>
+        <button class="gray" id="btn-clear" onclick="clearCart()">🗑 비우기</button>
+        <button class="outline" id="btn-excel" onclick="exportOrder()">📥 엑셀</button>
+        <button class="primary" id="btn-copy" onclick="copyOrderText()">📋 복사</button>
+        <button class="primary" id="btn-email" style="background:#1a73e8" onclick="emailOrder()">📧 이메일</button>
       </div>
     </div>
   </div>
@@ -268,9 +269,13 @@ try {
   const saved = localStorage.getItem(_cartKey());
   if (saved) Object.assign(CART, JSON.parse(saved));
 } catch(e){}
+// 🌐 2026-11-02 사장님 신고("영어·스패니쉬로 세이브가 안되고 표시가 다 한국말"):
+//   언어는 앱 전체가 공유하는 kimchi_lang 을 1순위로 읽는다. 예전엔 이 페이지만
+//   wismettac-lang 이라는 자기 열쇠를 써서 index.html·hub.js·recommend.js 와 따로
+//   놀았다 — 다른 데서 EN/ES 를 골라도 위스메텍만 한국어로 돌아오던 원인.
 try {
-  const lang = localStorage.getItem('wismettac-lang');
-  if (lang) LANG = lang;
+  const lang = localStorage.getItem('kimchi_lang') || localStorage.getItem('wismettac-lang');
+  if (lang === 'ko' || lang === 'en' || lang === 'es') LANG = lang;
 } catch(e){}
 
 const $ = (id) => document.getElementById(id);
@@ -297,19 +302,20 @@ window.KM_W = {
 
 // ===== BRANCH SELECTOR =====
 const BRANCHES = [
-  { id:'MIAMI',          ko:'마이애미',        en:'Miami' },
-  { id:'PEMBROKE_PINES', ko:'펨브로크 파인즈', en:'Pembroke Pines' },
-  { id:'HOLLYWOOD',      ko:'할리우드',        en:'Hollywood' },
-  { id:'CORAL_SPRINGS',  ko:'코럴 스프링스',   en:'Coral Springs' },
-  { id:'LASOLAS',        ko:'라스올라스',      en:'LASOLAS' },
-  { id:'WEST_PALM',      ko:'웨스트 팜 비치',  en:'West Palm Beach' }
+  { id:'MIAMI',          ko:'마이애미',        en:'Miami',             es:'Miami' },
+  { id:'PEMBROKE_PINES', ko:'펨브로크 파인즈', en:'Pembroke Pines',    es:'Pembroke Pines' },
+  { id:'HOLLYWOOD',      ko:'할리우드',        en:'Hollywood',         es:'Hollywood' },
+  { id:'CORAL_SPRINGS',  ko:'코럴 스프링스',   en:'Coral Springs',     es:'Coral Springs' },
+  { id:'LASOLAS',        ko:'라스올라스',      en:'LASOLAS',           es:'Las Olas' },
+  { id:'WEST_PALM',      ko:'웨스트 팜 비치',  en:'West Palm Beach',   es:'West Palm Beach' }
 ];
 const BRANCH_BY_ID = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
 function getBranchId(){ try { return localStorage.getItem('km_branch') || ''; } catch(e){ return ''; } }
+function branchName(b){ return b ? (b[LANG] || b.en || b.ko) : ''; }
 function updateBranchLabel(){
   const b = getBranchId();
   const el = $('branch-btn-label');
-  if (el) el.textContent = (BRANCH_BY_ID[b] && BRANCH_BY_ID[b].ko) || '지점 선택';
+  if (el) el.textContent = branchName(BRANCH_BY_ID[b]) || t('pickBranch');
 }
 function setBranch(id){
   if (!BRANCH_BY_ID[id]) return;
@@ -342,8 +348,8 @@ function openBranchModal(){
   if (grid){
     grid.innerHTML = BRANCHES.map(b => (
       '<button onclick="setBranch(\''+b.id+'\')" style="background:'+(b.id===cur?'#FFEBEE':'#fff')+';border:1.5px solid '+(b.id===cur?'#C8352A':'#ddd')+';border-radius:10px;padding:14px 10px;font-size:13px;font-weight:700;color:'+(b.id===cur?'#C8352A':'#333')+';cursor:pointer;font-family:inherit;text-align:center">'
-      + '<div>'+b.ko+'</div>'
-      + '<div style="font-size:10px;color:#888;font-weight:500;margin-top:2px">'+b.en+'</div>'
+      + '<div>'+branchName(b)+'</div>'
+      + '<div style="font-size:10px;color:#888;font-weight:500;margin-top:2px">'+(LANG==='ko'?b.en:b.ko)+'</div>'
       + '</button>'
     )).join('');
   }
@@ -366,22 +372,54 @@ function toast(msg, ms=1800){
 }
 
 const I18N = {
-  ko: { search:'제품명·코드·바코드 검색...', all:'전체', new:'⭐ 신제품', items:'{n}개', cart:'🛒 주문 내역', empty:'장바구니가 비어있습니다', clear:'🗑 비우기', excel:'📥 엑셀', copy:'📋 복사', summary:'<b>{types}</b>종 · 총 <b>{units}</b>개', noResults:'검색 결과가 없습니다', confirmClear:'주문 전체를 비울까요?', copied:'📋 주문 내용 복사 완료', noCart:'주문할 상품이 없습니다', allCats:'모든 세부 카테고리', clearFlt:'필터 초기화', brand:'브랜드', category:'카테고리', itemNo:'상품 번호', packSize:'팩 사이즈', minOrder:'최소 주문 수량', barcode:'바코드', orderQty:'주문 수량', addCart:'장바구니 담기', updateCart:'수량 저장', removeCart:'주문에서 제거', added:'✓ 장바구니에 추가됨', updated:'✓ 수량 업데이트됨', removed:'✓ 주문에서 제거됨' },
-  en: { search:'Search name, code, barcode...', all:'All', new:'⭐ New', items:'{n} items', cart:'🛒 Order Summary', empty:'Cart is empty', clear:'🗑 Clear', excel:'📥 Excel', copy:'📋 Copy', summary:'<b>{types}</b> items · <b>{units}</b> units', noResults:'No results found', confirmClear:'Clear all items?', copied:'📋 Order copied', noCart:'Cart is empty', allCats:'All sub-categories', clearFlt:'Clear filters', brand:'Brand', category:'Category', itemNo:'Item number', packSize:'Pack Size', minOrder:'Min Order Qty', barcode:'Barcode', orderQty:'Order Qty', addCart:'Add to Cart', updateCart:'Update Qty', removeCart:'Remove from Cart', added:'✓ Added to cart', updated:'✓ Qty updated', removed:'✓ Removed from cart' }
+  ko: { search:'제품명·코드·바코드 검색...', all:'전체', new:'⭐ 신제품', items:'{n}개', cart:'🛒 주문 내역', empty:'장바구니가 비어있습니다', clear:'🗑 비우기', excel:'📥 엑셀', copy:'📋 복사', summary:'<b>{types}</b>종 · 총 <b>{units}</b>개', noResults:'검색 결과가 없습니다', confirmClear:'주문 전체를 비울까요?', copied:'📋 주문 내용 복사 완료', noCart:'주문할 상품이 없습니다', allCats:'모든 세부 카테고리', clearFlt:'필터 초기화', brand:'브랜드', category:'카테고리', itemNo:'상품 번호', packSize:'팩 사이즈', minOrder:'최소 주문 수량', barcode:'바코드', orderQty:'주문 수량', addCart:'장바구니 담기', updateCart:'수량 저장', removeCart:'주문에서 제거', added:'✓ 장바구니에 추가됨', updated:'✓ 수량 업데이트됨', removed:'✓ 주문에서 제거됨',
+        pageTitle:'김치마트 주문 - Wismettac', sub:'위스메탁 · Orlando', pickBranch:'지점 선택', bmTitle:'📍 지점 선택', bmHint:'장바구니는 지점별로 실시간 공유됩니다', reviewOrder:'주문 확인 →', pdTitle:'제품 상세', email:'📧 이메일', unitCs:'📦 케이스 / CS', unitPc:'🥬 낱개 / pc', qtyPrompt:'수량 입력 (숫자):', close:'닫기', eaBadge:'小 ea', csBadge:'cs',
+        clearWarn:'⚠️ 공유 주문 카트입니다.\n\n[{b}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · {types}종 / {units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)', cleared:'✓ 비웠음 (백업 보관 중)', copyFail:'복사 실패', excelDone:'✓ 엑셀 저장 완료', sheetName:'주문',
+        orderHead:'[김치마트 주문 - Wismettac Orlando / {date}]', totalLine:'합계: {types}종 / {units}개',
+        emailConfirm:'위스메텍에 주문 이메일을 보낼까요?\n\n받는사람: {to}\n품목: {types}종 / {units}개\n(엑셀 첨부 자동 발송)', sending:'📧 발송 중…', sentOk:'✅ 발송 완료 — info@ 보낸편지함에서 확인하세요', sendFail:'발송 실패: ', gmailOpen:'📧 Gmail 작성창 열림 — 확인 후 보내기', copiedBody:'📋 주문 복사됨 — 본문에 Ctrl+V 후 보내기' },
+  en: { search:'Search name, code, barcode...', all:'All', new:'⭐ New', items:'{n} items', cart:'🛒 Order Summary', empty:'Cart is empty', clear:'🗑 Clear', excel:'📥 Excel', copy:'📋 Copy', summary:'<b>{types}</b> items · <b>{units}</b> units', noResults:'No results found', confirmClear:'Clear all items?', copied:'📋 Order copied', noCart:'Cart is empty', allCats:'All sub-categories', clearFlt:'Clear filters', brand:'Brand', category:'Category', itemNo:'Item number', packSize:'Pack Size', minOrder:'Min Order Qty', barcode:'Barcode', orderQty:'Order Qty', addCart:'Add to Cart', updateCart:'Update Qty', removeCart:'Remove from Cart', added:'✓ Added to cart', updated:'✓ Qty updated', removed:'✓ Removed from cart',
+        pageTitle:'Kimchi Mart Order - Wismettac', sub:'Wismettac · Orlando', pickBranch:'Select branch', bmTitle:'📍 Select branch', bmHint:'The cart is shared live within each branch', reviewOrder:'Review order →', pdTitle:'Product details', email:'📧 Email', unitCs:'📦 Case / CS', unitPc:'🥬 Each / pc', qtyPrompt:'Enter quantity (number):', close:'Close', eaBadge:'ea', csBadge:'cs',
+        clearWarn:'⚠️ This is a shared order cart.\n\nEverything other managers and staff at [{b}] added will be deleted:\n  · {types} items / {units} units\n\nClear the whole cart?\n(A backup is saved first, so it can be restored.)', cleared:'✓ Cleared (backup saved)', copyFail:'Copy failed', excelDone:'✓ Excel saved', sheetName:'Order',
+        orderHead:'[Kimchi Mart Order - Wismettac Orlando / {date}]', totalLine:'Total: {types} items / {units} units',
+        emailConfirm:'Send the order email to Wismettac?\n\nTo: {to}\nItems: {types} items / {units} units\n(Excel file attached automatically)', sending:'📧 Sending…', sentOk:'✅ Sent — check the Sent folder of info@', sendFail:'Send failed: ', gmailOpen:'📧 Gmail compose window opened — review, then send', copiedBody:'📋 Order copied — paste with Ctrl+V in the body, then send' },
+  es: { search:'Buscar nombre, código, código de barras...', all:'Todo', new:'⭐ Nuevos', items:'{n} artículos', cart:'🛒 Resumen del pedido', empty:'El carrito está vacío', clear:'🗑 Vaciar', excel:'📥 Excel', copy:'📋 Copiar', summary:'<b>{types}</b> artículos · <b>{units}</b> unidades', noResults:'Sin resultados', confirmClear:'¿Vaciar todo el pedido?', copied:'📋 Pedido copiado', noCart:'El carrito está vacío', allCats:'Todas las subcategorías', clearFlt:'Quitar filtros', brand:'Marca', category:'Categoría', itemNo:'Número de artículo', packSize:'Tamaño del paquete', minOrder:'Pedido mínimo', barcode:'Código de barras', orderQty:'Cantidad', addCart:'Agregar al carrito', updateCart:'Guardar cantidad', removeCart:'Quitar del pedido', added:'✓ Agregado al carrito', updated:'✓ Cantidad actualizada', removed:'✓ Quitado del pedido',
+        pageTitle:'Pedido Kimchi Mart - Wismettac', sub:'Wismettac · Orlando', pickBranch:'Elegir tienda', bmTitle:'📍 Elegir tienda', bmHint:'El carrito se comparte en vivo dentro de cada tienda', reviewOrder:'Revisar pedido →', pdTitle:'Detalles del producto', email:'📧 Correo', unitCs:'📦 Caja / CS', unitPc:'🥬 Unidad / pc', qtyPrompt:'Ingrese la cantidad (número):', close:'Cerrar', eaBadge:'ud', csBadge:'cs',
+        clearWarn:'⚠️ Este carrito de pedido es compartido.\n\nSe borrará todo lo que otros gerentes y empleados de [{b}] agregaron:\n  · {types} artículos / {units} unidades\n\n¿Vaciar todo el carrito?\n(Se guarda un respaldo antes, se puede restaurar.)', cleared:'✓ Vaciado (respaldo guardado)', copyFail:'Error al copiar', excelDone:'✓ Excel guardado', sheetName:'Pedido',
+        orderHead:'[Pedido Kimchi Mart - Wismettac Orlando / {date}]', totalLine:'Total: {types} artículos / {units} unidades',
+        emailConfirm:'¿Enviar el correo del pedido a Wismettac?\n\nPara: {to}\nArtículos: {types} artículos / {units} unidades\n(Archivo Excel adjunto automáticamente)', sending:'📧 Enviando…', sentOk:'✅ Enviado — revise la carpeta Enviados de info@', sendFail:'Error al enviar: ', gmailOpen:'📧 Ventana de Gmail abierta — revise y envíe', copiedBody:'📋 Pedido copiado — pegue con Ctrl+V en el cuerpo y envíe' }
 };
 const t = (key, vars={}) => {
-  let s = (I18N[LANG] && I18N[LANG][key]) || key;
+  let s = (I18N[LANG] && I18N[LANG][key]) || I18N.ko[key] || key;
   for (const k in vars) s = s.replace('{'+k+'}', vars[k]);
   return s;
 };
 function setLang(l){
   LANG = l;
+  // 앱 전체 공용 열쇠(kimchi_lang) 에 저장 — index.html·hub.js·recommend.js 가 같이 따라온다.
+  // wismettac-lang 은 옛 기기 호환으로 같이 써 준다.
+  try { localStorage.setItem('kimchi_lang', l); } catch(e){}
   try { localStorage.setItem('wismettac-lang', l); } catch(e){}
   document.querySelectorAll('.lang-sel button').forEach(b => b.classList.toggle('on', b.dataset.lang === l));
+  try { document.documentElement.lang = l; } catch(e){}
+  try { document.title = t('pageTitle'); } catch(e){}
+  // 정적 HTML 문구 — 예전엔 한국어가 그대로 박혀 있어서 EN/ES 를 눌러도 안 바뀌었다.
+  const setTxt = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+  setTxt('hdr-sub',    t('sub'));
+  setTxt('bm-title',   t('bmTitle'));
+  setTxt('bm-hint',    t('bmHint'));
+  setTxt('cart-cta',   t('reviewOrder'));
+  setTxt('cart-title', t('cart'));
+  setTxt('btn-clear',  t('clear'));
+  setTxt('btn-excel',  t('excel'));
+  setTxt('btn-copy',   t('copy'));
+  setTxt('btn-email',  t('email'));
+  if (!$('pd-modal').classList.contains('show')) setTxt('pd-header', t('pdTitle'));
   $('search').placeholder = t('search');
+  updateBranchLabel();
   buildGroups();
   buildCategorySelect();
   render();
+  updateCartBar();
   if ($('cart-modal').classList.contains('show')) renderCart();
   if ($('pd-modal').classList.contains('show')) openPd(CURRENT_PD_ID);
 }
@@ -529,7 +567,7 @@ function render(){
         '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+eaIdOf(p.detailId)+'\','+eaQty+')">' + eaQty + '</button>' +
         '<button class="qbtn plus" onclick="bumpQty(\''+eaIdOf(p.detailId)+'\',1)">+</button>' +
       '</div>' +
-      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">🥬 낱개 / pc' + (pack ? ' (1 CS = ' + pack.pack + 'pc)' : '') + '</div>'
+      '<div style="font-size:9.5px;color:#b87500;text-align:center;margin-top:2px;font-weight:700">' + t('unitPc') + (pack ? ' (1 CS = ' + pack.pack + 'pc)' : '') + '</div>'
     ) : '';
     const recTools  = window.kmRecs ? window.kmRecs.toggleHTML(p.id)  : '';
     const recUnit   = window.kmRecs ? window.kmRecs.defaultUnit(p) : 'cs';
@@ -562,7 +600,7 @@ function render(){
             '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
-          '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>' +
+          '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">' + t('unitCs') + '</div>' +
           eaRow +
           '')) +
         '</div>' +
@@ -579,7 +617,7 @@ function clearFilters(){
 }
 
 function openQtyInput(id, current){
-  const v = prompt('수량 입력 (숫자):', current);
+  const v = prompt(t('qtyPrompt'), current);
   if (v === null) return;
   const n = parseInt(v, 10);
   if (!isNaN(n) && n >= 0) setQty(id, n);
@@ -669,7 +707,7 @@ function openPd(detailId){
       '</div>' +
     '</div>') +
     '<div class="pd-foot">' +
-      '<button class="outline" onclick="closePd()">' + (LANG==='ko'?'닫기':'Close') + '</button>' +
+      '<button class="outline" onclick="closePd()">' + t('close') + '</button>' +
       (curQty > 0
         ? '<button class="primary" onclick="pdRemove()">' + t('removeCart') + '</button>'
         : ((window.kmHub && window.kmHub.blocked('wismettac', p.id)) ? '' : '<button class="primary" onclick="pdAddToCart()">+ ' + t('addCart') + '</button>')
@@ -738,7 +776,7 @@ function renderCart(){
     const pack = ea ? parsePackSize(p.packSize) : null;
     const sizeLabel = ea && pack ? ('1 pc (' + pack.unit + ')') : (p.packSize||'-');
     const unitChip = ea
-      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">小 ea</span>'
+      ? '<span style="display:inline-block;background:#ff9800;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">' + t('eaBadge') + '</span>'
       : '<span style="display:inline-block;background:#1976d2;color:#fff;font-weight:800;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">CS</span>';
     return (
       '<div class="ci" onclick="closeCart();openPd(\''+p.detailId+'\');">' +
@@ -751,7 +789,7 @@ function renderCart(){
           '<button onclick="bumpQty(\''+id+'\',-1)">−</button>' +
           '<input type="number" min="0" max="999" value="'+qty+'" onchange="setQty(\''+id+'\', this.value)">' +
           '<button onclick="bumpQty(\''+id+'\',1)">+</button>' +
-          '<span style="font-size:12px;font-weight:800;margin-left:6px;color:' + (ea?'#ff9800':'#1976d2') + '">' + (ea?'小 ea':'cs') + '</span>' +
+          '<span style="font-size:12px;font-weight:800;margin-left:6px;color:' + (ea?'#ff9800':'#1976d2') + '">' + (ea?t('eaBadge'):t('csBadge')) + '</span>' +
         '</div>' +
       '</div>'
     );
@@ -790,7 +828,7 @@ function clearCart(){
   const units = Object.values(CART).reduce((s,n)=>s+(+n||0),0);
   const b = (function(){ try { return localStorage.getItem('km_branch')||''; } catch(_){ return ''; } })();
   const u = (function(){ try { return JSON.parse(localStorage.getItem('chat.me')||'null')?.name || ''; } catch(_){ return ''; } })();
-  const warn = `⚠️ 공유 주문 카트입니다.\n\n[${b||'?'}] 지점의 다른 매니저·직원이 추가한 모든 주문이 사라집니다:\n  · ${types}종 / ${units}개 품목\n\n정말 전체를 비우시겠어요?\n(비우기 전 자동 백업되어 복구 가능)`;
+  const warn = t('clearWarn', { b: b || '?', types, units });
   if (!confirm(warn)) return;
   logWisOrdered();
   try {
@@ -808,14 +846,14 @@ function clearCart(){
   saveCart();
   render();
   renderCart();
-  toast('✓ 비웠음 (백업 보관 중)');
+  toast(t('cleared'));
 }
 
 function buildOrderText(){
   const entries = Object.entries(CART);
   if (!entries.length) return '';
   const today = new Date().toISOString().slice(0,10);
-  const lines = ['[김치마트 주문 - Wismettac Orlando / ' + today + ']', ''];
+  const lines = [t('orderHead', { date: today }), ''];
   entries.forEach(([id, qty]) => {
     const ea = isEaId(id);
     const lookupId = ea ? baseIdOf(id) : id;
@@ -825,7 +863,7 @@ function buildOrderText(){
     lines.push('[' + unit + '] #' + p.id + '  ×' + qty + '  ' + p.name + '  (' + (p.packSize||'-') + ')');
   });
   const units = entries.reduce((s, [,q]) => s + q, 0);
-  lines.push('', '합계: ' + entries.length + '종 / ' + units + '개');
+  lines.push('', t('totalLine', { types: entries.length, units }));
   return lines.join('\n');
 }
 
@@ -846,7 +884,7 @@ function fallbackCopy(txt){
   document.body.appendChild(ta);
   ta.select();
   try { document.execCommand('copy'); toast(t('copied')); }
-  catch(e){ toast('복사 실패'); }
+  catch(e){ toast(t('copyFail')); }
   document.body.removeChild(ta);
 }
 
@@ -873,14 +911,14 @@ function emailOrder(){
       if (p) items.push({ unit: ea?'PC':'CS', id: p.id, qty: qty, name: p.name, pack: p.packSize||'' });
     });
     const units = entries.reduce((s,[,q])=>s+q,0);
-    if (!confirm('위스메텍에 주문 이메일을 보낼까요?\n\n받는사람: ' + to + '\n품목: ' + items.length + '종 / ' + units + '개\n(엑셀 첨부 자동 발송)')) return;
-    toast('📧 발송 중…');
+    if (!confirm(t('emailConfirm', { to, types: items.length, units }))) return;
+    toast(t('sending'));
     fetch(ORDER_EMAIL_ENDPOINT, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ to, subject, body: txt, items, filename: 'KimchiMart_Wismettac_' + today })
-    }).then(() => toast('✅ 발송 완료 — info@ 보낸편지함에서 확인하세요'))
-      .catch(e => toast('발송 실패: ' + (e.message||e)));
+    }).then(() => toast(t('sentOk')))
+      .catch(e => toast(t('sendFail') + (e.message||e)));
     return;
   }
 
@@ -893,7 +931,7 @@ function emailOrder(){
   const url = withBody.length < 1900 ? withBody : base;
   const w = window.open(url, '_blank');
   if (!w){ location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject); }
-  toast(url === withBody ? '📧 Gmail 작성창 열림 — 확인 후 보내기' : '📋 주문 복사됨 — 본문에 Ctrl+V 후 보내기');
+  toast(url === withBody ? t('gmailOpen') : t('copiedBody'));
 }
 
 function exportOrder(){
@@ -910,10 +948,10 @@ function exportOrder(){
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
   ws['!cols'] = [{wch:6},{wch:10},{wch:44},{wch:16},{wch:10},{wch:24},{wch:14},{wch:10},{wch:14},{wch:10}];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '주문');
+  XLSX.utils.book_append_sheet(wb, ws, t('sheetName'));
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, 'Wismettac_Order_' + today + '.xlsx');
-  toast('✓ 엑셀 저장 완료');
+  toast(t('excelDone'));
 }
 
 /* -------- INIT -------- */

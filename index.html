@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script src="recommend.js?v=20261028e1"></script>
+<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102p"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20261030s"></script>
 <script src="recv.js?v=8"></script>
@@ -892,6 +892,8 @@ function setQty(vendorId, productId, qty) {
   if (window.kmHub && window.kmHub.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
   // 🔁 최근에 받은 상품을 처음 담는 순간 한 번만 묻는다
   if (window.kmRecv && window.kmRecv.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
+  // 🥬 낱개 전용 상품 — 케이스는 늘릴 수 없다 (줄이기는 됨)
+  if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(productId) && window.kmRecs.pcBlock(productId, qty, getQty(vendorId, productId))) return;
   if (!state.orders[vendorId]) state.orders[vendorId] = {};
   state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
   if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
@@ -1466,7 +1468,10 @@ function buildTilesHtml(v, products){
     //   한 케이스가 몇 개 안 되는 상품까지 낱개를 붙이면 2026-06 때처럼 매니저가
     //   혼란스러워지므로 그 선은 유지한다.
     const isBxItem = /^\s*BX\b/i.test(String(p.um || p.size || ''));
-    const showEA = isBxItem || !!(pack && pack.count >= EA_MIN_PIECES);
+    const _pcOnly = !!(window.kmRecs && window.kmRecs.isPcOnly && window.kmRecs.isPcOnly(p.id));
+    const _pcHide = (_pcOnly && qty <= 0) ? ' style="display:none"' : '';
+    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote() : '';
+    const showEA = isBxItem || !!(pack && pack.count >= EA_MIN_PIECES) || _pcOnly;
     // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
     // 다른 상품에 필요해지면 PL_ENABLED_NAMES 에 키워드 추가.
     const PL_ENABLED_NAMES = ['NAPA'];
@@ -1541,12 +1546,12 @@ function buildTilesHtml(v, products){
           ${hubMark}
         ${recvMark}
           ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
-          <div class="qty-row">
+          <div class="qty-row"${_pcHide}>
             <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
             <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
             <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
           </div>
-          <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
+          ${_pcHide ? _pcNote : '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>'}
           ${eaRow}
           ${plRow}`}
         </div>
@@ -1569,12 +1574,12 @@ function buildTilesHtml(v, products){
         ${hubMark}
         ${recvMark}
         ${hubBlocked ? window.kmHub.requestHTML(state.vendor, p.id) : `
-        <div class="qty-row">
+        <div class="qty-row"${_pcHide}>
           <button class="qty-btn minus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty-1})" ${qty<=0?'disabled':''}>−</button>
           <input class="qty-input ${qty>0?'has-qty':''}" type="text" inputmode="numeric" value="${qty}" readonly onclick="event.stopPropagation();openNumpad('${state.vendor}','${p.id}',${qty},'${safeName}')" placeholder="${pack?'cs':''}">
           <button class="qty-btn plus" onclick="event.stopPropagation();setQty('${state.vendor}','${p.id}',${qty+1})">+</button>
         </div>
-        <div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>
+        ${_pcHide ? _pcNote : '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>'}
         ${eaRow}
         ${plRow}`}
       </div>

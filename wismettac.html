@@ -217,7 +217,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="recommend.js?v=20261028e1"></script>
+<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102p"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20261030s"></script>
 <script src="product-images.js?v=20260726a"></script>
@@ -557,7 +557,10 @@ function render(){
     //   이라 직원이 "1" 만 누르면 실수로 대량 발주. 그래서 slash multi-tier 도
     //   낱개 게이트에 포함. (다른 vendor 페이지는 여전히 BX 만.)
     const _ps = String(p.packSize || '');
-    const showEA = /^\s*BX\b/i.test(_ps) || /\d\s*\/\s*\d/.test(_ps);
+    const _pcOnly = !!(window.kmRecs && window.kmRecs.isPcOnly && window.kmRecs.isPcOnly(p.id));
+    const _pcHide = (_pcOnly && qty <= 0) ? ' style="display:none"' : '';
+    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote() : '';
+    const showEA = /^\s*BX\b/i.test(_ps) || /\d\s*\/\s*\d/.test(_ps) || _pcOnly;
     const eaQty = showEA ? (CART[eaIdOf(p.detailId)] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0;
     // + 버튼은 항상 1 씩만 추가 (한 번에 packSize 갯수 추가 X).
@@ -595,12 +598,12 @@ function render(){
           overGuide +
           _hubMark +
           (_hubBlocked ? window.kmHub.requestHTML('wismettac', p.id) : (
-          '<div class="qrow" onclick="event.stopPropagation()">' +
+          '<div class="qrow" onclick="event.stopPropagation()"' + _pcHide + '>' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
             '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
-          '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">' + t('unitCs') + '</div>' +
+          (_pcHide ? _pcNote : '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">' + t('unitCs') + '</div>') +
           eaRow +
           '')) +
         '</div>' +
@@ -628,6 +631,7 @@ function bumpQty(id, delta){
   const cur = CART[id] || 0;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('wismettac', _hubPid(id), Math.max(0, cur + delta), cur)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), cur + delta, cur)) return;   // 🥬 낱개 전용
   const next = Math.max(0, Math.min(999, cur + delta));
   if (next === 0) delete CART[id];
   else CART[id] = next;
@@ -642,6 +646,7 @@ function bumpQty(id, delta){
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
   if (window.kmHub && window.kmHub.guard('wismettac', _hubPid(id), v, CART[id] || 0)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), v, CART[id] || 0)) return;   // 🥬 낱개 전용
   if (v === 0) delete CART[id];
   else CART[id] = v;
   saveCart();
@@ -741,6 +746,7 @@ function pdAddToCart(){
   if (n <= 0) n = 1;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 담을 수 없다
   if (window.kmHub && window.kmHub.guard('wismettac', _hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && window.kmRecs.pcBlock(_hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;   // 🥬 낱개 전용
   CART[CURRENT_PD_ID] = n;
   saveCart();
   render();

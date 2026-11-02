@@ -226,7 +226,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="rheebros_products.js?v=20261008c"></script>
-<script src="recommend.js?v=20261028e1"></script>
+<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102p"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20261030s"></script>
 <!-- 🔁 입고·주문·판매·매입가 띠 (2026-10-08) — index.html 과 같은 모듈 -->
@@ -632,7 +632,10 @@ function render(){
     const eaKey = p.detailId + '__EA';
     const plKey = p.detailId + '__PL';
     const pName = String(p.name || p.nameKr || '').toUpperCase();
-    const showEA = MULTI_TIER_RE.test(String(p.packSize || ''));
+    const _pcOnly = !!(window.kmRecs && window.kmRecs.isPcOnly && window.kmRecs.isPcOnly(p.id));
+    const _pcHide = (_pcOnly && qty <= 0) ? ' style="display:none"' : '';
+    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote() : '';
+    const showEA = MULTI_TIER_RE.test(String(p.packSize || '')) || _pcOnly;
     const showPL = PL_ENABLED_NAMES.some(k => pName.includes(k));
     const eaQty = showEA ? (CART[eaKey] || 0) : 0;
     const plQty = showPL ? (CART[plKey] || 0) : 0;
@@ -686,12 +689,12 @@ function render(){
           (window.kmRecv ? (window.kmRecv.badgeHTML('rhee_full', p.id) + window.kmRecv.ordHTML('rhee_full', p.id)
                           + window.kmRecv.altHTML('rhee_full', p.id) + window.kmRecv.salesHTML('rhee_full', p.id)) : '') +
           (_hubBlocked ? window.kmHub.requestHTML('rhee_full', p.id) : (
-          '<div class="qrow" onclick="event.stopPropagation()">' +
+          '<div class="qrow" onclick="event.stopPropagation()"' + _pcHide + '>' +
             '<button class="qbtn minus" onclick="bumpQty(\''+p.detailId+'\',-1)"' + (qty<=0?' disabled':'') + '>−</button>' +
             '<button class="qnum" onclick="event.stopPropagation();openQtyInput(\''+p.detailId+'\','+qty+')">' + qty + '</button>' +
             '<button class="qbtn plus" onclick="bumpQty(\''+p.detailId+'\',1)">+</button>' +
           '</div>' +
-          '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>' +
+          (_pcHide ? _pcNote : '<div style="font-size:9.5px;color:#1a5c3a;text-align:center;margin-top:2px;font-weight:700">📦 케이스 / CS</div>') +
           eaRow +
           plRow +
           '')) +
@@ -720,6 +723,7 @@ function bumpQty(id, delta){
   const cur = CART[id] || 0;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), cur + delta, cur)) return;   // 🥬 낱개 전용
   // 🔁 최근에 받은 물건이면 처음 담는 순간 한 번만 묻는다 (이미 담은 것엔 안 묻는다)
   if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
@@ -736,6 +740,7 @@ function bumpQty(id, delta){
 function setQty(id, n){
   const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), v, CART[id] || 0)) return;   // 🥬 낱개 전용
   if (window.kmRecv && window.kmRecv.guard('rhee_full', _hubPid(id), v, CART[id] || 0)) return;
   if (v === 0) delete CART[id];
   else CART[id] = v;
@@ -850,6 +855,7 @@ function pdAddToCart(){
   if (n <= 0) n = 1;
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 담을 수 없다
   if (window.kmHub && window.kmHub.guard('rhee_full', _hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;
+  if (window.kmRecs && window.kmRecs.pcBlock && window.kmRecs.pcBlock(_hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;   // 🥬 낱개 전용
   CART[CURRENT_PD_ID] = n;
   saveCart();
   render();

@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kimchi Mart Order System</title>
 <script src="vela_stock.js"></script>
-<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102p"></script>
+<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102q"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) — 지정된 품목은 지점이 벤더에 직접 못 담고 헐리우드에 요청 -->
 <script src="hub.js?v=20261030s"></script>
 <script src="recv.js?v=8"></script>
@@ -894,6 +894,8 @@ function setQty(vendorId, productId, qty) {
   if (window.kmRecv && window.kmRecv.guard(vendorId, productId, Math.max(0, parseInt(qty) || 0), getQty(vendorId, productId))) return;
   // 🥬 낱개 전용 상품 — 케이스는 늘릴 수 없다 (줄이기는 됨)
   if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(productId) && window.kmRecs.pcBlock(productId, qty, getQty(vendorId, productId))) return;
+  // 🥬 낱개(…__EA) 는 사장님이 정한 최대 개수까지만
+  if (window.kmRecs && window.kmRecs.pcClamp) qty = window.kmRecs.pcClamp(String(productId).replace(/__(EA|PL)$/, ''), productId, qty);
   if (!state.orders[vendorId]) state.orders[vendorId] = {};
   state.orders[vendorId][productId] = Math.max(0, parseInt(qty) || 0);
   if (state.orders[vendorId][productId] === 0) delete state.orders[vendorId][productId];
@@ -1470,7 +1472,7 @@ function buildTilesHtml(v, products){
     const isBxItem = /^\s*BX\b/i.test(String(p.um || p.size || ''));
     const _pcOnly = !!(window.kmRecs && window.kmRecs.isPcOnly && window.kmRecs.isPcOnly(p.id));
     const _pcHide = (_pcOnly && qty <= 0) ? ' style="display:none"' : '';
-    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote() : '';
+    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote(p.id) : '';
     const showEA = isBxItem || !!(pack && pack.count >= EA_MIN_PIECES) || _pcOnly;
     // 🏗 파레트 + 낱개 활성 상품 — NAPA 같은 대량 발주 상품. 두 옵션 모두 노출.
     // 다른 상품에 필요해지면 PL_ENABLED_NAMES 에 키워드 추가.

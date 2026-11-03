@@ -19,6 +19,7 @@
     globalIds: new Set(),   // star / TOP PICK (recs_global/<vendor>/<id>/ts)
     bestIds: new Set(),     // BEST ITEM — separate red mark (.../best)
     pcIds: new Set(),       // 🥬 낱개 전용 — 사장님이 지정하면 전 직원 낱개로만 주문 (.../pcOnly)
+    pcMax: {},              // 🥬 그 상품 낱개 최대 몇 개 (.../pcOnly/max) — 0 = 제한 없음
     notes: {},          // { productId: "3cs over available" }
     listeners: [],
     fbOps: null,
@@ -447,13 +448,14 @@
       const marked = new Set();
       const best = new Set();
       const pcs = new Set();
+      const pcMax = {};
       const notes = {};
       for (const id in v){
         const e = v[id];
         if (!e) continue;
         if (e.ts) marked.add(id);
         if (e.best) best.add(id);
-        if (e.pcOnly) pcs.add(id);
+        if (e.pcOnly){ pcs.add(id); const mx = parseInt(e.pcOnly.max, 10) || 0; if (mx > 0) pcMax[id] = mx; }
         if (e.note) notes[id] = String(e.note);
       }
       // Merge in any locally-saved notes that Firebase hasn't acked yet so
@@ -477,12 +479,13 @@
         for (const k of ka) if (a[k] !== b[k]) return false;
         return true;
       };
-      if (sameSet(marked, state.globalIds) && sameSet(best, state.bestIds) && sameSet(pcs, state.pcIds) && sameNotes(notes, state.notes)){
+      if (sameSet(marked, state.globalIds) && sameSet(best, state.bestIds) && sameSet(pcs, state.pcIds) && JSON.stringify(pcMax) === JSON.stringify(state.pcMax) && sameNotes(notes, state.notes)){
         return;
       }
       state.globalIds = marked;
       state.bestIds = best;
       state.pcIds = pcs;
+      state.pcMax = pcMax;
       state.notes = notes;
       console.info('[kmRecs] ' + path + ' snapshot:', marked.size, 'marked,', Object.keys(notes).length, 'notes (incl ' + Object.keys(localNotes).length + ' local)');
       notify();
@@ -522,9 +525,13 @@
   // 🥬 2026-11-02 사장님: "내가 낱개라고 지정하면 모든 직원들이 낱개로만 오더할 수 있도록 — 그 기능은 나만 보이게"
   //   recs_global/<vendor>/<id>/pcOnly — 별표·BEST 와 같은 자리라 규칙 배포 없이 전 지점 공통.
   //   켜지면 타일의 케이스 줄이 사라지고(이미 담긴 케이스는 빼기만 가능) 낱개 줄만 남는다.
+  // 🥬 11-02 2차: "제품마다 낱개 몇 개로 오더하라" — 버튼 누르면 개수를 묻고, 직원은 그 개수까지만 낱개로 담는다.
   function isPcOnly(productId){ return state.pcIds.has(fbKey(productId)); }
-  function pcOnlyNote(){
-    return '<div class="km-pc-only">🥬 낱개로만 주문 · Pieces only</div>';
+  function pcMaxOf(productId){ return state.pcMax[fbKey(productId)] || 0; }
+  function pcOnlyNote(productId){
+    const mx = productId == null ? 0 : pcMaxOf(productId);
+    return '<div class="km-pc-only">🥬 낱개로만 주문' + (mx ? ' · 최대 ' + mx + '개' : '') +
+           '<br><span style="font-weight:700;font-size:9.5px">Pieces only' + (mx ? ' · max ' + mx + ' pc' : '') + '</span></div>';
   }
   // 케이스 수량을 늘리려 하면 막는다 (줄이기·0 은 허용). 막았으면 true.
   function pcBlock(productId, next, cur){
@@ -533,24 +540,41 @@
     _recToast('🥬 이 상품은 낱개(pc)로만 주문합니다 — Pieces only');
     return true;
   }
+  // 낱개(…__EA) 수량을 사장님이 정한 최대치로 자른다. 잘렸으면 알림.
+  function pcClamp(productId, key, v){
+    v = Math.max(0, parseInt(v, 10) || 0);
+    if (!/__EA$/.test(String(key))) return v;
+    const mx = isPcOnly(productId) ? pcMaxOf(productId) : 0;
+    if (!mx || v <= mx) return v;
+    _recToast('🥬 이 상품은 낱개 최대 ' + mx + '개까지 — Max ' + mx + ' pc');
+    return mx;
+  }
   function togglePcOnly(productId){
     if (!canMark()){ _recToast('⚠ 낱개 지정은 오너 전용입니다'); return; }
     if (!state.fbOps || !state.vendor){ _recToast('⚠ 기능 초기화 안 됨 (새로고침 해보세요)'); return; }
     const id = fbKey(productId);
     const basePath = 'recs_global/' + state.vendor + '/' + id;
     const wasOn = state.pcIds.has(id);
-    if (wasOn) state.pcIds.delete(id); else state.pcIds.add(id);
+    const oldMax = state.pcMax[id] || 0;
+    const ans = window.prompt('🥬 이 상품은 낱개 최대 몇 개까지 주문하게 할까요?\n(숫자 입력 → 전 지점 직원은 케이스 없이 그 개수까지만 낱개 주문)\n(0 또는 빈칸 → 낱개 지정 해제)', oldMax ? String(oldMax) : '');
+    if (ans === null) return;   // 취소
+    const mx = Math.max(0, Math.min(999, parseInt(String(ans).replace(/[^0-9]/g, ''), 10) || 0));
+    const turnOff = mx === 0;
+    if (turnOff && !wasOn) return;
+    if (turnOff){ state.pcIds.delete(id); delete state.pcMax[id]; }
+    else { state.pcIds.add(id); state.pcMax[id] = mx; }
     notify();
     const onErr = (e) => {
       console.warn('pcOnly toggle failed', e);
       if (wasOn) state.pcIds.add(id); else state.pcIds.delete(id);
+      if (oldMax) state.pcMax[id] = oldMax; else delete state.pcMax[id];
       notify();
       _recToast('⚠ 낱개 지정 저장 실패: ' + ((e && e.message) || e));
     };
     try {
-      if (wasOn) state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/pcOnly')).catch(onErr);
-      else state.fbOps.set(state.fbOps.ref(state.db, basePath + '/pcOnly'), { ts: Date.now(), by: (me() || {}).name || '' }).catch(onErr);
-      _recToast(wasOn ? '낱개 전용 해제 — 케이스 주문 다시 가능' : '🥬 낱개 전용 — 전 지점 직원은 이 상품을 낱개로만 주문');
+      if (turnOff) state.fbOps.remove(state.fbOps.ref(state.db, basePath + '/pcOnly')).catch(onErr);
+      else state.fbOps.set(state.fbOps.ref(state.db, basePath + '/pcOnly'), { ts: Date.now(), by: (me() || {}).name || '', max: mx }).catch(onErr);
+      _recToast(turnOff ? '낱개 지정 해제 — 케이스 주문 다시 가능' : '🥬 낱개 최대 ' + mx + '개 — 전 지점 직원은 이 상품을 낱개 ' + mx + '개까지만 주문');
     } catch(e){ onErr(e); }
   }
   function getNote(productId){ return state.notes[fbKey(productId)] || ''; }
@@ -842,6 +866,7 @@
     const onBest = isBest(productId);
     const hasNote = !!getNote(productId);
     const onPc = isPcOnly(productId);
+    const pcMx = onPc ? pcMaxOf(productId) : 0;
     return (
       '<div class="km-rec-tools" onclick="event.stopPropagation()">' +
         '<button class="km-rec-tool' + (on ? ' on' : '') + '" ' +
@@ -862,8 +887,8 @@
         (!window.KM_PC_ONLY ? '' : (   // 🥬 낱개 전용 — 케이스 줄을 숨길 줄 아는 페이지에서만
         '<button class="km-rec-tool km-rec-pc-btn' + (onPc ? ' on' : '') + '" ' +
                 'onclick="event.stopPropagation();window.kmRecs.togglePcOnly(\'' + id + '\')" ' +
-                'title="' + (onPc ? '낱개 전용 해제 (케이스 주문 다시 가능)' : '낱개 전용 — 전 직원이 이 상품을 낱개로만 주문 (사장님만 보임)') + '">' +
-          (onPc ? '🥬낱개' : '낱개') +
+                'title="' + (onPc ? '낱개 최대 개수 바꾸기 / 0 = 해제' : '낱개 지정 — 이 상품을 낱개 몇 개까지만 주문하게 (사장님만 보임)') + '">' +
+          (onPc ? (pcMx ? '🥬' + pcMx + '개' : '🥬낱개') : '낱개') +
         '</button>')) +
       '</div>'
     );
@@ -1158,7 +1183,7 @@
     noteHTML, editNote, getNote, defaultUnit,
     getOverQty, overLabel, orderGuideHTML,
     canMark, isTop500Out, t5State,
-    isPcOnly, pcOnlyNote, pcBlock, togglePcOnly,
+    isPcOnly, pcOnlyNote, pcBlock, pcClamp, pcMaxOf, togglePcOnly,
   };
 
   if (document.readyState === 'loading'){

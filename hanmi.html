@@ -251,7 +251,7 @@
 
 <script src="hanmi_products.js"></script>
 <script src="cj_products.js"></script>
-<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102p"></script>
+<script>window.KM_PC_ONLY = 1;</script><script src="recommend.js?v=20261102q"></script>
 <!-- 🏬 헐리우드 경유 품목 (2026-09-19) -->
 <script src="hub.js?v=20261030s"></script>
 <!-- 🔁 입고·매입가·주문·판매 띠 + 주문 기록 (2026-10-08) — 리브·오더센터와 같은 모듈 -->
@@ -635,7 +635,7 @@ function render(){
     const eaKey = eaIdOf(p.detailId);
     const _pcOnly = !!(window.kmRecs && window.kmRecs.isPcOnly && window.kmRecs.isPcOnly(p.id));
     const _pcHide = (_pcOnly && qty <= 0) ? ' style="display:none"' : '';
-    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote() : '';
+    const _pcNote = _pcOnly ? window.kmRecs.pcOnlyNote(p.id) : '';
     const showEA = MULTI_TIER_RE.test(String(p.packSize || '')) || _pcOnly;
     const eaQty = showEA ? (CART[eaKey] || 0) : 0;
     const anyQty = qty > 0 || eaQty > 0;
@@ -716,6 +716,7 @@ function bumpQty(id, delta){
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 늘릴 수 없다
   if (window.kmHub && window.kmHub.guard('wang', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), cur + delta, cur)) return;   // 🥬 낱개 전용
+  if (delta > 0 && window.kmRecs && window.kmRecs.pcClamp && window.kmRecs.pcClamp(_hubPid(id), id, cur + delta) <= cur) return;   // 🥬 낱개 최대치
   // 🔁 최근에 받은 물건이면 처음 담는 순간 한 번만 묻는다
   if (window.kmRecv && window.kmRecv.guard('wang', _hubPid(id), Math.max(0, cur + delta), cur)) return;
   const next = Math.max(0, Math.min(999, cur + delta));
@@ -730,7 +731,8 @@ function bumpQty(id, delta){
   }
 }
 function setQty(id, n){
-  const v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
+  let v = Math.max(0, Math.min(999, parseInt(n,10) || 0));
+  if (window.kmRecs && window.kmRecs.pcClamp) v = window.kmRecs.pcClamp(_hubPid(id), id, v);   // 🥬 낱개 최대치
   if (window.kmHub && window.kmHub.guard('wang', _hubPid(id), v, CART[id] || 0)) return;
   if (window.kmRecs && window.kmRecs.pcBlock && !/__(EA|PL)$/.test(id) && window.kmRecs.pcBlock(_hubPid(id), v, CART[id] || 0)) return;   // 🥬 낱개 전용
   if (window.kmRecv && window.kmRecv.guard('wang', _hubPid(id), v, CART[id] || 0)) return;
@@ -834,6 +836,7 @@ function pdAddToCart(){
   // 🏬 헐리우드 경유 품목 — 헐리우드 아닌 지점은 담을 수 없다
   if (window.kmHub && window.kmHub.guard('wang', _hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;
   if (window.kmRecs && window.kmRecs.pcBlock && window.kmRecs.pcBlock(_hubPid(CURRENT_PD_ID), n, CART[CURRENT_PD_ID] || 0)) return;   // 🥬 낱개 전용
+  if (window.kmRecs && window.kmRecs.pcClamp) n = window.kmRecs.pcClamp(_hubPid(CURRENT_PD_ID), CURRENT_PD_ID, n) || n;
   CART[CURRENT_PD_ID] = n;
   saveCart();
   render();

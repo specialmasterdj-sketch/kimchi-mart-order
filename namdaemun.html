@@ -55,6 +55,8 @@
     transition: color .15s, border-color .15s;
   }
   .tab.active { color: #fff; border-bottom-color: #22c55e; }
+  .tab.tab-box { background: #f59e0b; color: #1f2937; border-radius: 10px 10px 0 0; font-weight: 800; }
+  .tab.tab-box.active { background: #fbbf24; color: #111827; border-bottom-color: #b45309; }
   .tab:disabled { opacity: 0.35; cursor: not-allowed; }
 
   .controls {
@@ -971,8 +973,9 @@ const BOX_FRUIT = [
   {code:"NDM-B-019", plu:"", en:"FUJI APPLE BOX", ko:"후지 사과 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr163.jpg"},
 ];
 
-const SECTIONS = [  { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
-  { id: "box",          label: "Box Fruit 박스 과일",    items: BOX_FRUIT, enabled: true },
+// 📦 사장님 "박스 과일을 맨 위에 가장 잘 보이게" — 첫 번째 탭 + 금색 강조
+const SECTIONS = [  { id: "box",          label: "📦 Box Fruit 박스 과일", items: BOX_FRUIT, enabled: true },
+  { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
   { id: "meat",         label: "Meat/Fish 고기·생선",    items: MEAT, enabled: true },
   { id: "ndmetc",       label: "Kimchi·Bulk 김치·반찬·벌크", items: NDM_ETC, enabled: true },
   { id: "ndmgro",       label: "Received 받았던 품목들",      items: NDM_GROCERY, enabled: true },
@@ -1054,7 +1057,7 @@ function loadState() {
     try { qty = migrateQty(JSON.parse(localStorage.getItem(cartKey(branchId, _userKey()))) || {}); } catch {}
   }
   return {
-    activeSection: shared.activeSection || "veg",
+    activeSection: shared.activeSection || "box",
     activeSub: shared.activeSub || "all",
     search: "",
     qty,
@@ -1179,7 +1182,7 @@ function updatePriceHeader() {
 function renderTabs() {
   const el = document.getElementById("tabs");
   el.innerHTML = SECTIONS.map(s => `
-    <button class="tab ${state.activeSection===s.id?'active':''}"
+    <button class="tab ${state.activeSection===s.id?'active':''}${s.id==='box'?' tab-box':''}"
             data-id="${s.id}" ${s.enabled ? '' : 'disabled'}>
       ${s.label}${s.enabled ? '' : ' <small>(soon)</small>'}
     </button>

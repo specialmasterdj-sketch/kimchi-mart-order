@@ -663,7 +663,7 @@ const VEGETABLES = [
 
 const SUBCAT_ORDER = [
   "b_otg", "b_sempio", "b_ofood", "b_jayone", "b_nongshim", "b_samyang", "b_crown", "b_cj", "b_pmo", "b_jongga", "b_sky", "b_spam", "b_etc", "t_kimchi", "t_bulk", "t_nori", "t_jeotgal", "t_paste", "t_sauce", "t_ramen", "t_snack", "t_drink", "t_other",
-  "고기", "계란", "잎", "뿌리", "열매", "버섯", "허브", "과일", "기타",
+  "고기", "계란", "잎", "뿌리", "열매", "버섯", "허브", "과일", "box", "기타",
   // Jayone subcats
   "tofu", "noodle", "ricecake", "ramen", "rice", "flour",
   "paste", "sauce", "broth", "pepper",
@@ -706,6 +706,7 @@ const SUBCAT_LABEL = {
   "버섯": "🍄 Mushroom 버섯",
   "허브": "🌶️ Herb 허브",
   "과일": "🍋 Fruit 과일",
+  "box":  "📦 Box Fruit 박스 과일",
   "기타": "📦 Other 기타",
   // Jayone
   "tofu":     "🧊 Tofu 두부·유부",
@@ -948,7 +949,31 @@ const NDM_SUPPLY = [
   {code:"NDM-G-029", plu:"", en:"THANK YOU BAG", ko:"봉투 (땡큐백)", unit:"", price: 24, cat:"supply"},
 ];
 
+// 📦 2026-11-03 사장님: "남대문 오더에 박스 과일 오더 섹션을 똑같이" — 신선 데일리(key-fresh) 야채 '박스류'와 같은 품목·사진
+const BOX_FRUIT = [
+  {code:"NDM-B-001", plu:"", en:"KOREAN SINGO PEAR (+ GIFT BOX)", ko:"신고배 (한국산·중국산·선물박스)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr124.jpg"},
+  {code:"NDM-B-002", plu:"", en:"FUYU PERSIMMON (+ GIFT BOX)", ko:"단감 (낱개·선물박스)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr128.jpg"},
+  {code:"NDM-B-003", plu:"", en:"MANGO", ko:"망고", unit:"", price:0, cat:"box", image:"images/box_fruit/pr137.jpg"},
+  {code:"NDM-B-004", plu:"", en:"KOREAN CHAMOE MELON BOX", ko:"참외 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr148.jpg"},
+  {code:"NDM-B-005", plu:"", en:"KOREAN PEAR 3P", ko:"한국 배 3p", unit:"", price:0, cat:"box", image:"images/box_fruit/pr149b.jpg"},
+  {code:"NDM-B-006", plu:"", en:"KOREAN PEAR BOX (7 PC)", ko:"한국 배 박스 7p", unit:"", price:0, cat:"box", image:"images/box_fruit/pr150.jpg"},
+  {code:"NDM-B-007", plu:"", en:"FUYU PERSIMMON BOX", ko:"단감 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr151.jpg"},
+  {code:"NDM-B-008", plu:"", en:"HACHIYA PERSIMMON BOX", ko:"하치야 감 박스 (홍시)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr152.jpg"},
+  {code:"NDM-B-009", plu:"", en:"GOLDEN KIWI BOX", ko:"골든 키위 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr153.jpg"},
+  {code:"NDM-B-010", plu:"", en:"SATSUMA MANDARIN (BLUE JAY)", ko:"사츠마 귤 (블루제이)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr154.jpg"},
+  {code:"NDM-B-011", plu:"", en:"ORANGE GIFT BOX", ko:"오렌지 선물용 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr155.jpg"},
+  {code:"NDM-B-012", plu:"", en:"YELLOW MANGO BOX", ko:"노랑 망고 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr156.jpg"},
+  {code:"NDM-B-013", plu:"", en:"ORRI MANDARIN BOX", ko:"오리 귤 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr157.jpg"},
+  {code:"NDM-B-014", plu:"", en:"HALLABONG BOX (SUMO CITRUS)", ko:"한라봉 박스 (스모 귤)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr158.jpg"},
+  {code:"NDM-B-015", plu:"", en:"KOREAN SHINE MUSCAT GRAPE", ko:"한국 샤인 머스캣 포도", unit:"", price:0, cat:"box", image:"images/box_fruit/pr159.jpg"},
+  {code:"NDM-B-016", plu:"", en:"TOMATO ON THE VINE BOX", ko:"줄기 토마토 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr160.jpg"},
+  {code:"NDM-B-017", plu:"", en:"ASIAN PEAR BOX (4 PC)", ko:"아시안 배 박스 (4p)", unit:"", price:0, cat:"box", image:"images/box_fruit/pr161.jpg"},
+  {code:"NDM-B-018", plu:"", en:"KOREAN SWEET POTATO BOX", ko:"한국 고구마 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr162.jpg"},
+  {code:"NDM-B-019", plu:"", en:"FUJI APPLE BOX", ko:"후지 사과 박스", unit:"", price:0, cat:"box", image:"images/box_fruit/pr163.jpg"},
+];
+
 const SECTIONS = [  { id: "veg",          label: "Vegetables 야채",       items: VEGETABLES, enabled: true },
+  { id: "box",          label: "Box Fruit 박스 과일",    items: BOX_FRUIT, enabled: true },
   { id: "meat",         label: "Meat/Fish 고기·생선",    items: MEAT, enabled: true },
   { id: "ndmetc",       label: "Kimchi·Bulk 김치·반찬·벌크", items: NDM_ETC, enabled: true },
   { id: "ndmgro",       label: "Received 받았던 품목들",      items: NDM_GROCERY, enabled: true },

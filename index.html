@@ -2547,6 +2547,15 @@ let currentSubBranch = null;
 let currentSubUser = null;
 let unsubscribe = null;
 let unsubscribeHistory = null;
+// 🔴 2026-11-12 — 할리우드 해태 주문이 통째로 사라진 뒤 넣었다.
+//   cloudPushOrders 는 _shared 를 **set() 으로 통째 덮어쓴다**. 그래서 어떤 기기가
+//   클라우드 내용을 아직 못 받은 상태에서 수량을 하나 건드리면, 그 기기가 들고 있던
+//   옛 장바구니가 통째로 올라가 **다른 벤더 칸이 함께 지워진다**. 지워진 흔적도 안 남는다.
+//   (실제로 할리우드 _shared 에 jfc·seoul_trading·two_bros_food·walong 만 남고
+//    해태 한 벤더가 사라졌는데 _shared_history 에도 ordRecent 에도 기록이 없었다.)
+//   👉 클라우드 내용을 한 번이라도 받기 전에는 **지우는 저장(set)을 하지 않는다**.
+let gotSnapshot = false;     // 이 지점 장바구니를 클라우드에서 한 번이라도 받았나
+let lastRemoteCart = {};     // 마지막으로 받은 클라우드 장바구니 (사라지는 벤더 가려내기용)
 
 function fbUserKey(){
   try {
@@ -2616,10 +2625,29 @@ window.cloudPushOrders = function(branchId, userKey, orders){
     const entries = Object.entries(items).filter(([, q]) => q > 0);
     if (entries.length) clean[v] = Object.fromEntries(entries.map(([id, q]) => [fbEncKey(id), q]));
   }
-  set(ref(db, branchPath(branchId, userKey)), clean).catch(e => {
+  const fail = e => {
     console.warn('cloud push failed', e);
     if (typeof showToast === 'function') showToast('⚠️ 클라우드 저장 실패 — 로그인/승인 확인 (주문은 이 기기에 저장됨)');
-  });
+  };
+
+  // 아직 클라우드 내용을 못 받았다 — 남의 벤더 칸을 지울 수 있으니 **얹기만** 한다.
+  // update 는 내가 가진 벤더만 갈아 끼우고 나머지는 건드리지 않는다.
+  if (!gotSnapshot){
+    console.warn('[cart] 클라우드 내용을 아직 못 받음 — 지우지 않는 저장(update)으로 올립니다');
+    if (Object.keys(clean).length) update(ref(db, branchPath(branchId, userKey)), clean).catch(fail);
+    return;
+  }
+
+  // 통째로 사라지는 벤더가 있으면 먼저 지난 기록에 남긴다 — 되살릴 수 있게.
+  // (비우기 단추로 지운 경우엔 기록이 두 번 남는데, 잃는 것보다 낫다.)
+  for (const v in lastRemoteCart){
+    const had = lastRemoteCart[v] || {};
+    if (Object.keys(had).length && !clean[v]){
+      try { window.kmLogOrder(branchId, v, had, '자동백업(사라짐)'); } catch(_){}
+      console.warn('[cart] ' + v + ' 칸이 통째로 사라집니다 — 지난 기록에 백업했습니다');
+    }
+  }
+  set(ref(db, branchPath(branchId, userKey)), clean).catch(fail);
 };
 
 function subscribeBranch(branchId, userKey){
@@ -2627,6 +2655,7 @@ function subscribeBranch(branchId, userKey){
   if (unsubscribeHistory){ try { unsubscribeHistory(); } catch(e){} unsubscribeHistory = null; }
   currentSubBranch = branchId;
   currentSubUser = userKey;
+  gotSnapshot = false; lastRemoteCart = {};   // 지점이 바뀌면 다시 받기 전까진 지우는 저장 금지
   if (!branchId || !userKey) return;
 
   // Orders (per branch × per user)
@@ -2639,6 +2668,10 @@ function subscribeBranch(branchId, userKey){
       const next = {};
       for (const v in vendors){ next[v] = {}; }
       for (const v in remote){ next[v] = Object.fromEntries(Object.entries(remote[v] || {}).map(([id, q]) => [fbDecKey(id), q])); }
+      // 여기까지 왔으면 클라우드 내용을 받은 것이다 — 이제부터 지우는 저장을 허용한다.
+      gotSnapshot = true;
+      lastRemoteCart = {};
+      for (const v in next){ if (Object.keys(next[v]||{}).length) lastRemoteCart[v] = next[v]; }
       if (!window.KM) return;
       // Skip re-render if remote matches local (echo from our own write).
       const prev = JSON.stringify(window.KM.state.orders || {});
@@ -2649,7 +2682,14 @@ function subscribeBranch(branchId, userKey){
       const _remoteHasItems = Object.values(next).some(v => v && Object.keys(v).length);
       const _localHasItems  = Object.values(window.KM.state.orders || {}).some(v => v && Object.keys(v).length);
       if (!_remoteHasItems && _localHasItems) {
-        try { window.cloudPushOrders(branchId, userKey, window.KM.state.orders); } catch(_){}
+        // 🔴 2026-11-12 — 여기서 바로 부르면 **아무 일도 안 일어났다**.
+        //    cloudPushOrders 첫 줄이 `if (… || applyingRemote) return;` 인데 지금이 바로
+        //    applyingRemote=true 인 구간이다. 즉 "로컬을 클라우드로 되올린다"는 이 보호장치는
+        //    만들어진 뒤로 한 번도 올린 적이 없다. 화면엔 주문이 보이는데 클라우드엔 없는
+        //    상태가 되고, 다음 동기화 때 그 기기에서도 조용히 사라진다.
+        //    → finally 로 applyingRemote 가 풀린 뒤에 올리도록 한 박자 미룬다.
+        const _keep = window.KM.state.orders;
+        setTimeout(() => { try { window.cloudPushOrders(branchId, userKey, _keep); } catch(_){} }, 0);
         return;  // 로컬 주문 유지 — 화면·기기에서 안 지움
       }
       window.KM.state.orders = next;

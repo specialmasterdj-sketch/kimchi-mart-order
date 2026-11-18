@@ -1946,6 +1946,47 @@ if (window.kmRecs){
   window.kmRecs.subscribe(() => {
     try { if (typeof renderContent === 'function') renderContent(); } catch(e){}
   });
+  // ⭐ 2026-11-18 사장님: 김치 5갤런 6종 골드박스 + 옮긴 품목(야채→박스 과일, 자연나라→김치·반찬·벌크)의 별표·BEST·메모 이어받기.
+  //   사장님 계정으로 이 화면을 처음 열 때 딱 한 번 (표시: recs_global/namdaemun/_seed_2026_11_18). 이후 끄고 켜는 건 자유.
+  ndmSeedGold2026_11_18({ db, ref, get, set });
+}
+async function ndmSeedGold2026_11_18(fb){
+  try {
+    if (!window.kmRecs || !window.kmRecs.canMark || !window.kmRecs.canMark()) return;
+    const base = 'recs_global/namdaemun/';
+    const enc = k => String(k).replace(/[.#$\[\]\/]|%(?![0-9A-Fa-f]{2})/g,
+      ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
+    const flag = fb.ref(fb.db, base + '_seed_2026_11_18');
+    if ((await fb.get(flag)).exists()) return;
+    const all = (await fb.get(fb.ref(fb.db, 'recs_global/namdaemun'))).val() || {};
+    let by = 'DJ'; try { by = (JSON.parse(localStorage.getItem('chat.me') || 'null') || {}).name || by; } catch(e){}
+    const GOLD = ['ndmetc:WHOLE CABBAGE KIMCHI 5GL', 'ndmetc:YOUNG RADISH KIMCHI 5GL', 'ndmetc:CUT RADISH KIMCHI 5GL',
+                  'ndmetc:WHOLE RADISH KIMCHI 5GL', 'ndmetc:GREEN ONION KIMCHI 5GL', 'ndmetc:WHITE NAPA KIMCHI 5GL'];
+    const MOVE = {
+      'veg:KOREAN PEAR GIFT 3P': 'box:KOREAN PEAR GIFT 3P', 'veg:ASIAN PEAR 3P': 'box:ASIAN PEAR 3P',
+      'veg:PREMIUM ORANGE 6P': 'box:PREMIUM ORANGE 6P', 'veg:FUJI APPLE GIFT BOX': 'box:FUJI APPLE GIFT BOX',
+      'box:KOREAN PEAR 3P': 'box:KOREAN PEAR GIFT 3P', 'box:ORANGE GIFT BOX': 'box:PREMIUM ORANGE 6P', 'box:FUJI APPLE BOX': 'box:FUJI APPLE GIFT BOX'
+    };
+    Object.keys(JY_TO_ETC).forEach(p => { MOVE['jayeon:' + p] = 'ndmetc:' + p; });
+    let n = 0;
+    for (const k of GOLD) {
+      const id = enc(k);
+      if (all[id] && all[id].ts) continue;
+      await fb.set(fb.ref(fb.db, base + id + '/ts'), Date.now());
+      await fb.set(fb.ref(fb.db, base + id + '/by'), by);
+      n++;
+    }
+    for (const o of Object.keys(MOVE)) {
+      const e = all[enc(o)]; if (!e || typeof e !== 'object') continue;
+      const id = enc(MOVE[o]); const cur = all[id] || {};
+      for (const f of ['ts', 'by', 'best', 'note', 'pcOnly']) {
+        if (e[f] != null && cur[f] == null) { await fb.set(fb.ref(fb.db, base + id + '/' + f), e[f]); cur[f] = e[f]; n++; }
+      }
+      all[id] = cur;
+    }
+    await fb.set(flag, { at: Date.now(), by: by, n: n });
+    console.info('[ndm] 골드박스·별표 이어받기 완료', n);
+  } catch(e){ console.warn('[ndm] gold seed', e); }
 }
 // 🛒 주문 수량 폰↔PC 공유 (2026-09-20 전무님 요청)
 //   같은 지점이면 폰에서 담은 수량이 PC 에도, PC 에서 담은 것이 폰에도 보인다.

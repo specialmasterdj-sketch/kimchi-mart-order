@@ -658,7 +658,7 @@ const VEGETABLES = [
 ];
 
 const SUBCAT_ORDER = [
-  "b_otg", "b_sempio", "b_ofood", "b_jayone", "b_nongshim", "b_samyang", "b_crown", "b_cj", "b_pmo", "b_jongga", "b_sky", "b_spam", "b_etc", "t_kimchi", "t_bulk", "t_nori", "t_jeotgal", "t_paste", "t_sauce", "t_ramen", "t_snack", "t_drink", "t_other",
+  "b_otg", "b_sempio", "b_ofood", "b_jayone", "b_nongshim", "b_samyang", "b_crown", "b_cj", "b_pmo", "b_jongga", "b_sky", "b_spam", "b_etc", "t_kimchi", "t_banchan", "t_bulk", "t_nori", "t_jeotgal", "t_paste", "t_sauce", "t_ramen", "t_snack", "t_drink", "t_other",
   "고기", "계란", "잎", "뿌리", "열매", "버섯", "허브", "과일", "box", "기타",
   // Jayone subcats
   "tofu", "noodle", "ricecake", "ramen", "rice", "flour",
@@ -675,6 +675,7 @@ const SUBCAT_LABEL = {
   "t_sauce": "🥫 소스·조미료",
   "t_paste": "🌶️ 장류",
   "t_jeotgal": "🦑 젓갈",
+  "t_banchan": "🥢 반찬·장아찌",
   "t_nori": "🌊 김",
   "t_bulk": "🛢️ 벌크 (큰 사이즈)",
   "t_kimchi": "🥬 김치",
@@ -730,7 +731,13 @@ const SUBCAT_LABEL = {
   "hardware": "🍳 Hardware 주방용품",
 };
 
-const JAYONE_ITEMS = (typeof window !== 'undefined' && window.JAYONE_PRODUCTS) ? window.JAYONE_PRODUCTS : [];
+// 🥢 2026-11-18 사장님: 자연나라 반찬·젓갈 6개를 '김치·반찬·벌크' 탭으로 옮김 (자연나라 탭에서는 뺌)
+const JY_TO_ETC = { "26741N":"t_banchan", "26745N":"t_banchan", "26747N":"t_banchan",
+                    "26706N":"t_jeotgal", "26717N":"t_jeotgal", "26798N":"t_jeotgal" };
+const JAYONE_ALL = (typeof window !== 'undefined' && window.JAYONE_PRODUCTS) ? window.JAYONE_PRODUCTS : [];
+const JAYONE_ITEMS = JAYONE_ALL.filter(p => !JY_TO_ETC[p.plu]);
+const JY_MOVED = Object.keys(JY_TO_ETC).map(k => JAYONE_ALL.find(p => p.plu === k)).filter(Boolean)
+  .map(p => Object.assign({}, p, { cat: JY_TO_ETC[p.plu] }));
 
 const MEAT = [
   {code:"NDM-M-001", plu:"", en:"WHOLE DUCK", ko:"통오리", unit:"", price:3.59, cat:"고기"},
@@ -791,7 +798,7 @@ const NDM_ETC = [
   {code:"NDM-G-017", plu:"", en:"SINSONG SOY BEAN PASTE 14KG", ko:"신송 된장 14KG", unit:"14KG", price: 27, cat:"t_bulk"},
   {code:"NDM-G-046", plu:"", en:"SUGAR 50LB", ko:"설탕", unit:"50LB", price: 39, cat:"t_bulk"},
   {code:"NDM-G-016", plu:"", en:"SALTED SQUID", ko:"오징어젓", unit:"", price: 89, cat:"t_jeotgal"},
-];
+].concat(JY_MOVED);
 
 const NDM_GROCERY = [
   {code:"NDM-G-019", plu:"", en:"OTG APPLE CIDER VINEGAR", ko:"오뚜기 사과식초", unit:"6/1.8L", price: 27, cat:"b_otg"},
@@ -1018,6 +1025,8 @@ const KEY_ALIASES = {
   'veg:KOREAN PEAR GIFT 9P'                  : 'veg:KOREAN PEAR GIFT 8PC',
   // 📦 2026-11-18 사장님: 박스 과일 4개를 야채 → 박스 과일 탭으로, 중복은 하나만 (남대문 실제 품목을 남김)
   'veg:KOREAN PEAR GIFT 3P'  : 'box:KOREAN PEAR GIFT 3P',
+  'jayeon:26741N': 'ndmetc:26741N', 'jayeon:26745N': 'ndmetc:26745N', 'jayeon:26747N': 'ndmetc:26747N',
+  'jayeon:26706N': 'ndmetc:26706N', 'jayeon:26717N': 'ndmetc:26717N', 'jayeon:26798N': 'ndmetc:26798N',
   'veg:ASIAN PEAR 3P'        : 'box:ASIAN PEAR 3P',
   'veg:PREMIUM ORANGE 6P'    : 'box:PREMIUM ORANGE 6P',
   'veg:FUJI APPLE GIFT BOX'  : 'box:FUJI APPLE GIFT BOX',

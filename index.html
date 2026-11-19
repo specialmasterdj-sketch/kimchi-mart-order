@@ -2335,27 +2335,35 @@ function refreshBrowseQtys(){
   if (state.page !== 'browse' || !state.vendor) return;
   const v = VENDORS[state.vendor];
   const orders = state.orders[state.vendor] || {};
-  const tiles = document.querySelectorAll('.product-tile');
-  for (const tile of tiles) {
-    const input = tile.querySelector('.qty-input');
+  // 🔁 2026-11-18 — 한 칸에 수량칸이 여럿(케이스·낱개·파레트)인데 첫 칸만 고쳐서
+  //   다른 기기에서 담은 낱개/파레트 수량이 화면에 안 나타났다. 줄(.qty-row)마다 고친다.
+  const rows = document.querySelectorAll('.product-tile .qty-row');
+  for (const row of rows) {
+    const input = row.querySelector('.qty-input');
     if (!input) continue;
-    const m = (input.getAttribute('onclick') || '').match(/openNumpad\('[^']*','([^']*)'/);
+    const oc = input.getAttribute('onclick') || '';
+    const m = oc.match(/openNumpad\('[^']*','([^']*)'/);
     if (!m) continue;
     const productId = m[1];
     const newQty = orders[productId] || 0;
     if (String(input.value) === String(newQty)) continue;
     input.value = newQty;
-    input.className = 'qty-input' + (newQty > 0 ? ' has-qty' : '');
-    tile.classList.toggle('has-qty', newQty > 0);
-    const minus = tile.querySelector('.minus');
-    const plus = tile.querySelector('.plus');
+    input.classList.toggle('has-qty', newQty > 0);
+    const minus = row.querySelector('.minus');
+    const plus = row.querySelector('.plus');
     if (minus) {
-      minus.setAttribute('onclick', "event.stopPropagation();setQty('" + state.vendor + "','" + productId + "'," + (newQty-1) + ")");
+      minus.setAttribute('onclick', "event.stopPropagation();setQty('" + state.vendor + "','" + productId + "'," + Math.max(0, newQty-1) + ")");
       if (newQty > 0) minus.removeAttribute('disabled'); else minus.setAttribute('disabled', '');
     }
     if (plus) plus.setAttribute('onclick', "event.stopPropagation();setQty('" + state.vendor + "','" + productId + "'," + (newQty+1) + ")");
-    const pName = (input.getAttribute('onclick') || '').match(/,'([^']*)'\)/);
-    input.setAttribute('onclick', "openNumpad('" + state.vendor + "','" + productId + "'," + newQty + ",'" + (pName ? pName[1] : '') + "')");
+    const pName = oc.match(/,'([^']*)'\)\s*$/);
+    input.setAttribute('onclick', "event.stopPropagation();openNumpad('" + state.vendor + "','" + productId + "'," + newQty + ",'" + (pName ? pName[1] : '') + "')");
+  }
+  // 칸 테두리(담김 표시)도 맞춘다
+  for (const tile of document.querySelectorAll('.product-tile')) {
+    let any = false;
+    for (const i of tile.querySelectorAll('.qty-input')) if ((parseInt(i.value) || 0) > 0) { any = true; break; }
+    tile.classList.toggle('has-qty', any);
   }
   // Floating cart badge
   const orderCount = Object.values(orders).filter(q => q > 0).length;
@@ -2704,7 +2712,16 @@ function subscribeBranch(branchId, userKey){
     } finally {
       applyingRemote = false;
     }
-  }, (err) => { console.warn('cloud read failed', err); });
+  }, (err) => {
+    // 🔁 2026-11-18 — 읽기가 한 번 거절되면(로그인 복원 전·세션 만료) 파이어베이스가 이 구독을
+    //   영영 끊는다. 예전엔 그대로 두어서 그 기기는 새로 고칠 때까지 남의 주문을 못 받았다.
+    //   → 끊긴 걸 표시해 두고, 로그인 복원·화면 복귀·인터넷 복귀 때 다시 붙는다.
+    console.warn('cloud read failed', err);
+    if (currentSubBranch === branchId){ currentSubBranch = null; currentSubUser = null; gotSnapshot = false; }
+    if (typeof showToast === 'function') showToast('⚠️ 다른 기기 주문을 못 받는 중 — 로그인/승인 확인');
+    clearTimeout(window._kmResubT);
+    window._kmResubT = setTimeout(() => { try { resyncSubscription(); } catch(_){} }, 15000);
+  });
 
   // History (latest 50 by timestamp; per branch × per user)
   const histRef = query(ref(db, historyPath(branchId, userKey)), orderByChild('ts'), limitToLast(50));
@@ -2737,7 +2754,10 @@ window.cloudPushHistory = function(branchId, userKey, entry){
 
 function resyncSubscription(){
   const b = window.KM?.branch;
-  const u = fbUserKey();
+  // 🔁 2026-11-18 — 이름(chat.me)이 없는 기기는 여기서 구독을 안 해서, 자기 주문은 올리면서
+  //   남의 주문은 못 받았다. 카트는 지점 공용(_shared)이라 이름과 무관 → 저장할 때와 같은
+  //   'UNASSIGNED' 로 구독한다.
+  const u = fbUserKey() || 'UNASSIGNED';
   if (b && u && (b !== currentSubBranch || u !== currentSubUser)) subscribeBranch(b, u);
   // Resubscribe the recommendation streams too so branch-scoped recs update.
   if (window.kmRecs && b) window.kmRecs.setBranch(b);
@@ -2764,6 +2784,10 @@ window.addEventListener('storage', (e) => {
 
 // First subscribe if a branch is already chosen at load time.
 resyncSubscription();
+// 🔁 끊긴 구독 되살리기 — 로그인 복원, 화면으로 돌아옴, 인터넷 복귀
+onAuthStateChanged(auth, (user) => { if (user) resyncSubscription(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) resyncSubscription(); });
+window.addEventListener('online', () => resyncSubscription());
 
 console.info('[Firebase] real-time order sync active (per branch × per user)');
 </script>
